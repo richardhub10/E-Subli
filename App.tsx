@@ -1,20 +1,80 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import 'react-native-gesture-handler';
+import React, { useEffect, useState } from 'react';
+import * as Font from 'expo-font';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { ActivityIndicator, View } from 'react-native';
 
-export default function App() {
+import { AuthProvider, useAuth } from './context/AuthContext';
+import LoginScreen from './screens/LoginScreen';
+import RegisterScreen from './screens/RegisterScreen';
+import HomeScreen from './screens/HomeScreen';
+import ReadHubScreen from './screens/ReadHubScreen';
+import WriteTraceScreen from './screens/WriteTraceScreen';
+import CameraScannerScreen from './screens/CameraScannerScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import { ProfileProvider } from './context/ProfileContext';
+
+const Stack = createStackNavigator();
+
+function AppNavigator() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FAF5EE' }}>
+        <ActivityIndicator size="large" color="#D9734E" />
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      {user ? (
+        <ProfileProvider>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {/* The routes are defined in the Auth listener above, but normally we'd structure it better. Let's just conditionally render here. */}
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="ReadHub" component={ReadHubScreen} />
+            <Stack.Screen name="WriteTrace" component={WriteTraceScreen} />
+            <Stack.Screen name="CameraScanner" component={CameraScannerScreen} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
+          </Stack.Navigator>
+        </ProfileProvider>
+      ) : (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+        </Stack.Navigator>
+      )}
+    </NavigationContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App() {
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  useEffect(() => {
+    async function loadFonts() {
+      await Font.loadAsync({
+        'Kulitan': require('./assets/fonts/KulitanHandwriting-SemiBold.otf'),
+      });
+      setFontsLoaded(true);
+    }
+    loadFonts();
+  }, []);
+
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0B2046' }}>
+        <ActivityIndicator size="large" color="#D9734E" />
+      </View>
+    );
+  }
+
+  return (
+    <AuthProvider>
+      <AppNavigator />
+    </AuthProvider>
+  );
+}
