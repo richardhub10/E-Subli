@@ -54,8 +54,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         setProfile({
           xp: data.xp || 0,
           level: data.level || 1,
-          flashcardsRead: data.flashcardsRead || 0,
-          writingPractices: data.writingPractices || 0,
+          flashcardsRead: data.flashcardsread ?? data.flashcardsRead ?? 0,
+          writingPractices: data.writingpractices ?? data.writingPractices ?? 0,
           email: data.email || user.email,
           firstName: data.first_name || user.user_metadata?.first_name || '',
           lastName: data.last_name || user.user_metadata?.last_name || '',
@@ -69,8 +69,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           last_name: user.user_metadata?.last_name || '',
           xp: defaultProfile.xp,
           level: defaultProfile.level,
-          flashcardsRead: defaultProfile.flashcardsRead,
-          writingPractices: defaultProfile.writingPractices,
+          flashcardsread: defaultProfile.flashcardsRead,
+          writingpractices: defaultProfile.writingPractices,
         };
         const { error: insertError } = await supabase.from('profiles').insert([initialProfileToInsert]);
         if (insertError) console.error("Insert Profile Error:", insertError);
@@ -92,8 +92,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             setProfile({
               xp: newData.xp || 0,
               level: newData.level || 1,
-              flashcardsRead: newData.flashcardsRead || 0,
-              writingPractices: newData.writingPractices || 0,
+              flashcardsRead: newData.flashcardsread ?? newData.flashcardsRead ?? 0,
+              writingPractices: newData.writingpractices ?? newData.writingPractices ?? 0,
               email: newData.email || user.email,
               firstName: newData.first_name || '',
               lastName: newData.last_name || '',
@@ -154,10 +154,13 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       await supabase.from('profiles').upsert({
         id: user.id,
         first_name: newProfile.firstName,
-        last_name: newProfile.lastName,
+        flashcardsread: newProfile.flashcardsRead,
+        writingpractices: newProfile.writingPractices,
         ...newProfile,
         firstName: undefined,
         lastName: undefined,
+        flashcardsRead: undefined,
+        writingPractices: undefined,
       });
     } catch (error) {
       console.error("Supabase Sync Error:", error);
