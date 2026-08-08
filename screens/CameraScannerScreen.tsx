@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { GoogleGenAI } from '@google/genai';
 import { useProfile } from '../context/ProfileContext';
 
 type CameraScannerScreenProps = {
@@ -64,24 +65,38 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
   const analyzePhoto = async () => {
     setIsAnalyzing(true);
     
-    // --- AI INTEGRATION STRATEGY ---
-    // 1. Send `base64Data` to a backend server or a direct API (like Google Cloud Vision or Gemini API).
-    // 2. The AI model checks if the handwriting matches the selected Kulitan symbol.
-    // 3. Return a confidence score.
-    
-    /* Example Implementation for future:
-    try {
-      const response = await fetch('YOUR_AI_ENDPOINT', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64: base64Data })
-      });
-      const data = await response.json();
-      const passed = data.confidence > 0.7;
-    } catch(err) { ... }
-    */
+    const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+    if (apiKey && base64Data) {
+      try {
+        const ai = new GoogleGenAI({ apiKey });
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: [
+            "This is an image of handwritten text on paper. Evaluate if the handwriting closely resembles any known character from the Kulitan script (the indigenous Kapampangan writing system). Respond strictly with exactly the word 'PASS' if it looks like a valid character, or 'FAIL' if it's completely unreadable, a blank page, or heavily incorrect.",
+            { inlineData: { data: base64Data, mimeType: 'image/jpeg' } }
+          ],
+        });
+        
+        const text = response.text?.trim() || '';
+        const passed = text.includes('PASS');
+        
+        setIsAnalyzing(false);
+        setAnalysisResult(passed ? 'success' : 'fail');
+        if (passed) addXP(50);
+        return;
+      } catch (err) {
+        console.error("Gemini API Error:", err);
+        // Fallback to mock if API fails
+      }
+    } else {
+      Alert.alert(
+        "API Key Missing",
+        "Add EXPO_PUBLIC_GEMINI_API_KEY to your environment variables to enable real AI validation. Falling back to mock data.",
+        [{ text: "OK" }]
+      );
+    }
 
-    // Mock AI validation: wait 2 seconds, then randomly pass or fail
+    // Mock AI validation fallback
     setTimeout(() => {
       setIsAnalyzing(false);
       const passed = Math.random() > 0.3; // 70% chance to pass for testing
