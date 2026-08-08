@@ -43,12 +43,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      // Fetch initial profile
+      // Fetch initial profile (maybeSingle prevents 406 Not Acceptable if it doesn't exist yet)
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (data) {
         setProfile({
@@ -61,26 +61,31 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           lastName: data.last_name || user.user_metadata?.last_name || '',
         });
       } else {
-        // Initialize new profile
-        const initialProfile = { 
-          ...defaultProfile, 
+        // Initialize new profile (only send columns that exist in SQL)
+        const initialProfileToInsert = { 
           id: user.id, 
           email: user.email || '',
           first_name: user.user_metadata?.first_name || '',
           last_name: user.user_metadata?.last_name || '',
+          xp: defaultProfile.xp,
+          level: defaultProfile.level,
+          flashcardsRead: defaultProfile.flashcardsRead,
+          writingPractices: defaultProfile.writingPractices,
         };
-        await supabase.from('profiles').insert([initialProfile]);
+        const { error: insertError } = await supabase.from('profiles').insert([initialProfileToInsert]);
+        if (insertError) console.error("Insert Profile Error:", insertError);
         
         // Map back to camelCase for frontend
         setProfile({
-          ...initialProfile,
-          firstName: initialProfile.first_name,
-          lastName: initialProfile.last_name,
+          ...defaultProfile,
+          email: initialProfileToInsert.email,
+          firstName: initialProfileToInsert.first_name,
+          lastName: initialProfileToInsert.last_name,
         });
       }
 
-      // Listen to realtime updates
-      subscription = supabase.channel(`public:profiles:id=eq.${user.id}`)
+      // Listen to realtime updates with unique channel name to prevent duplication error
+      subscription = supabase.channel(`public:profiles:${user.id}:${Date.now()}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` }, (payload) => {
           const newData = payload.new as any;
           if (newData) {

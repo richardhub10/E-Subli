@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, ScrollView, Platform } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -20,7 +20,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     const scale = new Animated.Value(1);
 
     const onPressIn = () => {
-      Animated.spring(scale, { toValue: 0.95, useNativeDriver: true }).start();
+      Animated.spring(scale, { toValue: 0.95, useNativeDriver: Platform.OS !== 'web' }).start();
     };
     const handleLogout = async () => {
     try {
@@ -31,7 +31,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   };
 
     const onPressOut = () => {
-      Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
+      Animated.spring(scale, { toValue: 1, useNativeDriver: Platform.OS !== 'web' }).start();
     };
 
     return (

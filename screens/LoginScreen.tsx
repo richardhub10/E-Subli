@@ -37,8 +37,8 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 
   // Animation for button
   const scaleAnim = new Animated.Value(1);
-  const onPressIn = () => Animated.spring(scaleAnim, { toValue: 0.95, useNativeDriver: true }).start();
-  const onPressOut = () => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
+  const onPressIn = () => Animated.spring(scaleAnim, { toValue: 0.95, useNativeDriver: Platform.OS !== 'web' }).start();
+  const onPressOut = () => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: Platform.OS !== 'web' }).start();
 
   return (
     <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
