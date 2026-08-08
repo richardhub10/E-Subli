@@ -129,26 +129,27 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateProfile = async (updates: Partial<ProfileData>) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    
-    // Bypassing stale closures by using the latest ref
+    // 1. Synchronously bypass stale closures by using the latest ref
     const currentProfile = profileRef.current;
     const newProfile = { ...currentProfile, ...updates };
-    
-    if (!newProfile.email && user.email) {
-      newProfile.email = user.email;
-    }
     
     // Recalculate level if XP changes
     if (updates.xp !== undefined) {
       newProfile.level = calculateLevel(newProfile.xp);
     }
     
-    // Synchronously update the ref so subsequent calls in the same tick use the new data
+    // Synchronously update the ref so subsequent rapid clicks see the new data immediately
     profileRef.current = newProfile;
-    // Optimistic update
+    // Optimistic update for UI
     setProfile(newProfile);
+    
+    // 2. Async database sync
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    if (!newProfile.email && user.email) {
+      newProfile.email = user.email;
+    }
     
     try {
       await supabase.from('profiles').upsert({
@@ -168,15 +169,15 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addXP = async (amount: number) => {
-    await updateProfile({ xp: profileRef.current.xp + amount });
+    updateProfile({ xp: profileRef.current.xp + amount });
   };
 
   const incrementFlashcards = async () => {
-    await updateProfile({ flashcardsRead: (profileRef.current.flashcardsRead || 0) + 1 });
+    updateProfile({ flashcardsRead: (profileRef.current.flashcardsRead || 0) + 1 });
   };
 
   const incrementWriting = async () => {
-    await updateProfile({ writingPractices: (profileRef.current.writingPractices || 0) + 1 });
+    updateProfile({ writingPractices: (profileRef.current.writingPractices || 0) + 1 });
   };
 
   return (
