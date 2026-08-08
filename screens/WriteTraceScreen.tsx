@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { DrawingCanvas, DrawingCanvasRef } from '../components/DrawingCanvas';
 import { useProfile } from '../context/ProfileContext';
@@ -32,12 +34,12 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
 
   const handleEraser = () => {
     setIsEraser(true);
-    setCurrentColor('#FAF5EE'); 
+    setCurrentColor('#FFFFFF'); 
   };
 
   const handlePen = () => {
     setIsEraser(false);
-    setCurrentColor('#0B2046'); 
+    setCurrentColor('#0F172A'); 
   };
 
   const handleCheck = () => {
@@ -49,7 +51,7 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
       setIsAnalyzing(false);
       
       const strokes = canvasRef.current?.getStrokes() || [];
-      const validStrokes = strokes.filter(s => s.color !== '#FAF5EE');
+      const validStrokes = strokes.filter(s => s.color !== '#FFFFFF' && s.color !== '#FAF5EE');
 
       let calculatedScore = 0;
 
@@ -189,13 +191,13 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>{'< Back'}</Text>
+          <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>TRACE: {currentSyllable.latin.toUpperCase()}</Text>
-        <View style={{ width: 50 }} />
+        <Text style={styles.headerTitle}>Trace: {currentSyllable.latin.toUpperCase()}</Text>
+        <View style={{ width: 44 }} />
       </View>
 
       <View 
@@ -220,6 +222,7 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
           style={[styles.toolButton, !isEraser && styles.toolButtonActive]} 
           onPress={handlePen}
         >
+          <Ionicons name="pencil" size={20} color={!isEraser ? "#FFFFFF" : "#64748B"} style={{marginRight: 8}} />
           <Text style={[styles.toolButtonText, !isEraser && styles.toolButtonTextActive]}>Pen</Text>
         </TouchableOpacity>
         
@@ -227,11 +230,12 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
           style={[styles.toolButton, isEraser && styles.toolButtonActive]} 
           onPress={handleEraser}
         >
+          <Ionicons name="bandage" size={20} color={isEraser ? "#FFFFFF" : "#64748B"} style={{marginRight: 8}} />
           <Text style={[styles.toolButtonText, isEraser && styles.toolButtonTextActive]}>Eraser</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.toolButtonClear} onPress={handleClear}>
-          <Text style={styles.toolButtonTextClear}>Clear</Text>
+          <Ionicons name="trash-outline" size={20} color="#D1582D" />
         </TouchableOpacity>
 
         {/* New Check Button */}
@@ -277,145 +281,163 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
           </View>
         </View>
       </Modal>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B2046', 
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 50,
+    paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
   backButton: {
-    padding: 10,
-  },
-  backButtonText: {
-    color: '#D9734E',
-    fontSize: 16,
-    fontWeight: 'bold',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   headerTitle: {
-    color: '#FAF5EE',
+    color: '#0F172A',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins_700Bold',
   },
   canvasContainer: {
     flex: 1,
-    backgroundColor: '#FAF5EE', 
     marginHorizontal: 20,
-    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
     overflow: 'hidden',
-    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
   },
-
   toolbar: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 20,
     paddingBottom: 40,
-    gap: 10,
   },
   toolButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 25,
-    borderWidth: 2,
-    borderColor: 'rgba(250, 245, 238, 0.3)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   toolButtonActive: {
-    backgroundColor: '#FAF5EE',
-    borderColor: '#FAF5EE',
+    backgroundColor: '#0F172A',
+    borderColor: '#0F172A',
   },
   toolButtonText: {
-    color: '#FAF5EE',
+    color: '#64748B',
+    fontFamily: 'Poppins_600SemiBold',
     fontSize: 14,
-    fontWeight: 'bold',
   },
   toolButtonTextActive: {
-    color: '#0B2046',
+    color: '#FFFFFF',
   },
   toolButtonClear: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  toolButtonTextClear: {
-    color: '#FAF5EE',
-    fontSize: 14,
-    fontWeight: 'bold',
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#FEE2E2',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   toolButtonCheck: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    backgroundColor: '#10B981', // Green for action
+    backgroundColor: '#10B981',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 4,
   },
   toolButtonTextCheck: {
-    color: '#FFF',
+    color: '#FFFFFF',
+    fontFamily: 'Poppins_700Bold',
     fontSize: 14,
-    fontWeight: 'bold',
   },
-  
-  // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(11, 32, 70, 0.9)', 
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    width: '80%',
-    backgroundColor: '#FAF5EE',
-    borderRadius: 20,
+    width: '85%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
     padding: 30,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
     elevation: 10,
+  },
+  scoreText: {
+    fontSize: 64,
+    fontFamily: 'Poppins_700Bold',
+    color: '#D1582D',
+    marginBottom: 10,
   },
   modalText: {
     fontSize: 18,
-    color: '#0B2046',
-    marginTop: 15,
+    fontFamily: 'Poppins_400Regular',
+    color: '#64748B',
     textAlign: 'center',
-    fontWeight: '500',
-  },
-  scoreText: {
-    fontSize: 60,
-    fontWeight: 'bold',
-    color: '#D9734E',
+    marginBottom: 30,
   },
   modalButtons: {
-    flexDirection: 'row',
-    marginTop: 30,
-    gap: 15,
+    width: '100%',
   },
   modalButtonNext: {
     backgroundColor: '#10B981',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 25,
+    padding: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   modalButtonRetry: {
-    backgroundColor: '#D9734E',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 25,
+    backgroundColor: '#D1582D',
+    padding: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   modalButtonText: {
-    color: '#FFF',
+    color: '#FFFFFF',
+    fontFamily: 'Poppins_700Bold',
     fontSize: 16,
-    fontWeight: 'bold',
-  },
+  }
 });

@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Flashcard from '../components/Flashcard';
 import { kulitanSyllables } from '../data/kulitanData';
@@ -32,13 +34,13 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
   const progressPercentage = ((currentIndex + 1) / kulitanSyllables.length) * 100;
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>{'< Back'}</Text>
+          <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>READ HUB</Text>
-        <View style={{ width: 50 }} />
+        <Text style={styles.headerTitle}>Read Hub</Text>
+        <View style={{ width: 44 }} />
       </View>
 
       <View style={styles.progressContainer}>
@@ -62,83 +64,103 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={[styles.controlButton, currentIndex === kulitanSyllables.length - 1 && styles.controlButtonDisabled]} 
+          style={[styles.controlButton, styles.controlButtonPrimary, currentIndex === kulitanSyllables.length - 1 && styles.controlButtonDisabled]} 
           onPress={handleNext}
           disabled={currentIndex === kulitanSyllables.length - 1}
         >
-          <Text style={styles.controlButtonText}>Next</Text>
+          <Text style={[styles.controlButtonText, styles.controlButtonTextPrimary]}>Next</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B2046', // Primary dark blue background
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 50, // safe area approximation
+    paddingTop: 60, 
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
   backButton: {
-    padding: 10,
-  },
-  backButtonText: {
-    color: '#D9734E', // Coral/Orange
-    fontSize: 16,
-    fontWeight: 'bold',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   headerTitle: {
-    color: '#FAF5EE', // Light text
+    color: '#0F172A',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins_700Bold',
   },
   progressContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     marginBottom: 20,
   },
   progressText: {
-    color: '#D9734E',
+    color: '#D1582D',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Poppins_600SemiBold',
     marginBottom: 10,
+    letterSpacing: 0.5,
   },
   progressBarBackground: {
-    height: 8,
-    backgroundColor: '#1E3A68', // Lighter blue for background
-    borderRadius: 4,
+    height: 10,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 5,
+    overflow: 'hidden',
   },
   progressBarFill: {
-    height: 8,
-    backgroundColor: '#D9734E',
-    borderRadius: 4,
+    height: 10,
+    backgroundColor: '#D1582D',
+    borderRadius: 5,
   },
   controlsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    paddingHorizontal: 20,
-    marginTop: 20,
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    marginTop: 24,
+    marginBottom: 40,
   },
   controlButton: {
-    backgroundColor: '#FAF5EE',
-    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 16,
     paddingHorizontal: 30,
-    borderRadius: 25,
-    minWidth: 120,
+    borderRadius: 16,
+    minWidth: '46%',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  controlButtonPrimary: {
+    backgroundColor: '#D1582D',
+    shadowColor: '#D1582D',
+    shadowOpacity: 0.3,
   },
   controlButtonDisabled: {
-    opacity: 0.5,
+    opacity: 0.4,
   },
   controlButtonText: {
-    color: '#0B2046',
-    fontWeight: 'bold',
+    color: '#64748B',
+    fontFamily: 'Poppins_600SemiBold',
     fontSize: 16,
+  },
+  controlButtonTextPrimary: {
+    color: '#FFFFFF',
   }
 });

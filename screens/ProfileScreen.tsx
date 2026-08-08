@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../context/ProfileContext';
 import { auth } from '../firebaseConfig';
 
@@ -21,22 +22,17 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>{'< Dashboard'}</Text>
+          <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>PROFILE</Text>
-        <View style={{ width: 80 }} /> 
+        <Text style={styles.headerTitle}>Profile</Text>
+        <View style={{ width: 44 }} /> 
       </View>
 
       <View style={styles.content}>
-        <LinearGradient
-          colors={['#1a365d', '#0B2046']}
-          style={styles.card}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
+        <View style={styles.card}>
           <View style={styles.avatarContainer}>
             <Text style={styles.avatarText}>{auth.currentUser?.email?.charAt(0).toUpperCase() || 'U'}</Text>
           </View>
@@ -65,123 +61,139 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
               <Text style={styles.statLabel}>Trace Practices</Text>
             </View>
           </View>
-        </LinearGradient>
+        </View>
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Log Out</Text>
+        <TouchableOpacity onPress={handleLogout}>
+          <LinearGradient colors={['#D1582D', '#B04724']} style={styles.logoutButton}>
+            <Text style={styles.logoutButtonText}>Log Out</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B2046', 
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 50,
+    paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
   backButton: {
-    padding: 10,
-  },
-  backButtonText: {
-    color: '#D9734E',
-    fontSize: 16,
-    fontWeight: 'bold',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   headerTitle: {
-    color: '#FAF5EE',
+    color: '#0F172A',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins_700Bold',
   },
   content: {
     flex: 1,
-    padding: 20,
+    padding: 24,
     alignItems: 'center',
   },
   card: {
     width: '100%',
-    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
     padding: 30,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
     elevation: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
   },
   avatarContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#D9734E',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#FAF5EE',
+    borderWidth: 3,
+    borderColor: '#D1582D',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 16,
   },
   avatarText: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#FAF5EE',
+    fontSize: 40,
+    fontFamily: 'Poppins_700Bold',
+    color: '#D1582D',
   },
   emailText: {
     fontSize: 18,
-    color: '#FAF5EE',
-    marginBottom: 30,
-    fontWeight: '600',
+    color: '#0F172A',
+    marginBottom: 32,
+    fontFamily: 'Poppins_600SemiBold',
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   statBox: {
     flex: 1,
     alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    paddingVertical: 16,
+    marginHorizontal: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#D9734E',
-    marginBottom: 5,
+    fontSize: 22,
+    color: '#10B981',
+    fontFamily: 'Poppins_700Bold',
   },
   statLabel: {
-    fontSize: 14,
-    color: 'rgba(250, 245, 238, 0.7)',
+    fontSize: 12,
+    color: '#64748B',
+    fontFamily: 'Poppins_500Medium',
+    marginTop: 4,
   },
   divider: {
     width: '80%',
     height: 1,
-    backgroundColor: 'rgba(250, 245, 238, 0.1)',
-    marginVertical: 20,
+    backgroundColor: '#E2E8F0',
+    marginBottom: 24,
   },
   footer: {
-    padding: 30,
-    paddingBottom: 50,
+    padding: 24,
+    paddingBottom: 40,
   },
   logoutButton: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    paddingVertical: 15,
-    borderRadius: 25,
+    paddingVertical: 18,
+    borderRadius: 16,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   logoutButtonText: {
-    color: '#FAF5EE',
+    color: '#FFFFFF',
+    fontFamily: 'Poppins_700Bold',
     fontSize: 16,
-    fontWeight: 'bold',
-  },
+  }
 });

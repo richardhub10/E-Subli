@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useProfile } from '../context/ProfileContext';
@@ -25,10 +27,10 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
   if (!permission.granted) {
     // Camera permissions are not granted yet.
     return (
-      <View style={styles.container}>
+      <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Text style={styles.backButtonText}>{'< Back'}</Text>
+            <Ionicons name="arrow-back" size={24} color="#0F172A" />
           </TouchableOpacity>
         </View>
         <View style={styles.permissionContainer}>
@@ -37,7 +39,7 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
             <Text style={styles.actionButtonText}>Grant Permission</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </LinearGradient>
     );
   }
 
@@ -74,13 +76,13 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>{'< Back'}</Text>
+          <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>AI SCANNER</Text>
-        <View style={{ width: 50 }} /> 
+        <Text style={styles.headerTitle}>AI Scanner</Text>
+        <View style={{ width: 44 }} /> 
       </View>
 
       <View style={styles.content}>
@@ -148,35 +150,39 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
           </View>
         )}
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B2046', 
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 50,
+    paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
   backButton: {
-    padding: 10,
-  },
-  backButtonText: {
-    color: '#D9734E',
-    fontSize: 16,
-    fontWeight: 'bold',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   headerTitle: {
-    color: '#FAF5EE',
+    color: '#0F172A',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins_700Bold',
   },
   permissionContainer: {
     flex: 1,
@@ -185,17 +191,23 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   permissionText: {
-    color: '#FAF5EE',
+    color: '#0F172A',
     fontSize: 16,
+    fontFamily: 'Poppins_400Regular',
     marginBottom: 20,
     textAlign: 'center',
   },
   content: {
     flex: 1,
     marginHorizontal: 20,
-    borderRadius: 20,
+    borderRadius: 24,
     overflow: 'hidden',
     backgroundColor: '#000',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
   },
   cameraContainer: {
     flex: 1,
@@ -213,16 +225,16 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     borderWidth: 2,
-    borderColor: '#D9734E',
+    borderColor: '#D1582D',
     borderStyle: 'dashed',
-    borderRadius: 20,
+    borderRadius: 24,
     backgroundColor: 'transparent',
   },
   scanTargetText: {
-    color: '#fff',
+    color: '#FFFFFF',
     marginTop: 20,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins_600SemiBold',
   },
   previewContainer: {
     flex: 1,
@@ -240,33 +252,34 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(11, 32, 70, 0.8)', // Semi-transparent brand blue
+    backgroundColor: 'rgba(15, 23, 42, 0.8)', 
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   successOverlay: {
-    backgroundColor: 'rgba(46, 139, 87, 0.9)', // SeaGreen
+    backgroundColor: 'rgba(16, 185, 129, 0.9)', 
   },
   failOverlay: {
-    backgroundColor: 'rgba(217, 115, 78, 0.9)', // Brand Coral
+    backgroundColor: 'rgba(209, 88, 45, 0.9)', 
   },
   overlayText: {
-    color: '#FAF5EE',
+    color: '#FFFFFF',
     marginTop: 20,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins_600SemiBold',
   },
   resultTitle: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 32,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins_700Bold',
     marginBottom: 10,
     textAlign: 'center',
   },
   resultText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
+    fontFamily: 'Poppins_400Regular',
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -276,37 +289,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   captureButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: 'rgba(209, 88, 45, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   captureInner: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#fff',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#D1582D',
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 4,
   },
   resultActions: {
     flexDirection: 'row',
-    gap: 20,
+    gap: 16,
   },
   actionButton: {
-    backgroundColor: '#D9734E',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 25,
+    backgroundColor: '#D1582D',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 16,
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#FAF5EE',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
   },
   actionButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontFamily: 'Poppins_600SemiBold',
     fontSize: 16,
   }
 });

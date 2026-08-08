@@ -1,6 +1,13 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
 import * as Font from 'expo-font';
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+} from '@expo-google-fonts/poppins';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ActivityIndicator, View } from 'react-native';
@@ -52,19 +59,25 @@ function AppNavigator() {
 }
 
 export default function App() {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [customFontsLoaded, setCustomFontsLoaded] = useState(false);
+  const [googleFontsLoaded] = useFonts({
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+  });
 
   useEffect(() => {
     async function loadFonts() {
       await Font.loadAsync({
         'Kulitan': require('./assets/fonts/KulitanHandwriting-SemiBold.otf'),
       });
-      setFontsLoaded(true);
+      setCustomFontsLoaded(true);
     }
     loadFonts();
   }, []);
 
-  if (!fontsLoaded) {
+  if (!customFontsLoaded || !googleFontsLoaded) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0B2046' }}>
         <ActivityIndicator size="large" color="#D9734E" />

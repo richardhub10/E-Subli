@@ -55,7 +55,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
       {/* Header Profile Section */}
       <View style={styles.header}>
         <View>
@@ -103,14 +103,13 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         />
 
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B2046', 
   },
   header: {
     flexDirection: 'row',
@@ -121,74 +120,79 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   welcomeText: {
-    color: 'rgba(250, 245, 238, 0.7)',
+    color: '#64748B',
     fontSize: 16,
+    fontFamily: 'Poppins_400Regular',
   },
   emailText: {
-    color: '#FAF5EE',
+    color: '#0F172A',
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins_700Bold',
+    letterSpacing: -0.5,
   },
   profileAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#D9734E',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    borderWidth: 2,
-    borderColor: '#FAF5EE',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
   },
   avatarText: {
-    color: '#FAF5EE',
-    fontSize: 20,
-    fontWeight: 'bold',
+    color: '#D1582D',
+    fontSize: 24,
+    fontFamily: 'Poppins_700Bold',
   },
   levelBadge: {
     position: 'absolute',
-    bottom: -5,
-    right: -5,
+    bottom: -2,
+    right: -2,
     backgroundColor: '#10B981',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#0B2046',
+    borderColor: '#FFFFFF',
   },
   levelText: {
     color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
+    fontSize: 11,
+    fontFamily: 'Poppins_700Bold',
   },
   scrollContainer: {
     flex: 1,
     paddingHorizontal: 25,
   },
   sectionTitle: {
-    color: '#FAF5EE',
+    color: '#0F172A',
     fontSize: 22,
-    fontWeight: '600',
-    marginTop: 20,
+    fontFamily: 'Poppins_600SemiBold',
+    marginTop: 10,
     marginBottom: 20,
   },
   cardContainer: {
     width: '100%',
-    height: 140,
+    height: 150,
     marginBottom: 20,
-    borderRadius: 20,
+    borderRadius: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
     elevation: 8,
   },
   cardGradient: {
     flex: 1,
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: 24,
+    padding: 24,
   },
   cardContent: {
     flex: 1,
@@ -202,13 +206,15 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 5,
+    fontSize: 26,
+    fontFamily: 'Poppins_700Bold',
+    marginBottom: 4,
+    letterSpacing: -0.5,
   },
   cardSubtitle: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 15,
+    fontFamily: 'Poppins_400Regular',
   },
   iconContainer: {
     width: 60,
