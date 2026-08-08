@@ -180,11 +180,8 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
   };
 
   const handleNext = () => {
-    if (currentIndex < kulitanSyllables.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      setCurrentIndex(0); // loop back
-    }
+    const randomIndex = Math.floor(Math.random() * kulitanSyllables.length);
+    setCurrentIndex(randomIndex);
     setModalVisible(false);
     canvasRef.current?.clear();
   };

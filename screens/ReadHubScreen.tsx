@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { StackNavigationProp } from '@react-navigation/stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Flashcard from '../components/Flashcard';
 import { kulitanSyllables } from '../data/kulitanData';
 import { useProfile } from '../context/ProfileContext';
@@ -23,10 +24,61 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
     return kulitanSyllables;
   }, [category]);
 
+  React.useEffect(() => {
+    const loadProgress = async () => {
+      try {
+        const savedIndex = await AsyncStorage.getItem('read_hub_index');
+        const savedCategory = await AsyncStorage.getItem('read_hub_category');
+        
+        if (savedIndex !== null && savedCategory !== null) {
+          const parsedIndex = parseInt(savedIndex, 10);
+          
+          if (parsedIndex > 0) {
+            Alert.alert(
+              "Resume Progress?",
+              `Do you want to continue from card ${parsedIndex + 1}?`,
+              [
+                {
+                  text: "Start Over",
+                  style: "cancel",
+                  onPress: () => {
+                    AsyncStorage.removeItem('read_hub_index');
+                    AsyncStorage.removeItem('read_hub_category');
+                  }
+                },
+                {
+                  text: "Resume",
+                  onPress: () => {
+                    setCategory(savedCategory as any);
+                    setCurrentIndex(parsedIndex);
+                  }
+                }
+              ]
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load progress", error);
+      }
+    };
+    
+    loadProgress();
+  }, []);
+
+  const saveProgress = async (newIndex: number, newCategory: string) => {
+    try {
+      await AsyncStorage.setItem('read_hub_index', newIndex.toString());
+      await AsyncStorage.setItem('read_hub_category', newCategory);
+    } catch (error) {
+      console.error("Failed to save progress", error);
+    }
+  };
+
   const handleNext = () => {
     if (currentIndex < filteredData.length - 1) {
       if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setCurrentIndex(currentIndex + 1);
+      saveProgress(currentIndex + 1, category);
       addXP(5);
       incrementFlashcards();
     }
@@ -36,6 +88,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
     if (currentIndex > 0) {
       if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setCurrentIndex(currentIndex - 1);
+      saveProgress(currentIndex - 1, category);
     }
   };
 
@@ -45,6 +98,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
   const handleCategoryChange = (newCategory: 'All' | 'Vowels' | 'Consonants') => {
     setCategory(newCategory);
     setCurrentIndex(0);
+    saveProgress(0, newCategory);
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
