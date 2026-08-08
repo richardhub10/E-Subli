@@ -34,27 +34,38 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
           const parsedIndex = parseInt(savedIndex, 10);
           
           if (parsedIndex > 0) {
-            Alert.alert(
-              "Resume Progress?",
-              `Do you want to continue from card ${parsedIndex + 1}?`,
-              [
-                {
-                  text: "Start Over",
-                  style: "cancel",
-                  onPress: () => {
-                    AsyncStorage.removeItem('read_hub_index');
-                    AsyncStorage.removeItem('read_hub_category');
+            if (Platform.OS === 'web') {
+              const resume = window.confirm(`Resume Progress?\nDo you want to continue from card ${parsedIndex + 1}?`);
+              if (resume) {
+                setCategory(savedCategory as any);
+                setCurrentIndex(parsedIndex);
+              } else {
+                AsyncStorage.removeItem('read_hub_index');
+                AsyncStorage.removeItem('read_hub_category');
+              }
+            } else {
+              Alert.alert(
+                "Resume Progress?",
+                `Do you want to continue from card ${parsedIndex + 1}?`,
+                [
+                  {
+                    text: "Start Over",
+                    style: "cancel",
+                    onPress: () => {
+                      AsyncStorage.removeItem('read_hub_index');
+                      AsyncStorage.removeItem('read_hub_category');
+                    }
+                  },
+                  {
+                    text: "Resume",
+                    onPress: () => {
+                      setCategory(savedCategory as any);
+                      setCurrentIndex(parsedIndex);
+                    }
                   }
-                },
-                {
-                  text: "Resume",
-                  onPress: () => {
-                    setCategory(savedCategory as any);
-                    setCurrentIndex(parsedIndex);
-                  }
-                }
-              ]
-            );
+                ]
+              );
+            }
           }
         }
       } catch (error) {
