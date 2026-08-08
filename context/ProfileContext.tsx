@@ -7,6 +7,7 @@ type ProfileData = {
   level: number;
   flashcardsRead: number;
   writingPractices: number;
+  email?: string;
 };
 
 type ProfileContextType = {
@@ -65,6 +66,9 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return;
     
     const newProfile = { ...profile, ...updates };
+    if (!newProfile.email && user.email) {
+      newProfile.email = user.email;
+    }
     
     // Recalculate level if XP changes
     if (updates.xp !== undefined) {

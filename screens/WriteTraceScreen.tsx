@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { DrawingCanvas, DrawingCanvasRef } from '../components/DrawingCanvas';
 import { useProfile } from '../context/ProfileContext';
@@ -169,8 +170,11 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
       setScore(calculatedScore);
       
       if (calculatedScore >= 70) {
+        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         addXP(10);
         incrementWriting();
+      } else {
+        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     }, 1500);
   };

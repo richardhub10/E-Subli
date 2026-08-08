@@ -75,8 +75,15 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollContainer} contentContainerStyle={{ paddingBottom: 50 }}>
-        <Text style={styles.sectionTitle}>Your Journey</Text>
+      <ScrollView style={styles.scrollContainer} contentContainerStyle={{ paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
+        
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Your Journey</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Leaderboard')} style={styles.leaderboardButton}>
+            <Ionicons name="trophy" size={20} color="#FBBF24" />
+            <Text style={styles.leaderboardText}>Rankings</Text>
+          </TouchableOpacity>
+        </View>
 
         <Card 
           title="Read Hub" 
@@ -171,12 +178,36 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 25,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+  },
   sectionTitle: {
     color: '#0F172A',
     fontSize: 22,
     fontFamily: 'Poppins_600SemiBold',
-    marginTop: 10,
-    marginBottom: 20,
+  },
+  leaderboardButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  leaderboardText: {
+    color: '#0F172A',
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 14,
+    marginLeft: 6,
   },
   cardContainer: {
     width: '100%',

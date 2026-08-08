@@ -13,6 +13,7 @@ type CameraScannerScreenProps = {
 export default function CameraScannerScreen({ navigation }: CameraScannerScreenProps) {
   const [permission, requestPermission] = useCameraPermissions();
   const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [base64Data, setBase64Data] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<'success' | 'fail' | null>(null);
   const { addXP } = useProfile();
@@ -46,9 +47,12 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
   const takePicture = async () => {
     if (cameraRef.current) {
       try {
-        const photo = await cameraRef.current.takePictureAsync();
+        const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.5 });
         if (photo) {
           setPhotoUri(photo.uri);
+          if (photo.base64) {
+            setBase64Data(photo.base64);
+          }
           setAnalysisResult(null); // reset
         }
       } catch (e) {
@@ -57,8 +61,26 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
     }
   };
 
-  const analyzePhoto = () => {
+  const analyzePhoto = async () => {
     setIsAnalyzing(true);
+    
+    // --- AI INTEGRATION STRATEGY ---
+    // 1. Send `base64Data` to a backend server or a direct API (like Google Cloud Vision or Gemini API).
+    // 2. The AI model checks if the handwriting matches the selected Kulitan symbol.
+    // 3. Return a confidence score.
+    
+    /* Example Implementation for future:
+    try {
+      const response = await fetch('YOUR_AI_ENDPOINT', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64Data })
+      });
+      const data = await response.json();
+      const passed = data.confidence > 0.7;
+    } catch(err) { ... }
+    */
+
     // Mock AI validation: wait 2 seconds, then randomly pass or fail
     setTimeout(() => {
       setIsAnalyzing(false);
@@ -72,6 +94,7 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
 
   const retakePhoto = () => {
     setPhotoUri(null);
+    setBase64Data(null);
     setAnalysisResult(null);
   };
 

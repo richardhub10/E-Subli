@@ -20,6 +20,7 @@ import ReadHubScreen from './screens/ReadHubScreen';
 import WriteTraceScreen from './screens/WriteTraceScreen';
 import CameraScannerScreen from './screens/CameraScannerScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import LeaderboardScreen from './screens/LeaderboardScreen';
 import { ProfileProvider } from './context/ProfileContext';
 
 const Stack = createStackNavigator();
@@ -45,6 +46,7 @@ function AppNavigator() {
             <Stack.Screen name="ReadHub" component={ReadHubScreen} />
             <Stack.Screen name="WriteTrace" component={WriteTraceScreen} />
             <Stack.Screen name="CameraScanner" component={CameraScannerScreen} />
+            <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
           </Stack.Navigator>
         </ProfileProvider>

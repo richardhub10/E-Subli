@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Flashcard from '../components/Flashcard';
 import { kulitanSyllables } from '../data/kulitanData';
@@ -12,13 +13,20 @@ type ReadHubScreenProps = {
 };
 
 export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
+  const [category, setCategory] = useState<'All' | 'Vowels' | 'Consonants'>('All');
   const [currentIndex, setCurrentIndex] = useState(0);
   const { addXP, incrementFlashcards } = useProfile();
 
+  const filteredData = useMemo(() => {
+    if (category === 'Vowels') return kulitanSyllables.slice(0, 5);
+    if (category === 'Consonants') return kulitanSyllables.slice(5);
+    return kulitanSyllables;
+  }, [category]);
+
   const handleNext = () => {
-    if (currentIndex < kulitanSyllables.length - 1) {
+    if (currentIndex < filteredData.length - 1) {
+      if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setCurrentIndex(currentIndex + 1);
-      // Give 5 XP for every card read
       addXP(5);
       incrementFlashcards();
     }
@@ -26,12 +34,19 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
+      if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setCurrentIndex(currentIndex - 1);
     }
   };
 
-  const currentSyllable = kulitanSyllables[currentIndex];
-  const progressPercentage = ((currentIndex + 1) / kulitanSyllables.length) * 100;
+  const currentSyllable = filteredData[currentIndex];
+  const progressPercentage = ((currentIndex + 1) / filteredData.length) * 100;
+
+  const handleCategoryChange = (newCategory: 'All' | 'Vowels' | 'Consonants') => {
+    setCategory(newCategory);
+    setCurrentIndex(0);
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
 
   return (
     <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
@@ -43,9 +58,21 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
         <View style={{ width: 44 }} />
       </View>
 
+      <View style={styles.tabsContainer}>
+        {['All', 'Vowels', 'Consonants'].map((cat) => (
+          <TouchableOpacity 
+            key={cat} 
+            style={[styles.tabButton, category === cat && styles.tabButtonActive]}
+            onPress={() => handleCategoryChange(cat as any)}
+          >
+            <Text style={[styles.tabText, category === cat && styles.tabTextActive]}>{cat}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <View style={styles.progressContainer}>
         <Text style={styles.progressText}>
-          LEARN SYLLABLES ({currentIndex + 1}/{kulitanSyllables.length})
+          LEARN {category.toUpperCase()} ({currentIndex + 1}/{filteredData.length})
         </Text>
         <View style={styles.progressBarBackground}>
           <View style={[styles.progressBarFill, { width: `${progressPercentage}%` }]} />
@@ -64,9 +91,9 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={[styles.controlButton, styles.controlButtonPrimary, currentIndex === kulitanSyllables.length - 1 && styles.controlButtonDisabled]} 
+          style={[styles.controlButton, styles.controlButtonPrimary, currentIndex === filteredData.length - 1 && styles.controlButtonDisabled]} 
           onPress={handleNext}
-          disabled={currentIndex === kulitanSyllables.length - 1}
+          disabled={currentIndex === filteredData.length - 1}
         >
           <Text style={[styles.controlButtonText, styles.controlButtonTextPrimary]}>Next</Text>
         </TouchableOpacity>
@@ -104,6 +131,33 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     fontSize: 20,
     fontFamily: 'Poppins_700Bold',
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  tabButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  tabButtonActive: {
+    backgroundColor: '#0F172A',
+    borderColor: '#0F172A',
+  },
+  tabText: {
+    fontSize: 14,
+    fontFamily: 'Poppins_600SemiBold',
+    color: '#64748B',
+  },
+  tabTextActive: {
+    color: '#FFFFFF',
   },
   progressContainer: {
     paddingHorizontal: 24,

@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, initializeAuth, browserLocalPersistence, Auth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, Firestore } from "firebase/firestore";
 import { Platform } from 'react-native';
 
 const firebaseConfig = {
@@ -30,6 +30,14 @@ if (Platform.OS === 'web') {
   auth = getAuth(app);
 }
 
-const db = getFirestore(app);
+let db: Firestore;
+try {
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
+  });
+} catch (e) {
+  // Fallback if already initialized (hot reloads)
+  db = getFirestore(app);
+}
 
 export { app, auth, db };
