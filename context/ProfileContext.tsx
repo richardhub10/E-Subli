@@ -9,10 +9,13 @@ type ProfileData = {
   email?: string;
   firstName?: string;
   lastName?: string;
+  readHubIndex?: number;
+  readHubCategory?: string;
 };
 
 type ProfileContextType = {
   profile: ProfileData;
+  updateProfile: (updates: Partial<ProfileData>) => Promise<void>;
   addXP: (amount: number) => Promise<void>;
   incrementFlashcards: () => Promise<void>;
   incrementWriting: () => Promise<void>;
@@ -23,6 +26,8 @@ const defaultProfile: ProfileData = {
   level: 1,
   flashcardsRead: 0,
   writingPractices: 0,
+  readHubIndex: 0,
+  readHubCategory: 'All',
 };
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -59,6 +64,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           email: data.email || user.email,
           firstName: data.first_name || user.user_metadata?.first_name || '',
           lastName: data.last_name || user.user_metadata?.last_name || '',
+          readHubIndex: data.read_hub_index || 0,
+          readHubCategory: data.read_hub_category || 'All',
         });
       } else {
         // Initialize new profile (only send columns that exist in SQL)
@@ -71,6 +78,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           level: defaultProfile.level,
           flashcardsread: defaultProfile.flashcardsRead,
           writingpractices: defaultProfile.writingPractices,
+          read_hub_index: defaultProfile.readHubIndex,
+          read_hub_category: defaultProfile.readHubCategory,
         };
         const { error: insertError } = await supabase.from('profiles').insert([initialProfileToInsert]);
         if (insertError) console.error("Insert Profile Error:", insertError);
@@ -81,6 +90,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           email: initialProfileToInsert.email,
           firstName: initialProfileToInsert.first_name,
           lastName: initialProfileToInsert.last_name,
+          readHubIndex: initialProfileToInsert.read_hub_index,
+          readHubCategory: initialProfileToInsert.read_hub_category,
         });
       }
 
@@ -97,6 +108,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
               email: newData.email || user.email,
               firstName: newData.first_name || '',
               lastName: newData.last_name || '',
+              readHubIndex: newData.read_hub_index || 0,
+              readHubCategory: newData.read_hub_category || 'All',
             });
           }
         })
@@ -157,11 +170,15 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         first_name: newProfile.firstName,
         flashcardsread: newProfile.flashcardsRead,
         writingpractices: newProfile.writingPractices,
+        read_hub_index: newProfile.readHubIndex,
+        read_hub_category: newProfile.readHubCategory,
         ...newProfile,
         firstName: undefined,
         lastName: undefined,
         flashcardsRead: undefined,
         writingPractices: undefined,
+        readHubIndex: undefined,
+        readHubCategory: undefined,
       });
     } catch (error) {
       console.error("Supabase Sync Error:", error);
@@ -181,7 +198,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <ProfileContext.Provider value={{ profile, addXP, incrementFlashcards, incrementWriting }}>
+    <ProfileContext.Provider value={{ profile, updateProfile, addXP, incrementFlashcards, incrementWriting }}>
       {children}
     </ProfileContext.Provider>
   );

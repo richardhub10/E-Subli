@@ -4,7 +4,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { StackNavigationProp } from '@react-navigation/stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Flashcard from '../components/Flashcard';
 import { kulitanSyllables } from '../data/kulitanData';
 import { useProfile } from '../context/ProfileContext';
@@ -18,7 +17,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [resumeData, setResumeData] = useState<{index: number, category: string} | null>(null);
-  const { addXP, incrementFlashcards } = useProfile();
+  const { profile, updateProfile, addXP, incrementFlashcards } = useProfile();
 
   const filteredData = useMemo(() => {
     if (category === 'Vowels') return kulitanSyllables.slice(0, 5);
@@ -27,34 +26,15 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
   }, [category]);
 
   React.useEffect(() => {
-    const loadProgress = async () => {
-      try {
-        const savedIndex = await AsyncStorage.getItem('read_hub_index');
-        const savedCategory = await AsyncStorage.getItem('read_hub_category');
-        
-        if (savedIndex !== null && savedCategory !== null) {
-          const parsedIndex = parseInt(savedIndex, 10);
-          
-          if (parsedIndex > 0) {
-            setResumeData({ index: parsedIndex, category: savedCategory });
-            setShowResumeModal(true);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to load progress", error);
-      }
-    };
-    
-    loadProgress();
-  }, []);
-
-  const saveProgress = async (newIndex: number, newCategory: string) => {
-    try {
-      await AsyncStorage.setItem('read_hub_index', newIndex.toString());
-      await AsyncStorage.setItem('read_hub_category', newCategory);
-    } catch (error) {
-      console.error("Failed to save progress", error);
+    // Only prompt once on mount if there is saved progress
+    if (profile.readHubIndex && profile.readHubIndex > 0 && profile.readHubCategory) {
+      setResumeData({ index: profile.readHubIndex, category: profile.readHubCategory });
+      setShowResumeModal(true);
     }
+  }, []); // Run only once on mount
+
+  const saveProgress = (newIndex: number, newCategory: string) => {
+    updateProfile({ readHubIndex: newIndex, readHubCategory: newCategory });
   };
 
   const handleNext = () => {
@@ -152,8 +132,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
               <TouchableOpacity 
                 style={styles.modalButtonSecondary}
                 onPress={() => {
-                  AsyncStorage.removeItem('read_hub_index');
-                  AsyncStorage.removeItem('read_hub_category');
+                  saveProgress(0, category);
                   setShowResumeModal(false);
                 }}
               >
