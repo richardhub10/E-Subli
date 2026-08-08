@@ -4,7 +4,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../context/ProfileContext';
-import { auth } from '../firebaseConfig';
+import { supabase } from '../supabaseClient';
 
 type ProfileScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -15,9 +15,9 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   
   const handleLogout = async () => {
     try {
-      await auth.signOut();
+      await supabase.auth.signOut();
     } catch (error) {
-      console.error("Logout error", error);
+      console.error('Logout error:', error);
     }
   };
 
@@ -34,9 +34,9 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       <View style={styles.content}>
         <View style={styles.card}>
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{auth.currentUser?.email?.charAt(0).toUpperCase() || 'U'}</Text>
+            <Text style={styles.avatarText}>{profile.email?.charAt(0).toUpperCase() || 'U'}</Text>
           </View>
-          <Text style={styles.emailText}>{auth.currentUser?.email}</Text>
+          <Text style={styles.emailText}>{profile.email}</Text>
           
           <View style={styles.statsContainer}>
             <View style={styles.statBox}>

@@ -3,8 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator }
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { supabase } from '../supabaseClient';
 
 type LeaderboardScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -24,23 +23,24 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const q = query(collection(db, 'users'), orderBy('xp', 'desc'), limit(50));
-        const querySnapshot = await getDocs(q);
-        const fetchedLeaders: LeaderboardEntry[] = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          if (data.email) {
-            fetchedLeaders.push({
-              id: doc.id,
-              email: data.email,
-              xp: data.xp || 0,
-              level: data.level || 1,
-            });
-          }
-        });
-        setLeaders(fetchedLeaders);
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('xp', { ascending: false })
+          .limit(50);
+          
+        if (error) throw error;
+
+        const users: LeaderboardEntry[] = data.map((doc: any) => ({
+          id: doc.id,
+          email: doc.email || 'Anonymous Scholar',
+          xp: doc.xp || 0,
+          level: doc.level || 1,
+        }));
+
+        setLeaders(users);
       } catch (error) {
-        console.error("Error fetching leaderboard:", error);
+        console.error("Error fetching leaderboard: ", error);
       } finally {
         setLoading(false);
       }

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from '
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { auth } from '../firebaseConfig';
+import { supabase } from '../supabaseClient';
 import { useProfile } from '../context/ProfileContext';
 
 type HomeScreenProps = {
@@ -22,6 +22,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     const onPressIn = () => {
       Animated.spring(scale, { toValue: 0.95, useNativeDriver: true }).start();
     };
+    const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
     const onPressOut = () => {
       Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
     };
@@ -60,14 +68,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       <View style={styles.header}>
         <View>
           <Text style={styles.welcomeText}>Welcome back,</Text>
-          <Text style={styles.emailText}>{auth.currentUser?.email?.split('@')[0] || 'Student'}</Text>
+          <Text style={styles.emailText}>{profile.email?.split('@')[0] || 'Scholar'}</Text>
         </View>
         <TouchableOpacity 
           style={styles.profileAvatar} 
           onPress={() => navigation.navigate('Profile')}
         >
           <Text style={styles.avatarText}>
-            {auth.currentUser?.email?.charAt(0).toUpperCase() || 'U'}
+            {profile.email?.charAt(0).toUpperCase() || 'U'}
           </Text>
           <View style={styles.levelBadge}>
             <Text style={styles.levelText}>{profile.level}</Text>

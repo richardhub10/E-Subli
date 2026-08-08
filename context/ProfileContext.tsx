@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
-import { auth, db } from '../firebaseConfig';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { supabase } from '../supabaseClient';
 
 type ProfileData = {
   xp: number;
@@ -30,30 +29,69 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<ProfileData>(defaultProfile);
 
   useEffect(() => {
-    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
-      if (user) {
-        const docRef = doc(db, 'users', user.uid);
-        
-        // Listen to realtime updates
-        const unsubscribeSnapshot = onSnapshot(docRef, (docSnap) => {
-          if (docSnap.exists()) {
-            setProfile(docSnap.data() as ProfileData);
-          } else {
-            // Initialize new profile
-            setDoc(docRef, defaultProfile).catch(console.error);
-            setProfile(defaultProfile);
-          }
-        }, (error) => {
-          console.error("Error listening to profile:", error);
-        });
+    let subscription: any = null;
 
-        return () => unsubscribeSnapshot();
-      } else {
+    const setupProfileSubscription = async (user: any) => {
+      if (!user) {
         setProfile(defaultProfile);
+        if (subscription) {
+          supabase.removeChannel(subscription);
+          subscription = null;
+        }
+        return;
       }
+
+      // Fetch initial profile
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (data) {
+        setProfile({
+          xp: data.xp || 0,
+          level: data.level || 1,
+          flashcardsRead: data.flashcardsRead || 0,
+          writingPractices: data.writingPractices || 0,
+          email: data.email || user.email,
+        });
+      } else {
+        // Initialize new profile
+        const initialProfile = { ...defaultProfile, id: user.id, email: user.email || '' };
+        await supabase.from('profiles').insert([initialProfile]);
+        setProfile(initialProfile);
+      }
+
+      // Listen to realtime updates
+      subscription = supabase.channel(`public:profiles:id=eq.${user.id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` }, (payload) => {
+          const newData = payload.new as any;
+          if (newData) {
+            setProfile({
+              xp: newData.xp || 0,
+              level: newData.level || 1,
+              flashcardsRead: newData.flashcardsRead || 0,
+              writingPractices: newData.writingPractices || 0,
+              email: newData.email || user.email,
+            });
+          }
+        })
+        .subscribe();
+    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setupProfileSubscription(session?.user);
     });
 
-    return () => unsubscribeAuth();
+    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setupProfileSubscription(session?.user);
+    });
+
+    return () => {
+      authSub.unsubscribe();
+      if (subscription) supabase.removeChannel(subscription);
+    };
   }, []);
 
   const profileRef = useRef<ProfileData>(defaultProfile);
@@ -68,7 +106,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateProfile = async (updates: Partial<ProfileData>) => {
-    const user = auth.currentUser;
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     
     // Bypassing stale closures by using the latest ref
@@ -89,11 +127,13 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     // Optimistic update
     setProfile(newProfile);
     
-    const docRef = doc(db, 'users', user.uid);
     try {
-      await setDoc(docRef, newProfile, { merge: true });
+      await supabase.from('profiles').upsert({
+        id: user.id,
+        ...newProfile
+      });
     } catch (error) {
-      console.error("Firestore Sync Error:", error);
+      console.error("Supabase Sync Error:", error);
     }
   };
 

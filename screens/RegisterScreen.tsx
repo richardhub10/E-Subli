@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+import { supabase } from '../supabaseClient';
 import { StackNavigationProp } from '@react-navigation/stack';
 
 type RegisterScreenProps = {
@@ -28,8 +27,14 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
 
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      // Navigation is handled automatically by the root navigator based on AuthContext
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      if (error) throw error;
+      
+      Alert.alert('Registration Successful', 'You can now log in.');
+      navigation.replace('Login');
     } catch (error: any) {
       Alert.alert('Registration Failed', error.message);
     } finally {

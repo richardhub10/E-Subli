@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+import { supabase } from '../supabaseClient';
 import { StackNavigationProp } from '@react-navigation/stack';
 
 type LoginScreenProps = {
@@ -22,8 +21,13 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Navigation is handled automatically by the root navigator based on AuthContext
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      
+      // On success, AuthContext will handle navigation automatically
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
     } finally {
