@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 
@@ -56,6 +56,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribeAuth();
   }, []);
 
+  const profileRef = useRef<ProfileData>(defaultProfile);
+
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
+
   const calculateLevel = (currentXp: number) => {
     // Basic level calculation: level up every 100 XP
     return Math.floor(currentXp / 100) + 1;
@@ -65,7 +71,10 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     const user = auth.currentUser;
     if (!user) return;
     
-    const newProfile = { ...profile, ...updates };
+    // Bypassing stale closures by using the latest ref
+    const currentProfile = profileRef.current;
+    const newProfile = { ...currentProfile, ...updates };
+    
     if (!newProfile.email && user.email) {
       newProfile.email = user.email;
     }
@@ -75,6 +84,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       newProfile.level = calculateLevel(newProfile.xp);
     }
     
+    // Synchronously update the ref so subsequent calls in the same tick use the new data
+    profileRef.current = newProfile;
     // Optimistic update
     setProfile(newProfile);
     
@@ -83,15 +94,15 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addXP = async (amount: number) => {
-    await updateProfile({ xp: profile.xp + amount });
+    await updateProfile({ xp: profileRef.current.xp + amount });
   };
 
   const incrementFlashcards = async () => {
-    await updateProfile({ flashcardsRead: profile.flashcardsRead + 1 });
+    await updateProfile({ flashcardsRead: (profileRef.current.flashcardsRead || 0) + 1 });
   };
 
   const incrementWriting = async () => {
-    await updateProfile({ writingPractices: profile.writingPractices + 1 });
+    await updateProfile({ writingPractices: (profileRef.current.writingPractices || 0) + 1 });
   };
 
   return (
