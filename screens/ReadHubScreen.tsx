@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Modal, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -16,6 +16,8 @@ type ReadHubScreenProps = {
 export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
   const [category, setCategory] = useState<'All' | 'Vowels' | 'Consonants'>('All');
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [resumeData, setResumeData] = useState<{index: number, category: string} | null>(null);
   const { addXP, incrementFlashcards } = useProfile();
 
   const filteredData = useMemo(() => {
@@ -34,38 +36,8 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
           const parsedIndex = parseInt(savedIndex, 10);
           
           if (parsedIndex > 0) {
-            if (Platform.OS === 'web') {
-              const resume = window.confirm(`Resume Progress?\nDo you want to continue from card ${parsedIndex + 1}?`);
-              if (resume) {
-                setCategory(savedCategory as any);
-                setCurrentIndex(parsedIndex);
-              } else {
-                AsyncStorage.removeItem('read_hub_index');
-                AsyncStorage.removeItem('read_hub_category');
-              }
-            } else {
-              Alert.alert(
-                "Resume Progress?",
-                `Do you want to continue from card ${parsedIndex + 1}?`,
-                [
-                  {
-                    text: "Start Over",
-                    style: "cancel",
-                    onPress: () => {
-                      AsyncStorage.removeItem('read_hub_index');
-                      AsyncStorage.removeItem('read_hub_category');
-                    }
-                  },
-                  {
-                    text: "Resume",
-                    onPress: () => {
-                      setCategory(savedCategory as any);
-                      setCurrentIndex(parsedIndex);
-                    }
-                  }
-                ]
-              );
-            }
+            setResumeData({ index: parsedIndex, category: savedCategory });
+            setShowResumeModal(true);
           }
         }
       } catch (error) {
@@ -163,6 +135,48 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
           <Text style={[styles.controlButtonText, styles.controlButtonTextPrimary]}>Next</Text>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        visible={showResumeModal}
+        transparent={true}
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Resume Progress?</Text>
+            <Text style={styles.modalDescription}>
+              Do you want to continue from {resumeData?.category} card {resumeData ? resumeData.index + 1 : 1}?
+            </Text>
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={styles.modalButtonSecondary}
+                onPress={() => {
+                  AsyncStorage.removeItem('read_hub_index');
+                  AsyncStorage.removeItem('read_hub_category');
+                  setShowResumeModal(false);
+                }}
+              >
+                <Text style={styles.modalButtonSecondaryText}>Start Over</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.modalButtonPrimary}
+                onPress={() => {
+                  if (resumeData) {
+                    setCategory(resumeData.category as any);
+                    setCurrentIndex(resumeData.index);
+                  }
+                  setShowResumeModal(false);
+                }}
+              >
+                <Text style={styles.modalButtonPrimaryText}>Resume</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </LinearGradient>
   );
 }
@@ -280,6 +294,69 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   controlButtonTextPrimary: {
+    color: '#FFFFFF',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    backgroundColor: '#FAF5EE',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 22,
+    color: '#0F172A',
+    marginBottom: 12,
+  },
+  modalDescription: {
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 16,
+    color: '#475569',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  modalButtonSecondary: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#E2D3C1',
+    alignItems: 'center',
+  },
+  modalButtonSecondaryText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 16,
+    color: '#475569',
+  },
+  modalButtonPrimary: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#E87954',
+    alignItems: 'center',
+  },
+  modalButtonPrimaryText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 16,
     color: '#FFFFFF',
   }
 });
