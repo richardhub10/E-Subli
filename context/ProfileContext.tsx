@@ -90,7 +90,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     setProfile(newProfile);
     
     const docRef = doc(db, 'users', user.uid);
-    await setDoc(docRef, newProfile, { merge: true });
+    try {
+      await setDoc(docRef, newProfile, { merge: true });
+    } catch (error) {
+      console.error("Firestore Sync Error:", error);
+    }
   };
 
   const addXP = async (amount: number) => {
