@@ -68,14 +68,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       <View style={styles.header}>
         <View>
           <Text style={styles.welcomeText}>Welcome back,</Text>
-          <Text style={styles.emailText}>{profile.email?.split('@')[0] || 'Scholar'}</Text>
+          <Text style={styles.emailText}>{profile.firstName || profile.email?.split('@')[0] || 'Scholar'}</Text>
         </View>
         <TouchableOpacity 
           style={styles.profileAvatar} 
           onPress={() => navigation.navigate('Profile')}
         >
           <Text style={styles.avatarText}>
-            {profile.email?.charAt(0).toUpperCase() || 'U'}
+            {profile.firstName?.charAt(0).toUpperCase() || profile.email?.charAt(0).toUpperCase() || 'U'}
           </Text>
           <View style={styles.levelBadge}>
             <Text style={styles.levelText}>{profile.level}</Text>

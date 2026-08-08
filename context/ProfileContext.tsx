@@ -7,6 +7,8 @@ type ProfileData = {
   flashcardsRead: number;
   writingPractices: number;
   email?: string;
+  firstName?: string;
+  lastName?: string;
 };
 
 type ProfileContextType = {
@@ -55,12 +57,26 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           flashcardsRead: data.flashcardsRead || 0,
           writingPractices: data.writingPractices || 0,
           email: data.email || user.email,
+          firstName: data.first_name || user.user_metadata?.first_name || '',
+          lastName: data.last_name || user.user_metadata?.last_name || '',
         });
       } else {
         // Initialize new profile
-        const initialProfile = { ...defaultProfile, id: user.id, email: user.email || '' };
+        const initialProfile = { 
+          ...defaultProfile, 
+          id: user.id, 
+          email: user.email || '',
+          first_name: user.user_metadata?.first_name || '',
+          last_name: user.user_metadata?.last_name || '',
+        };
         await supabase.from('profiles').insert([initialProfile]);
-        setProfile(initialProfile);
+        
+        // Map back to camelCase for frontend
+        setProfile({
+          ...initialProfile,
+          firstName: initialProfile.first_name,
+          lastName: initialProfile.last_name,
+        });
       }
 
       // Listen to realtime updates
@@ -74,6 +90,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
               flashcardsRead: newData.flashcardsRead || 0,
               writingPractices: newData.writingPractices || 0,
               email: newData.email || user.email,
+              firstName: newData.first_name || '',
+              lastName: newData.last_name || '',
             });
           }
         })
@@ -130,7 +148,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     try {
       await supabase.from('profiles').upsert({
         id: user.id,
-        ...newProfile
+        first_name: newProfile.firstName,
+        last_name: newProfile.lastName,
+        ...newProfile,
+        firstName: undefined,
+        lastName: undefined,
       });
     } catch (error) {
       console.error("Supabase Sync Error:", error);

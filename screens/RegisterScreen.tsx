@@ -9,13 +9,15 @@ type RegisterScreenProps = {
 };
 
 export default function RegisterScreen({ navigation }: RegisterScreenProps) {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!email || !password || !confirmPassword) {
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields.');
       return;
     }
@@ -30,6 +32,12 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+          }
+        }
       });
       if (error) throw error;
       
@@ -57,6 +65,22 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
         </View>
         
         <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="First Name"
+            placeholderTextColor="#888"
+            value={firstName}
+            onChangeText={setFirstName}
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Last Name"
+            placeholderTextColor="#888"
+            value={lastName}
+            onChangeText={setLastName}
+          />
+          
           <TextInput
             style={styles.input}
             placeholder="Email Address"

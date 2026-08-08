@@ -34,8 +34,13 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       <View style={styles.content}>
         <View style={styles.card}>
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{profile.email?.charAt(0).toUpperCase() || 'U'}</Text>
+            <Text style={styles.avatarText}>{profile.firstName?.charAt(0).toUpperCase() || profile.email?.charAt(0).toUpperCase() || 'U'}</Text>
           </View>
+          {profile.firstName || profile.lastName ? (
+            <Text style={[styles.emailText, { fontSize: 24, fontWeight: '700', color: '#333' }]}>
+              {profile.firstName} {profile.lastName}
+            </Text>
+          ) : null}
           <Text style={styles.emailText}>{profile.email}</Text>
           
           <View style={styles.statsContainer}>
