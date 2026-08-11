@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
+import { useProfile } from '../context/ProfileContext';
 
 // Quiz Data
 const QUIZ_QUESTIONS = [
@@ -43,13 +44,15 @@ type Props = {
 export default function QuizBattleScreen({ navigation, route }: Props) {
   const { roomId, roomCode, isHost } = route.params;
   const { user } = useAuth();
+  const { profile } = useProfile();
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [status, setStatus] = useState('waiting'); // waiting, playing, finished
-  const [showVsScreen, setShowVsScreen] = useState(false);
+  const [hasShownVsScreen, setHasShownVsScreen] = useState(false);
   const [myScore, setMyScore] = useState(0);
   const [opponentScore, setOpponentScore] = useState(0);
   const [opponentId, setOpponentId] = useState<string | null>(null);
+  const [opponentName, setOpponentName] = useState<string>('OPPONENT');
   const [isLoading, setIsLoading] = useState(true);
 
   // Parse Kulitan
@@ -96,6 +99,12 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           if (opp) {
             setOpponentScore(opp.score);
             setOpponentId(opp.user_id);
+            
+            // Fetch opponent name
+            const { data: oppProfile } = await supabase.from('profiles').select('first_name').eq('id', opp.user_id).single();
+            if (oppProfile && oppProfile.first_name) {
+              setOpponentName(oppProfile.first_name.toUpperCase());
+            }
           }
         }
       } catch (e) {
@@ -111,16 +120,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quiz_rooms', filter: `id=eq.${roomId}` }, (payload) => {
         const newRecord = payload.new;
         if (newRecord.current_question_index !== undefined) setCurrentQuestionIndex(newRecord.current_question_index);
-        
-        if (newRecord.status !== undefined) {
-          if (status === 'waiting' && newRecord.status === 'playing') {
-            setShowVsScreen(true);
-            setTimeout(() => {
-              setShowVsScreen(false);
-            }, 3000);
-          }
-          setStatus(newRecord.status);
-        }
+        if (newRecord.status !== undefined) setStatus(newRecord.status);
       })
       .subscribe();
 
@@ -134,7 +134,13 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           if (me) setMyScore(me.score);
           if (opp) {
             setOpponentScore(opp.score);
-            setOpponentId(opp.user_id);
+            if (opp.user_id !== opponentId) {
+              setOpponentId(opp.user_id);
+              const { data: oppProfile } = await supabase.from('profiles').select('first_name').eq('id', opp.user_id).single();
+              if (oppProfile && oppProfile.first_name) {
+                setOpponentName(oppProfile.first_name.toUpperCase());
+              }
+            }
           }
         }
       })
@@ -146,13 +152,16 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     };
   }, [roomId]);
 
+  useEffect(() => {
+    if (status === 'playing' && !hasShownVsScreen && opponentId) {
+      const timer = setTimeout(() => {
+        setHasShownVsScreen(true);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [status, hasShownVsScreen, opponentId]);
+
   const startGame = async () => {
-    // Show VS screen on host immediately
-    setShowVsScreen(true);
-    setTimeout(() => {
-      setShowVsScreen(false);
-    }, 3000);
-    
     await supabase.from('quiz_rooms').update({ status: 'playing', current_question_index: 0 }).eq('id', roomId);
   };
 
@@ -250,15 +259,17 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     );
   }
 
-  if (showVsScreen) {
+  if (status === 'playing' && !hasShownVsScreen && opponentId) {
+    const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'YOU';
+    
     return (
       <LinearGradient colors={['#0F172A', '#1E293B']} style={styles.container}>
         <View style={styles.vsScreenContainer}>
-          <Text style={styles.vsPlayerText}>YOU</Text>
+          <Text style={styles.vsPlayerText} adjustsFontSizeToFit numberOfLines={1}>{myName}</Text>
           <View style={styles.vsBigCircle}>
             <Text style={styles.vsBigText}>VS</Text>
           </View>
-          <Text style={styles.vsPlayerText}>OPPONENT</Text>
+          <Text style={styles.vsPlayerText} adjustsFontSizeToFit numberOfLines={1}>{opponentName}</Text>
         </View>
       </LinearGradient>
     );
