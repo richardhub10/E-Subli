@@ -41,7 +41,7 @@ function AppNavigator() {
     <NavigationContainer>
       {user ? (
         <ProfileProvider>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { flex: 1 } }}>
             {/* The routes are defined in the Auth listener above, but normally we'd structure it better. Let's just conditionally render here. */}
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="ReadHub" component={ReadHubScreen} />
@@ -53,7 +53,7 @@ function AppNavigator() {
           </Stack.Navigator>
         </ProfileProvider>
       ) : (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { flex: 1 } }}>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
         </Stack.Navigator>

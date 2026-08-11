@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 120,
+    minHeight: 160,
     marginBottom: 20,
   },
   kulitanResultText: {
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     fontSize: 64,
     color: '#0B2046',
     textAlign: 'center',
-    lineHeight: 80,
+    paddingVertical: 20,
   },
   actionButtonsRow: {
     flexDirection: 'row',
