@@ -313,7 +313,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         
         const nextIndex = currentQuestionIndex + 1;
         
-        if (nextIndex >= questions.length) {
+        if (newScore >= 50 || nextIndex >= questions.length) {
           setStatus('finished');
           await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user?.id);
           await supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId);
@@ -324,14 +324,8 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         }
       } else {
         // Just advance if incorrect, but no score
-        const nextIndex = currentQuestionIndex + 1;
-        if (nextIndex >= questions.length) {
-          setStatus('finished');
-          if (isHost) await supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId);
-        } else {
-          setCurrentQuestionIndex(nextIndex);
-          if (isHost) await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
-        }
+        // ACTUALLY: Under new rules, DO NOT advance. Just lock them out and wait for timer or opponent.
+        // We do nothing here on the database side. The UI handles the lockout locally.
       }
     }, 800);
   };
@@ -354,7 +348,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   }, [rematchStatus, opponentWantsRematch]);
 
   const triggerRematch = async () => {
-    const newQuestions = getRandomQuestions(5);
+    const newQuestions = getRandomQuestions(30);
     
     // Reset scores & rematch flags
     await supabase.from('quiz_room_players').update({ score: 0, wants_rematch: false }).eq('room_id', roomId);

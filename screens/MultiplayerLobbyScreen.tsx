@@ -89,7 +89,7 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
         
         const newCode = Math.floor(100000 + Math.random() * 900000).toString();
         
-        const initialQuestions = getRandomQuestions(5);
+        const initialQuestions = getRandomQuestions(30);
 
         const { data: newRoom, error: createError } = await supabase
           .from('quiz_rooms')

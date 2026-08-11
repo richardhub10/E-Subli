@@ -23,7 +23,33 @@ export const QUIZ_POOL = [
   { kapampangan: 'Salilung', correct: 'Lilim', options: ['Araw', 'Lilim', 'Ulan', 'Hangin'] },
   { kapampangan: 'Taram', correct: 'Talim', options: ['Talim', 'Pupu', 'Dulas', 'Gaspang'] },
   { kapampangan: 'Pipikat', correct: 'Kumukurap', options: ['Kumukurap', 'Tumatitig', 'Pumipikit', 'Lumuha'] },
-  { kapampangan: 'Dayat-malat', correct: 'Dagat', options: ['Ilog', 'Lawa', 'Sapa', 'Dagat'] }
+  { kapampangan: 'Dayat-malat', correct: 'Dagat', options: ['Ilog', 'Lawa', 'Sapa', 'Dagat'] },
+  // 25 NEW QUESTIONS
+  { kapampangan: 'Tingga', correct: 'Tingi / Titingin', options: ['Tingi / Titingin', 'Hahawak', 'Lalakad', 'Kakain'] },
+  { kapampangan: 'Sampaga', correct: 'Bulaklak', options: ['Dahon', 'Puno', 'Bulaklak', 'Bunga'] },
+  { kapampangan: 'Balas', correct: 'Buhangin', options: ['Bato', 'Lupa', 'Buhangin', 'Puno'] },
+  { kapampangan: 'Batuin', correct: 'Bituin', options: ['Buwan', 'Araw', 'Ulap', 'Bituin'] },
+  { kapampangan: 'Buntuk', correct: 'Ulo', options: ['Paa', 'Kamay', 'Tiyan', 'Ulo'] },
+  { kapampangan: 'Sibul', correct: 'Bukal ng tubig', options: ['Ulan', 'Bukal ng tubig', 'Dagat', 'Ilog'] },
+  { kapampangan: 'Balen', correct: 'Bayan', options: ['Bayan', 'Bansa', 'Lungsod', 'Mundo'] },
+  { kapampangan: 'Kapatad', correct: 'Kapatid', options: ['Pinsan', 'Tito', 'Kapatid', 'Kaibigan'] },
+  { kapampangan: 'Sulu', correct: 'Ilaw', options: ['Ilaw', 'Apoy', 'Dilim', 'Gabi'] },
+  { kapampangan: 'Busal', correct: 'Gitna', options: ['Gilid', 'Gitna', 'Taas', 'Baba'] },
+  { kapampangan: 'Alapaap', correct: 'Kaitaasan / Langit', options: ['Lupa', 'Kaitaasan / Langit', 'Ilalim', 'Gubat'] },
+  { kapampangan: 'Baling', correct: 'Amoy', options: ['Amoy', 'Lasa', 'Tunog', 'Itsura'] },
+  { kapampangan: 'Lauk', correct: 'Halo', options: ['Hiwalay', 'Halo', 'Sama-sama', 'Basag'] },
+  { kapampangan: 'Yamut', correct: 'Ugat', options: ['Sangá', 'Dahon', 'Ugat', 'Balat'] },
+  { kapampangan: 'Gamat', correct: 'Kamay', options: ['Kamay', 'Paa', 'Binti', 'Braso'] },
+  { kapampangan: 'Bitis', correct: 'Paa / Binti', options: ['Paa / Binti', 'Tiyan', 'Ulo', 'Likod'] },
+  { kapampangan: 'Kamatayan', correct: 'Kamatayan', options: ['Buhay', 'Kamatayan', 'Sakit', 'Galing'] },
+  { kapampangan: 'Pamamasa', correct: 'Pagbasa', options: ['Pagsulat', 'Pagbasa', 'Pagkanta', 'Pagsayaw'] },
+  { kapampangan: 'Kasuy', correct: 'Kasoy', options: ['Mani', 'Kasoy', 'Pili', 'Mangga'] },
+  { kapampangan: 'Makatapak', correct: 'Nakayapak', options: ['Nakasapatos', 'Nakatali', 'Nakayapak', 'Nakalutang'] },
+  { kapampangan: 'Talimhaga', correct: 'Talinghaga', options: ['Talinghaga', 'Kwento', 'Kanta', 'Tula'] },
+  { kapampangan: 'Alipan', correct: 'Alipin', options: ['Hari', 'Alipin', 'Kawal', 'Mayaman'] },
+  { kapampangan: 'Timawa', correct: 'Malaya', options: ['Malaya', 'Nakulong', 'Alipin', 'Mahirap'] },
+  { kapampangan: 'Sagmit', correct: 'Hablot', options: ['Hawak', 'Hablot', 'Bitaw', 'Tapon'] },
+  { kapampangan: 'Kasangkapan', correct: 'Gamit / Kagamitan', options: ['Pagkain', 'Damit', 'Gamit / Kagamitan', 'Pera'] }
 ];
 
 export const getRandomQuestions = (count: number = 5) => {
