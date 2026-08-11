@@ -46,6 +46,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [status, setStatus] = useState('waiting'); // waiting, playing, finished
+  const [showVsScreen, setShowVsScreen] = useState(false);
   const [myScore, setMyScore] = useState(0);
   const [opponentScore, setOpponentScore] = useState(0);
   const [opponentId, setOpponentId] = useState<string | null>(null);
@@ -110,7 +111,16 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quiz_rooms', filter: `id=eq.${roomId}` }, (payload) => {
         const newRecord = payload.new;
         if (newRecord.current_question_index !== undefined) setCurrentQuestionIndex(newRecord.current_question_index);
-        if (newRecord.status !== undefined) setStatus(newRecord.status);
+        
+        if (newRecord.status !== undefined) {
+          if (status === 'waiting' && newRecord.status === 'playing') {
+            setShowVsScreen(true);
+            setTimeout(() => {
+              setShowVsScreen(false);
+            }, 3000);
+          }
+          setStatus(newRecord.status);
+        }
       })
       .subscribe();
 
@@ -137,6 +147,12 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   }, [roomId]);
 
   const startGame = async () => {
+    // Show VS screen on host immediately
+    setShowVsScreen(true);
+    setTimeout(() => {
+      setShowVsScreen(false);
+    }, 3000);
+    
     await supabase.from('quiz_rooms').update({ status: 'playing', current_question_index: 0 }).eq('id', roomId);
   };
 
@@ -146,15 +162,17 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     if (selectedOption === currentQ.correct) {
       // Correct! Increment score
       const newScore = myScore + 10;
-      setMyScore(newScore); // Optimistic
-
-      await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user?.id);
-
-      // Advance question
+      setMyScore(newScore); // Optimistic score
+      
       const nextIndex = currentQuestionIndex + 1;
+      
       if (nextIndex >= QUIZ_QUESTIONS.length) {
+        setStatus('finished'); // Optimistic status
+        await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user?.id);
         await supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId);
       } else {
+        setCurrentQuestionIndex(nextIndex); // Optimistic next question
+        await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user?.id);
         await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
       }
     } else {
@@ -227,6 +245,20 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           <TouchableOpacity style={styles.leaveButton} onPress={leaveRoom}>
             <Text style={styles.leaveButtonText}>Back to Lobby</Text>
           </TouchableOpacity>
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  if (showVsScreen) {
+    return (
+      <LinearGradient colors={['#0F172A', '#1E293B']} style={styles.container}>
+        <View style={styles.vsScreenContainer}>
+          <Text style={styles.vsPlayerText}>YOU</Text>
+          <View style={styles.vsBigCircle}>
+            <Text style={styles.vsBigText}>VS</Text>
+          </View>
+          <Text style={styles.vsPlayerText}>OPPONENT</Text>
         </View>
       </LinearGradient>
     );
@@ -495,5 +527,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#334155',
     textAlign: 'center',
+  },
+  vsScreenContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  vsPlayerText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 48,
+    color: '#FFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 4 },
+    textShadowRadius: 10,
+    marginVertical: 40,
+  },
+  vsBigCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#EF4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  vsBigText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 40,
+    color: '#FFF',
   },
 });
