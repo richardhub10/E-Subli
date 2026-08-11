@@ -22,6 +22,8 @@ import CameraScannerScreen from './screens/CameraScannerScreen';
 import TranslatorScreen from './screens/TranslatorScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import LeaderboardScreen from './screens/LeaderboardScreen';
+import MultiplayerLobbyScreen from './screens/MultiplayerLobbyScreen';
+import CooperativeFlashcardScreen from './screens/CooperativeFlashcardScreen';
 import { ProfileProvider } from './context/ProfileContext';
 
 const Stack = createStackNavigator();
@@ -50,6 +52,8 @@ function AppNavigator() {
             <Stack.Screen name="Translator" component={TranslatorScreen} />
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
+            <Stack.Screen name="MultiplayerLobby" component={MultiplayerLobbyScreen} />
+            <Stack.Screen name="CooperativeFlashcard" component={CooperativeFlashcardScreen} />
           </Stack.Navigator>
         </ProfileProvider>
       ) : (

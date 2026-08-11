@@ -125,6 +125,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           onPress={() => navigation.navigate('Translator')}
         />
 
+        <Card 
+          title="Multiplayer (Beta)" 
+          subtitle="Co-op Flashcards"
+          icon={<Ionicons name="people" size={40} color="rgba(255,255,255,0.8)" />}
+          gradient={['#EC4899', '#BE185D']}
+          onPress={() => navigation.navigate('MultiplayerLobby')}
+        />
+
       </ScrollView>
     </LinearGradient>
   );
