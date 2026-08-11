@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -11,147 +11,144 @@ type MultiplayerLobbyScreenProps = {
 };
 
 export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyScreenProps) {
-  const [roomCode, setRoomCode] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
+  const [roomId, setRoomId] = useState<string | null>(null);
   const { user } = useAuth();
 
-  const generateRoomCode = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code = '';
-    for (let i = 0; i < 6; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
-  };
-
-  const createRoom = async () => {
-    if (!user) return;
-    setIsLoading(true);
-    const newCode = generateRoomCode();
+  // Handle host waiting for a player to join
+  useEffect(() => {
+    let subscription: any;
     
-    try {
-      const { data, error } = await supabase
-        .from('quiz_rooms')
-        .insert([
-          { room_code: newCode, host_id: user.id, status: 'waiting', current_question_index: 0 }
-        ])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      await supabase
-        .from('quiz_room_players')
-        .insert([
-          { room_id: data.id, user_id: user.id, score: 0 }
-        ]);
-
-      navigation.navigate('QuizBattle', { roomId: data.id, roomCode: newCode, isHost: true });
-    } catch (err: any) {
-      console.error(err);
-      Alert.alert('Error', 'Could not create a room.');
-    } finally {
-      setIsLoading(false);
+    if (isSearching && roomId) {
+      subscription = supabase.channel(`wait_${roomId}`)
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quiz_rooms', filter: `id=eq.${roomId}` }, (payload) => {
+          if (payload.new.status === 'playing') {
+            setIsSearching(false);
+            navigation.navigate('QuizBattle', { roomId: payload.new.id, isHost: true });
+          }
+        })
+        .subscribe();
     }
-  };
 
-  const joinRoom = async () => {
-    if (!user || !roomCode.trim()) return;
-    setIsLoading(true);
-    
-    try {
-      // Find room by code
-      const { data: room, error: findError } = await supabase
-        .from('quiz_rooms')
-        .select('*')
-        .eq('room_code', roomCode.trim().toUpperCase())
-        .single();
-
-      if (findError || !room) {
-        throw new Error('Room not found or invalid code.');
+    return () => {
+      if (subscription) {
+        supabase.removeChannel(subscription);
       }
+    };
+  }, [isSearching, roomId, navigation]);
 
-      // Check if already a member
-      const { data: existingMember } = await supabase
-        .from('quiz_room_players')
+  const cancelSearch = async () => {
+    setIsSearching(false);
+    if (roomId) {
+      await supabase.from('quiz_rooms').delete().eq('id', roomId);
+      setRoomId(null);
+    }
+  };
+
+  const findMatch = async () => {
+    if (!user) return;
+    setIsSearching(true);
+    setStatusMessage('Searching for opponents...');
+    setRoomId(null);
+    
+    try {
+      // 1. Look for a waiting room
+      const { data: waitingRooms, error: searchError } = await supabase
+        .from('quiz_rooms')
         .select('*')
-        .eq('room_id', room.id)
-        .eq('user_id', user.id)
-        .single();
+        .eq('status', 'waiting')
+        .neq('host_id', user.id) // Don't join your own ghost room
+        .limit(1);
 
-      if (!existingMember) {
-        // Join room
+      if (waitingRooms && waitingRooms.length > 0) {
+        setStatusMessage('Match found! Joining...');
+        const room = waitingRooms[0];
+        
+        // 2a. Join the room as player 2
         await supabase
           .from('quiz_room_players')
-          .insert([
-            { room_id: room.id, user_id: user.id, score: 0 }
-          ]);
-      }
+          .insert([{ room_id: room.id, user_id: user.id, score: 0 }]);
+          
+        // 2b. Update status to playing
+        await supabase
+          .from('quiz_rooms')
+          .update({ status: 'playing' })
+          .eq('id', room.id);
 
-      navigation.navigate('QuizBattle', { roomId: room.id, roomCode: room.room_code, isHost: room.host_id === user.id });
+        setIsSearching(false);
+        navigation.navigate('QuizBattle', { roomId: room.id, isHost: false });
+        
+      } else {
+        // 3. No rooms available. Create a new one and wait.
+        setStatusMessage('Creating a lobby...');
+        
+        const { data: newRoom, error: createError } = await supabase
+          .from('quiz_rooms')
+          .insert([{ 
+            room_code: Math.random().toString(36).substring(7).toUpperCase(), 
+            host_id: user.id, 
+            status: 'waiting', 
+            current_question_index: 0 
+          }])
+          .select()
+          .single();
+
+        if (createError) throw createError;
+
+        await supabase
+          .from('quiz_room_players')
+          .insert([{ room_id: newRoom.id, user_id: user.id, score: 0 }]);
+
+        setRoomId(newRoom.id);
+        setStatusMessage('Waiting for an opponent to join...');
+      }
     } catch (err: any) {
       console.error(err);
-      Alert.alert('Error', err.message || 'Could not join room.');
-    } finally {
-      setIsLoading(false);
+      setIsSearching(false);
+      Alert.alert('Matchmaking Error', 'Could not connect to the server.');
     }
   };
 
   return (
-    <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
-      <KeyboardAvoidingView 
-        style={styles.keyboardContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+    <LinearGradient colors={['#0B2046', '#1A365D']} style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#0F172A" />
+          <TouchableOpacity 
+            onPress={() => {
+              if (isSearching) cancelSearch();
+              navigation.goBack();
+            }} 
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color="#FFF" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Quiz Battle</Text>
-          <View style={{ width: 44 }} />
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.title}>Race to Translate!</Text>
-          <Text style={styles.subtitle}>Create a room and invite your friends, or enter a room code to join an existing session.</Text>
+          <Ionicons name="game-controller" size={80} color="#3B82F6" style={styles.icon} />
+          <Text style={styles.title}>Quiz Battle</Text>
+          <Text style={styles.subtitle}>Test your Kapampangan skills against real players!</Text>
 
-          <View style={styles.card}>
-            <TouchableOpacity 
-              style={styles.createButton} 
-              onPress={createRoom}
-              disabled={isLoading}
-            >
-              {isLoading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.createButtonText}>Create a New Room</Text>}
-            </TouchableOpacity>
-
-            <View style={styles.dividerContainer}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>OR</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            <View style={styles.joinContainer}>
-              <Text style={styles.label}>Enter Room Code</Text>
-              <TextInput
-                style={styles.input}
-                value={roomCode}
-                onChangeText={(text) => setRoomCode(text.toUpperCase())}
-                placeholder="e.g. A7X9B2"
-                placeholderTextColor="#94A3B8"
-                maxLength={6}
-                autoCapitalize="characters"
-              />
-              <TouchableOpacity 
-                style={[styles.joinButton, !roomCode.trim() && styles.joinButtonDisabled]}
-                onPress={joinRoom}
-                disabled={isLoading || !roomCode.trim()}
-              >
-                <Text style={styles.joinButtonText}>Join Room</Text>
+          <View style={styles.matchContainer}>
+            {isSearching ? (
+              <View style={styles.searchingBox}>
+                <ActivityIndicator size="large" color="#3B82F6" />
+                <Text style={styles.searchingText}>{statusMessage}</Text>
+                
+                <TouchableOpacity style={styles.cancelButton} onPress={cancelSearch}>
+                  <Text style={styles.cancelButtonText}>Cancel Search</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.findMatchButton} onPress={findMatch}>
+                <Text style={styles.findMatchText}>Find Match</Text>
+                <Ionicons name="search" size={24} color="#FFF" style={{ marginLeft: 10 }} />
               </TouchableOpacity>
-            </View>
+            )}
           </View>
         </View>
-      </KeyboardAvoidingView>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -160,132 +157,90 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  keyboardContainer: {
+  safeArea: {
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
+    paddingTop: 20,
   },
   backButton: {
     width: 44,
     height: 44,
-    backgroundColor: '#FFFFFF',
     borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  headerTitle: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 20,
-    color: '#0F172A',
   },
   content: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 20,
-    paddingTop: 20,
+    marginTop: -50,
+  },
+  icon: {
+    marginBottom: 20,
   },
   title: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 28,
-    color: '#0F172A',
-    marginBottom: 8,
+    fontSize: 36,
+    color: '#FFF',
+    marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
     fontFamily: 'Poppins_400Regular',
     fontSize: 16,
-    color: '#64748B',
+    color: '#94A3B8',
     textAlign: 'center',
-    marginBottom: 40,
-    paddingHorizontal: 10,
+    marginBottom: 50,
+    paddingHorizontal: 20,
   },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
+  matchContainer: {
+    width: '100%',
+    alignItems: 'center',
   },
-  createButton: {
+  findMatchButton: {
     backgroundColor: '#3B82F6',
-    borderRadius: 16,
-    paddingVertical: 16,
+    flexDirection: 'row',
+    width: '80%',
+    paddingVertical: 18,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  createButtonText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 18,
-    color: '#FFFFFF',
+  findMatchText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 20,
+    color: '#FFF',
   },
-  dividerContainer: {
-    flexDirection: 'row',
+  searchingBox: {
     alignItems: 'center',
-    marginVertical: 30,
   },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E2E8F0',
-  },
-  dividerText: {
+  searchingText: {
     fontFamily: 'Poppins_500Medium',
-    fontSize: 14,
-    color: '#94A3B8',
-    paddingHorizontal: 16,
+    fontSize: 16,
+    color: '#93C5FD',
+    marginTop: 20,
+    marginBottom: 30,
   },
-  joinContainer: {
-    gap: 12,
-  },
-  label: {
-    fontFamily: 'Poppins_500Medium',
-    fontSize: 14,
-    color: '#475569',
-  },
-  input: {
-    backgroundColor: '#F8FAFC',
+  cancelButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+    backgroundColor: 'rgba(239,68,68,0.2)',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    padding: 16,
+    borderColor: 'rgba(239,68,68,0.5)',
+  },
+  cancelButtonText: {
     fontFamily: 'Poppins_600SemiBold',
-    fontSize: 24,
-    color: '#0F172A',
-    textAlign: 'center',
-    letterSpacing: 4,
-  },
-  joinButton: {
-    backgroundColor: '#10B981',
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 10,
-  },
-  joinButtonDisabled: {
-    backgroundColor: '#94A3B8',
-  },
-  joinButtonText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 18,
-    color: '#FFFFFF',
+    fontSize: 14,
+    color: '#F87171',
   },
 });
