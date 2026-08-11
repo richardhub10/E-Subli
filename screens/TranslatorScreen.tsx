@@ -18,6 +18,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
   const [translatedText, setTranslatedText] = useState('');
   const [isTranslating, setIsTranslating] = useState(false);
   const [showKulitan, setShowKulitan] = useState(true);
+  const [orientation, setOrientation] = useState<'Horizontal' | 'Vertical'>('Horizontal');
   const { addXP } = useProfile();
 
   const handleTranslate = async () => {
@@ -64,6 +65,15 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
         window.alert('Copied to clipboard!');
       }
     }
+  };
+
+  const getVerticalWords = (text: string) => {
+    const words = text.toLowerCase().split(/\s+/);
+    return words.map(word => {
+      // Smart regex to break Kapampangan words into syllables
+      const syllables = word.match(/[^aeiou]*[aeiou](?:ng|[a-z](?![aeiou]))?/gi) || [word];
+      return syllables.join('\n');
+    });
   };
 
   return (
@@ -129,6 +139,23 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
             />
           </View>
 
+          {showKulitan && (
+            <View style={styles.orientationToggleRow}>
+              <TouchableOpacity 
+                style={[styles.orientationTab, orientation === 'Horizontal' && styles.orientationTabActive]}
+                onPress={() => setOrientation('Horizontal')}
+              >
+                <Text style={[styles.orientationTabText, orientation === 'Horizontal' && styles.orientationTabTextActive]}>Horizontal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.orientationTab, orientation === 'Vertical' && styles.orientationTabActive]}
+                onPress={() => setOrientation('Vertical')}
+              >
+                <Text style={[styles.orientationTabText, orientation === 'Vertical' && styles.orientationTabTextActive]}>Vertical</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <TouchableOpacity 
             style={[styles.translateButton, (!sourceText.trim() || isTranslating) && styles.translateButtonDisabled]}
             onPress={handleTranslate}
@@ -150,12 +177,25 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
             {showKulitan && (
               <>
                 <View style={styles.divider} />
-                <Text style={styles.cardHeader}>KULITAN SCRIPT</Text>
-                <View style={styles.kulitanContainer}>
-                  <Text style={styles.kulitanResultText}>
-                    {translatedText.toLowerCase()}
-                  </Text>
-                </View>
+                <Text style={styles.cardHeader}>KULITAN SCRIPT ({orientation.toUpperCase()})</Text>
+                
+                {orientation === 'Horizontal' ? (
+                  <View style={styles.kulitanContainer}>
+                    <Text style={styles.kulitanResultText}>
+                      {translatedText.toLowerCase()}
+                    </Text>
+                  </View>
+                ) : (
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.verticalScrollContent}>
+                    <View style={styles.verticalKulitanContainer}>
+                      {getVerticalWords(translatedText).map((vWord, index) => (
+                        <View key={index} style={styles.verticalWordColumn}>
+                          <Text style={styles.kulitanResultText}>{vWord}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </ScrollView>
+                )}
               </>
             )}
 
@@ -271,6 +311,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#475569',
   },
+  orientationToggleRow: {
+    flexDirection: 'row',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 16,
+  },
+  orientationTab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  orientationTabActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  orientationTabText: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 12,
+    color: '#64748B',
+  },
+  orientationTabTextActive: {
+    color: '#3B82F6',
+    fontFamily: 'Poppins_600SemiBold',
+  },
   translateButton: {
     backgroundColor: '#3B82F6',
     borderRadius: 12,
@@ -322,6 +392,24 @@ const styles = StyleSheet.create({
     color: '#0B2046',
     textAlign: 'center',
     paddingVertical: 20,
+  },
+  verticalScrollContent: {
+    flexGrow: 1,
+    minHeight: 250,
+  },
+  verticalKulitanContainer: {
+    flexDirection: 'row-reverse',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    backgroundColor: '#FAF5EE',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    gap: 30,
+    minWidth: '100%',
+  },
+  verticalWordColumn: {
+    alignItems: 'center',
   },
   actionButtonsRow: {
     flexDirection: 'row',
