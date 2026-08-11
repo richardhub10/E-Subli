@@ -44,6 +44,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   // Animation & Selection State
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isCorrectSelected, setIsCorrectSelected] = useState<boolean | null>(null);
+  const [roundWinnerName, setRoundWinnerName] = useState<string | null>(null);
 
   const [floatingEmojis, setFloatingEmojis] = useState<FloatingEmoji[]>([]);
   const timerAnim = useRef(new Animated.Value(100)).current;
@@ -165,13 +166,16 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         const newEmoji = {
           id: Math.random().toString(),
           emoji: payload.payload.emoji,
-          xPosition: Math.random() * 80 + 10, // 10% to 90% of screen width
+          xPosition: Math.random() * 80 + 10,
         };
         setFloatingEmojis((prev) => [...prev, newEmoji]);
         
         setTimeout(() => {
           setFloatingEmojis((prev) => prev.filter(e => e.id !== newEmoji.id));
         }, 2000);
+      })
+      .on('broadcast', { event: 'round_winner' }, (payload: any) => {
+        setRoundWinnerName(payload.payload.name);
       })
       .subscribe();
 
@@ -198,6 +202,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       // Reset selection state
       setSelectedOption(null);
       setIsCorrectSelected(null);
+      setRoundWinnerName(null);
       
       // Reset entry animations
       optionsSlideAnim.setValue(50);
@@ -278,7 +283,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   };
 
   const handleAnswer = async (selectedOpt: string) => {
-    if (status !== 'playing' || selectedOption !== null) return;
+    if (status !== 'playing' || selectedOption !== null || roundWinnerName !== null) return;
 
     const currentQ = questions[currentQuestionIndex];
     const isCorrect = selectedOpt === currentQ.correct;
@@ -289,6 +294,16 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     // Clear timeout immediately
     if (isHost && timerRef.current) clearTimeout(timerRef.current);
     timerAnim.stopAnimation();
+
+    if (isCorrect) {
+      const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'YOU';
+      broadcastChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'round_winner',
+        payload: { name: myName },
+      });
+      setRoundWinnerName(myName);
+    }
 
     // Wait 800ms to show the red/green feedback before advancing
     setTimeout(async () => {
@@ -497,6 +512,13 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           </View>
         </View>
 
+        {roundWinnerName && (
+          <Animated.View style={styles.winnerBanner}>
+            <Ionicons name="flash" size={24} color="#F59E0B" />
+            <Text style={styles.winnerBannerText}>{roundWinnerName} got it!</Text>
+          </Animated.View>
+        )}
+
         {/* Question Area */}
         <Animated.View style={[styles.questionCard, { transform: [{ translateY: cardFloatAnim }] }]}>
           <Text style={styles.questionLabel}>What does this mean?</Text>
@@ -531,7 +553,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
                 ]}
                 onPress={() => handleAnswer(opt)}
                 activeOpacity={0.7}
-                disabled={selectedOption !== null}
+                disabled={selectedOption !== null || roundWinnerName !== null}
               >
                 <Text style={[
                   styles.optionText,
@@ -672,4 +694,6 @@ const styles = StyleSheet.create({
   vsPlayerText: { fontFamily: 'Poppins_700Bold', fontSize: 48, color: '#FFF', textShadowColor: 'rgba(0, 0, 0, 0.5)', textShadowOffset: { width: 0, height: 4 }, textShadowRadius: 10, marginVertical: 40 },
   vsBigCircle: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#EF4444', alignItems: 'center', justifyContent: 'center', shadowColor: '#EF4444', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 20, elevation: 10 },
   vsBigText: { fontFamily: 'Poppins_700Bold', fontSize: 40, color: '#FFF' },
+  winnerBanner: { flexDirection: 'row', backgroundColor: '#FFF', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 30, position: 'absolute', top: 120, alignSelf: 'center', zIndex: 10, shadowColor: '#F59E0B', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5, alignItems: 'center', gap: 10 },
+  winnerBannerText: { fontFamily: 'Poppins_700Bold', fontSize: 16, color: '#0F172A' },
 });
