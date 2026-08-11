@@ -40,7 +40,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
     try {
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-2.0-flash',
         contents: [
           `You are an expert translator specializing in the Kapampangan (Pampanga) language, Tagalog, and English. Translate the following text from ${sourceLanguage} to conversational ${targetLanguage}. Output ONLY the translated ${targetLanguage} text, nothing else. Do not use quotes or explanations. Text to translate: "${sourceText.trim()}"`
         ],
@@ -67,12 +67,21 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
     }
   };
 
-  const getVerticalWords = (text: string) => {
+  const getKulitanSyllables = (text: string): string[][] => {
     const words = text.toLowerCase().split(/\s+/);
     return words.map(word => {
-      // Smart regex to break Kapampangan words into syllables
-      const syllables = word.match(/[^aeiou]*[aeiou](?:ng|[a-z](?![aeiou]))?/gi) || [word];
-      return syllables.join('\n');
+      // Match CV syllables or standalone consonants
+      const parts = word.match(/(?:ng|[bcdfghjklmnpqrstvwxyz])?[aeiou]|(?:ng|[bcdfghjklmnpqrstvwxyz])/gi);
+      if (!parts) return [word];
+      
+      return parts.map(p => {
+        if (/[aeiou]$/.test(p)) {
+          return p; // Has vowel, valid syllable
+        } else {
+          // Trailing consonant takes 'u' form for Anak Sulat (bottom placement)
+          return p + 'u'; 
+        }
+      });
     });
   };
 
@@ -182,15 +191,15 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
                 {orientation === 'Horizontal' ? (
                   <View style={styles.kulitanContainer}>
                     <Text style={styles.kulitanResultText}>
-                      {translatedText.toLowerCase()}
+                      {getKulitanSyllables(translatedText).map(word => word.join('')).join(' ')}
                     </Text>
                   </View>
                 ) : (
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.verticalScrollContent}>
                     <View style={styles.verticalKulitanContainer}>
-                      {getVerticalWords(translatedText).map((vWord, index) => (
+                      {getKulitanSyllables(translatedText).map((syllables, index) => (
                         <View key={index} style={styles.verticalWordColumn}>
-                          <Text style={styles.kulitanResultText}>{vWord}</Text>
+                          <Text style={styles.kulitanResultText}>{syllables.join('\n')}</Text>
                         </View>
                       ))}
                     </View>
