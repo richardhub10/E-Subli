@@ -101,7 +101,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
             setOpponentId(opp.user_id);
             
             // Fetch opponent name
-            const { data: oppProfile } = await supabase.from('profiles').select('first_name').eq('id', opp.user_id).single();
+            const { data: oppProfile } = await supabase.from('profiles').select('first_name').eq('id', opp.user_id).maybeSingle();
             if (oppProfile && oppProfile.first_name) {
               setOpponentName(oppProfile.first_name.toUpperCase());
             }
@@ -136,7 +136,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
             setOpponentScore(opp.score);
             if (opp.user_id !== opponentId) {
               setOpponentId(opp.user_id);
-              const { data: oppProfile } = await supabase.from('profiles').select('first_name').eq('id', opp.user_id).single();
+              const { data: oppProfile } = await supabase.from('profiles').select('first_name').eq('id', opp.user_id).maybeSingle();
               if (oppProfile && oppProfile.first_name) {
                 setOpponentName(oppProfile.first_name.toUpperCase());
               }
@@ -259,9 +259,9 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     );
   }
 
+  const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'YOU';
+
   if (status === 'playing' && !hasShownVsScreen && opponentId) {
-    const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'YOU';
-    
     return (
       <LinearGradient colors={['#0F172A', '#1E293B']} style={styles.container}>
         <View style={styles.vsScreenContainer}>
@@ -283,14 +283,14 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         {/* Header Scores */}
         <View style={styles.scoreBoard}>
           <View style={[styles.scorePill, styles.myScorePill]}>
-            <Text style={styles.scoreLabel}>YOU</Text>
+            <Text style={styles.scoreLabel} adjustsFontSizeToFit numberOfLines={1}>{myName}</Text>
             <Text style={styles.scoreValue}>{myScore}</Text>
           </View>
           <View style={styles.vsCircle}>
             <Text style={styles.vsText}>VS</Text>
           </View>
           <View style={[styles.scorePill, styles.oppScorePill]}>
-            <Text style={styles.scoreLabel}>OPP</Text>
+            <Text style={styles.scoreLabel} adjustsFontSizeToFit numberOfLines={1}>{opponentName}</Text>
             <Text style={styles.scoreValue}>{opponentScore}</Text>
           </View>
         </View>
