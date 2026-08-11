@@ -40,7 +40,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
     try {
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-1.5-flash',
         contents: [
           `You are an expert translator specializing in the Kapampangan (Pampanga) language, Tagalog, and English. Translate the following text from ${sourceLanguage} to conversational ${targetLanguage}. Output ONLY the translated ${targetLanguage} text, nothing else. Do not use quotes or explanations. Text to translate: "${sourceText.trim()}"`
         ],

@@ -70,7 +70,7 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
       try {
         const ai = new GoogleGenAI({ apiKey });
         const response = await ai.models.generateContent({
-          model: 'gemini-3.6-flash',
+          model: 'gemini-1.5-flash',
           contents: [
             "This is an image of handwritten text on paper. Evaluate if the handwriting closely resembles any known character from the Kulitan script (the indigenous Kapampangan writing system). Respond strictly with exactly the word 'PASS' if it looks like a valid character, or 'FAIL' if it's completely unreadable, a blank page, or heavily incorrect.",
             { inlineData: { data: base64Data, mimeType: 'image/jpeg' } }
