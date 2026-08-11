@@ -53,6 +53,9 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   const optionsOpacityAnim = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const broadcastChannelRef = useRef<any>(null);
+  
+  const myAnswerWrongRef = useRef(false);
+  const opponentWrongRef = useRef(false);
 
   // Parse Kulitan
   const getKulitanSyllables = (text: string): string[][] => {
@@ -177,6 +180,12 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       .on('broadcast', { event: 'round_winner' }, (payload: any) => {
         setRoundWinnerName(payload.payload.name);
       })
+      .on('broadcast', { event: 'wrong_answer' }, () => {
+        opponentWrongRef.current = true;
+        if (isHost && myAnswerWrongRef.current) {
+          handleTimeOut();
+        }
+      })
       .subscribe();
 
     return () => {
@@ -203,6 +212,8 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       setSelectedOption(null);
       setIsCorrectSelected(null);
       setRoundWinnerName(null);
+      myAnswerWrongRef.current = false;
+      opponentWrongRef.current = false;
       
       // Reset entry animations
       optionsSlideAnim.setValue(50);
@@ -323,9 +334,12 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
         }
       } else {
-        // Just advance if incorrect, but no score
-        // ACTUALLY: Under new rules, DO NOT advance. Just lock them out and wait for timer or opponent.
-        // We do nothing here on the database side. The UI handles the lockout locally.
+        myAnswerWrongRef.current = true;
+        broadcastChannelRef.current?.send({ type: 'broadcast', event: 'wrong_answer' });
+        
+        if (isHost && opponentWrongRef.current) {
+          handleTimeOut();
+        }
       }
     }, 800);
   };
