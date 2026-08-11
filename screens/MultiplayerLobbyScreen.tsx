@@ -31,9 +31,9 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
     
     try {
       const { data, error } = await supabase
-        .from('flashcard_rooms')
+        .from('quiz_rooms')
         .insert([
-          { room_code: newCode, host_id: user.id }
+          { room_code: newCode, host_id: user.id, status: 'waiting', current_question_index: 0 }
         ])
         .select()
         .single();
@@ -41,12 +41,12 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
       if (error) throw error;
 
       await supabase
-        .from('flashcard_room_members')
+        .from('quiz_room_players')
         .insert([
-          { room_id: data.id, user_id: user.id }
+          { room_id: data.id, user_id: user.id, score: 0 }
         ]);
 
-      navigation.navigate('CooperativeFlashcard', { roomId: data.id, roomCode: newCode, isHost: true });
+      navigation.navigate('QuizBattle', { roomId: data.id, roomCode: newCode, isHost: true });
     } catch (err: any) {
       console.error(err);
       Alert.alert('Error', 'Could not create a room.');
@@ -62,7 +62,7 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
     try {
       // Find room by code
       const { data: room, error: findError } = await supabase
-        .from('flashcard_rooms')
+        .from('quiz_rooms')
         .select('*')
         .eq('room_code', roomCode.trim().toUpperCase())
         .single();
@@ -73,7 +73,7 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
 
       // Check if already a member
       const { data: existingMember } = await supabase
-        .from('flashcard_room_members')
+        .from('quiz_room_players')
         .select('*')
         .eq('room_id', room.id)
         .eq('user_id', user.id)
@@ -82,13 +82,13 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
       if (!existingMember) {
         // Join room
         await supabase
-          .from('flashcard_room_members')
+          .from('quiz_room_players')
           .insert([
-            { room_id: room.id, user_id: user.id }
+            { room_id: room.id, user_id: user.id, score: 0 }
           ]);
       }
 
-      navigation.navigate('CooperativeFlashcard', { roomId: room.id, roomCode: room.room_code, isHost: room.host_id === user.id });
+      navigation.navigate('QuizBattle', { roomId: room.id, roomCode: room.room_code, isHost: room.host_id === user.id });
     } catch (err: any) {
       console.error(err);
       Alert.alert('Error', err.message || 'Could not join room.');
@@ -107,12 +107,12 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#0F172A" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Co-op Flashcards</Text>
+          <Text style={styles.headerTitle}>Quiz Battle</Text>
           <View style={{ width: 44 }} />
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.title}>Learn Kapampangan Together!</Text>
+          <Text style={styles.title}>Race to Translate!</Text>
           <Text style={styles.subtitle}>Create a room and invite your friends, or enter a room code to join an existing session.</Text>
 
           <View style={styles.card}>

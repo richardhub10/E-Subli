@@ -127,7 +127,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
         <Card 
           title="Multiplayer (Beta)" 
-          subtitle="Co-op Flashcards"
+          subtitle="1v1 Quiz Battle"
           icon={<Ionicons name="people" size={40} color="rgba(255,255,255,0.8)" />}
           gradient={['#EC4899', '#BE185D']}
           onPress={() => navigation.navigate('MultiplayerLobby')}

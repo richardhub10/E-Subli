@@ -23,7 +23,7 @@ import TranslatorScreen from './screens/TranslatorScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import LeaderboardScreen from './screens/LeaderboardScreen';
 import MultiplayerLobbyScreen from './screens/MultiplayerLobbyScreen';
-import CooperativeFlashcardScreen from './screens/CooperativeFlashcardScreen';
+import QuizBattleScreen from './screens/QuizBattleScreen';
 import { ProfileProvider } from './context/ProfileContext';
 
 const Stack = createStackNavigator();
@@ -53,7 +53,7 @@ function AppNavigator() {
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="MultiplayerLobby" component={MultiplayerLobbyScreen} />
-            <Stack.Screen name="CooperativeFlashcard" component={CooperativeFlashcardScreen} />
+            <Stack.Screen name="QuizBattle" component={QuizBattleScreen} />
           </Stack.Navigator>
         </ProfileProvider>
       ) : (
