@@ -76,7 +76,11 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
         <View style={{ width: 44 }} />
       </View>
 
-      <ScrollView style={styles.contentContainer} contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={{ flex: 1 }} 
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 150, flexGrow: 1 }} 
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.inputCard}>
           <Text style={styles.cardHeader}>FROM</Text>
           <View style={styles.languageSelector}>
@@ -195,10 +199,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Poppins_600SemiBold',
     color: '#0F172A',
-  },
-  contentContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
   },
   inputCard: {
     backgroundColor: '#FFFFFF',
