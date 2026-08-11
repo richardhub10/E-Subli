@@ -99,12 +99,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           if (opp) {
             setOpponentScore(opp.score);
             setOpponentId(opp.user_id);
-            
-            // Fetch opponent name
-            const { data: oppProfile } = await supabase.from('profiles').select('first_name').eq('id', opp.user_id).maybeSingle();
-            if (oppProfile && oppProfile.first_name) {
-              setOpponentName(oppProfile.first_name.toUpperCase());
-            }
+            if (opp.player_name) setOpponentName(opp.player_name);
           }
         }
       } catch (e) {
@@ -136,10 +131,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
             setOpponentScore(opp.score);
             if (opp.user_id !== opponentId) {
               setOpponentId(opp.user_id);
-              const { data: oppProfile } = await supabase.from('profiles').select('first_name').eq('id', opp.user_id).maybeSingle();
-              if (oppProfile && oppProfile.first_name) {
-                setOpponentName(oppProfile.first_name.toUpperCase());
-              }
+              if (opp.player_name) setOpponentName(opp.player_name);
             }
           }
         }

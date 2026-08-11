@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
+import { useProfile } from '../context/ProfileContext';
 
 type MultiplayerLobbyScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -15,6 +16,7 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
   const [statusMessage, setStatusMessage] = useState('');
   const [roomId, setRoomId] = useState<string | null>(null);
   const { user } = useAuth();
+  const { profile } = useProfile();
 
   // Handle host waiting for a player to join
   useEffect(() => {
@@ -66,9 +68,10 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
         const room = waitingRooms[0];
         
         // 2a. Join the room as player 2
+        const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'PLAYER 2';
         await supabase
           .from('quiz_room_players')
-          .insert([{ room_id: room.id, user_id: user.id, score: 0 }]);
+          .insert([{ room_id: room.id, user_id: user.id, score: 0, player_name: myName }]);
           
         // 2b. Update status to playing
         await supabase
@@ -96,9 +99,10 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
 
         if (createError) throw createError;
 
+        const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'HOST';
         await supabase
           .from('quiz_room_players')
-          .insert([{ room_id: newRoom.id, user_id: user.id, score: 0 }]);
+          .insert([{ room_id: newRoom.id, user_id: user.id, score: 0, player_name: myName }]);
 
         setRoomId(newRoom.id);
         setStatusMessage('Waiting for an opponent to join...');
