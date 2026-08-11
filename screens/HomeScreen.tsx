@@ -117,6 +117,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           onPress={() => navigation.navigate('CameraScanner')}
         />
 
+        <Card 
+          title="Translator & Transliteration" 
+          subtitle="Tagalog/English to Kulitan"
+          icon={<Ionicons name="language" size={40} color="rgba(255,255,255,0.8)" />}
+          gradient={['#8B5CF6', '#6D28D9']}
+          onPress={() => navigation.navigate('Translator')}
+        />
+
       </ScrollView>
     </LinearGradient>
   );

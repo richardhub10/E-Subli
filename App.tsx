@@ -19,6 +19,7 @@ import HomeScreen from './screens/HomeScreen';
 import ReadHubScreen from './screens/ReadHubScreen';
 import WriteTraceScreen from './screens/WriteTraceScreen';
 import CameraScannerScreen from './screens/CameraScannerScreen';
+import TranslatorScreen from './screens/TranslatorScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import LeaderboardScreen from './screens/LeaderboardScreen';
 import { ProfileProvider } from './context/ProfileContext';
@@ -46,6 +47,7 @@ function AppNavigator() {
             <Stack.Screen name="ReadHub" component={ReadHubScreen} />
             <Stack.Screen name="WriteTrace" component={WriteTraceScreen} />
             <Stack.Screen name="CameraScanner" component={CameraScannerScreen} />
+            <Stack.Screen name="Translator" component={TranslatorScreen} />
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
           </Stack.Navigator>
