@@ -1,59 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated, Easing, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
+import { getRandomQuestions } from '../utils/quizQuestions';
 
-// Quiz Data
-const QUIZ_QUESTIONS = [
-  { 
-    kapampangan: 'Nanu gagawan mu', 
-    correct: 'Ano ginagawa mo',
-    options: ['Ano ginagawa mo', 'Saan ka pupunta', 'Kumusta ka', 'Anong pangalan mo']
-  },
-  { 
-    kapampangan: 'Komusta', 
-    correct: 'Kumusta',
-    options: ['Magandang umaga', 'Kumusta', 'Salamat', 'Paalam']
-  },
-  { 
-    kapampangan: 'Mayap a abak', 
-    correct: 'Magandang umaga',
-    options: ['Magandang gabi', 'Magandang tanghali', 'Magandang hapon', 'Magandang umaga']
-  },
-  { 
-    kapampangan: 'Nukarin ka munta', 
-    correct: 'Saan ka pupunta',
-    options: ['Ano ginagawa mo', 'Saan ka pupunta', 'Sino kasama mo', 'Anong oras na']
-  },
-  { 
-    kapampangan: 'Kaluguran daka', 
-    correct: 'Mahal kita',
-    options: ['Salamat', 'Maganda ka', 'Mahal kita', 'Kaibigan kita']
-  }
-];
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 type Props = {
   navigation: StackNavigationProp<any, any>;
   route: any;
 };
 
+type FloatingEmoji = {
+  id: string;
+  emoji: string;
+  xPosition: number;
+};
+
 export default function QuizBattleScreen({ navigation, route }: Props) {
   const { roomId, roomCode, isHost } = route.params;
   const { user } = useAuth();
-  const { profile } = useProfile();
+  const { profile, updateProfile } = useProfile();
   
+  const [questions, setQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [status, setStatus] = useState('waiting'); // waiting, playing, finished
   const [hasShownVsScreen, setHasShownVsScreen] = useState(false);
+  
   const [myScore, setMyScore] = useState(0);
   const [opponentScore, setOpponentScore] = useState(0);
   const [opponentId, setOpponentId] = useState<string | null>(null);
   const [opponentName, setOpponentName] = useState<string>('OPPONENT');
+  
   const [isLoading, setIsLoading] = useState(true);
+  const [rematchStatus, setRematchStatus] = useState<'none' | 'waiting' | 'accepted'>('none');
+  const [opponentWantsRematch, setOpponentWantsRematch] = useState(false);
+  const [hasAwardedXP, setHasAwardedXP] = useState(false);
+
+  const [floatingEmojis, setFloatingEmojis] = useState<FloatingEmoji[]>([]);
+  const timerAnim = useRef(new Animated.Value(100)).current;
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const broadcastChannelRef = useRef<any>(null);
 
   // Parse Kulitan
   const getKulitanSyllables = (text: string): string[][] => {
@@ -83,6 +74,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         if (roomError) throw roomError;
         
         if (room) {
+          if (room.questions) setQuestions(room.questions);
           setCurrentQuestionIndex(room.current_question_index || 0);
           setStatus(room.status || 'waiting');
         }
@@ -95,10 +87,14 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         if (players) {
           const me = players.find(p => p.user_id === user?.id);
           const opp = players.find(p => p.user_id !== user?.id);
-          if (me) setMyScore(me.score);
+          if (me) {
+            setMyScore(me.score);
+            setRematchStatus(me.wants_rematch ? 'waiting' : 'none');
+          }
           if (opp) {
             setOpponentScore(opp.score);
             setOpponentId(opp.user_id);
+            setOpponentWantsRematch(!!opp.wants_rematch);
             if (opp.player_name) setOpponentName(opp.player_name);
           }
         }
@@ -114,21 +110,35 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     roomSubscription = supabase.channel(`quiz_room_${roomId}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quiz_rooms', filter: `id=eq.${roomId}` }, (payload) => {
         const newRecord = payload.new;
+        if (newRecord.questions) setQuestions(newRecord.questions);
         if (newRecord.current_question_index !== undefined) setCurrentQuestionIndex(newRecord.current_question_index);
-        if (newRecord.status !== undefined) setStatus(newRecord.status);
+        
+        if (newRecord.status !== undefined) {
+          if (newRecord.status === 'playing' && status === 'finished') {
+             // Reset state for rematch
+             setHasShownVsScreen(false);
+             setHasAwardedXP(false);
+             setRematchStatus('none');
+             setOpponentWantsRematch(false);
+          }
+          setStatus(newRecord.status);
+        }
       })
       .subscribe();
 
     playersSubscription = supabase.channel(`quiz_players_${roomId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'quiz_room_players', filter: `room_id=eq.${roomId}` }, async () => {
-        // Just re-fetch players on any change
         const { data: players } = await supabase.from('quiz_room_players').select('*').eq('room_id', roomId);
         if (players) {
           const me = players.find(p => p.user_id === user?.id);
           const opp = players.find(p => p.user_id !== user?.id);
-          if (me) setMyScore(me.score);
+          if (me) {
+            setMyScore(me.score);
+            setRematchStatus(me.wants_rematch ? 'waiting' : 'none');
+          }
           if (opp) {
             setOpponentScore(opp.score);
+            setOpponentWantsRematch(!!opp.wants_rematch);
             if (opp.user_id !== opponentId) {
               setOpponentId(opp.user_id);
               if (opp.player_name) setOpponentName(opp.player_name);
@@ -138,47 +148,160 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       })
       .subscribe();
 
+    // Broadcast channel for emojis
+    broadcastChannelRef.current = supabase.channel(`room_broadcast_${roomId}`, {
+      config: { broadcast: { self: true } },
+    });
+
+    broadcastChannelRef.current
+      .on('broadcast', { event: 'emoji' }, (payload: any) => {
+        const newEmoji = {
+          id: Math.random().toString(),
+          emoji: payload.payload.emoji,
+          xPosition: Math.random() * 80 + 10, // 10% to 90% of screen width
+        };
+        setFloatingEmojis((prev) => [...prev, newEmoji]);
+        
+        setTimeout(() => {
+          setFloatingEmojis((prev) => prev.filter(e => e.id !== newEmoji.id));
+        }, 2000);
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(roomSubscription);
       supabase.removeChannel(playersSubscription);
+      supabase.removeChannel(broadcastChannelRef.current);
     };
-  }, [roomId]);
+  }, [roomId, status]);
 
+  // VS Screen Timer
   useEffect(() => {
-    if (status === 'playing' && !hasShownVsScreen && opponentId) {
+    if (status === 'playing' && !hasShownVsScreen && opponentId && questions.length > 0) {
       const timer = setTimeout(() => {
         setHasShownVsScreen(true);
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [status, hasShownVsScreen, opponentId]);
+  }, [status, hasShownVsScreen, opponentId, questions]);
+
+  // Game Timer (Urgency)
+  useEffect(() => {
+    if (status === 'playing' && hasShownVsScreen && currentQuestionIndex < questions.length) {
+      // Reset timer animation to 100%
+      timerAnim.setValue(100);
+      Animated.timing(timerAnim, {
+        toValue: 0,
+        duration: 10000, // 10 seconds
+        easing: Easing.linear,
+        useNativeDriver: false,
+      }).start();
+
+      // Only host triggers the timeout update to avoid race conditions
+      if (isHost) {
+        timerRef.current = setTimeout(() => {
+           handleTimeOut();
+        }, 10000);
+      }
+
+      return () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerAnim.stopAnimation();
+      };
+    }
+  }, [currentQuestionIndex, status, hasShownVsScreen, questions]);
+
+  // Handle XP Awarding when finished
+  useEffect(() => {
+    if (status === 'finished' && !hasAwardedXP) {
+      setHasAwardedXP(true);
+      if (myScore > opponentScore) {
+        updateProfile({ xp: (profile?.xp || 0) + 50 });
+      } else if (myScore < opponentScore) {
+        const newXp = Math.max(0, (profile?.xp || 0) - 20);
+        updateProfile({ xp: newXp });
+      }
+    }
+  }, [status, myScore, opponentScore, hasAwardedXP]);
+
+
+  const handleTimeOut = async () => {
+    const nextIndex = currentQuestionIndex + 1;
+    if (nextIndex >= questions.length) {
+      await supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId);
+    } else {
+      await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
+    }
+  };
 
   const startGame = async () => {
     await supabase.from('quiz_rooms').update({ status: 'playing', current_question_index: 0 }).eq('id', roomId);
   };
 
   const handleAnswer = async (selectedOption: string) => {
-    const currentQ = QUIZ_QUESTIONS[currentQuestionIndex];
+    if (status !== 'playing') return;
+
+    const currentQ = questions[currentQuestionIndex];
     
     if (selectedOption === currentQ.correct) {
-      // Correct! Increment score
+      // Clear timeout if host answered correctly
+      if (isHost && timerRef.current) clearTimeout(timerRef.current);
+
       const newScore = myScore + 10;
-      setMyScore(newScore); // Optimistic score
+      setMyScore(newScore);
       
       const nextIndex = currentQuestionIndex + 1;
       
-      if (nextIndex >= QUIZ_QUESTIONS.length) {
-        setStatus('finished'); // Optimistic status
+      if (nextIndex >= questions.length) {
+        setStatus('finished');
         await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user?.id);
         await supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId);
       } else {
-        setCurrentQuestionIndex(nextIndex); // Optimistic next question
+        setCurrentQuestionIndex(nextIndex);
         await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user?.id);
         await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
       }
     } else {
       Alert.alert("Incorrect", "Try the next one or wait for your opponent!");
     }
+  };
+
+  const requestRematch = async () => {
+    setRematchStatus('waiting');
+    await supabase.from('quiz_room_players').update({ wants_rematch: true }).eq('room_id', roomId).eq('user_id', user?.id);
+
+    // If I'm host and opponent already wants it, trigger it
+    if (isHost && opponentWantsRematch) {
+      triggerRematch();
+    }
+  };
+
+  // Check if both want rematch (non-host might trigger this when host accepts)
+  useEffect(() => {
+    if (isHost && rematchStatus === 'waiting' && opponentWantsRematch) {
+      triggerRematch();
+    }
+  }, [rematchStatus, opponentWantsRematch]);
+
+  const triggerRematch = async () => {
+    const newQuestions = getRandomQuestions(5);
+    
+    // Reset scores & rematch flags
+    await supabase.from('quiz_room_players').update({ score: 0, wants_rematch: false }).eq('room_id', roomId);
+    // Update room
+    await supabase.from('quiz_rooms').update({ 
+      status: 'playing', 
+      current_question_index: 0, 
+      questions: newQuestions 
+    }).eq('id', roomId);
+  };
+
+  const sendEmoji = (emoji: string) => {
+    broadcastChannelRef.current?.send({
+      type: 'broadcast',
+      event: 'emoji',
+      payload: { emoji },
+    });
   };
 
   const leaveRoom = async () => {
@@ -229,6 +352,8 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     );
   }
 
+  const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'YOU';
+
   if (status === 'finished') {
     const isWinner = myScore > opponentScore;
     const isTie = myScore === opponentScore;
@@ -242,7 +367,23 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           </Text>
           <Text style={styles.finalScoreText}>Your Score: {myScore}</Text>
           <Text style={styles.finalScoreText}>Opponent Score: {opponentScore}</Text>
+          {isWinner && <Text style={styles.xpText}>+50 XP</Text>}
+          {!isWinner && !isTie && <Text style={styles.xpTextNegative}>-20 XP</Text>}
           
+          <View style={styles.rematchContainer}>
+            {rematchStatus === 'none' ? (
+              <TouchableOpacity style={styles.rematchButton} onPress={requestRematch}>
+                <Ionicons name="refresh" size={20} color="#FFF" />
+                <Text style={styles.rematchButtonText}>Rematch</Text>
+              </TouchableOpacity>
+            ) : (
+              <Text style={styles.waitingHostText}>Waiting for opponent...</Text>
+            )}
+            {opponentWantsRematch && rematchStatus === 'none' && (
+              <Text style={styles.opponentRematchText}>{opponentName} wants a rematch!</Text>
+            )}
+          </View>
+
           <TouchableOpacity style={styles.leaveButton} onPress={leaveRoom}>
             <Text style={styles.leaveButtonText}>Back to Lobby</Text>
           </TouchableOpacity>
@@ -250,8 +391,6 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       </LinearGradient>
     );
   }
-
-  const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'YOU';
 
   if (status === 'playing' && !hasShownVsScreen && opponentId) {
     return (
@@ -267,11 +406,18 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     );
   }
 
-  const currentQ = QUIZ_QUESTIONS[currentQuestionIndex];
+  const currentQ = questions[currentQuestionIndex];
+  if (!currentQ) return null; // Safe guard if questions not loaded
 
   return (
     <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
+        
+        {/* Floating Emojis */}
+        {floatingEmojis.map((emoji) => (
+          <FloatingEmojiComponent key={emoji.id} emoji={emoji.emoji} xPosition={emoji.xPosition} />
+        ))}
+
         {/* Header Scores */}
         <View style={styles.scoreBoard}>
           <View style={[styles.scorePill, styles.myScorePill]}>
@@ -288,8 +434,11 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         </View>
 
         <View style={styles.progressContainer}>
-          <View style={styles.progressBarBg}>
-            <View style={[styles.progressBarFill, { width: `${((currentQuestionIndex) / QUIZ_QUESTIONS.length) * 100}%` }]} />
+          <View style={styles.timerBarBg}>
+            <Animated.View style={[styles.timerBarFill, { 
+              width: timerAnim.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }),
+              backgroundColor: timerAnim.interpolate({ inputRange: [0, 30, 100], outputRange: ['#EF4444', '#F59E0B', '#10B981'] })
+            }]} />
           </View>
         </View>
 
@@ -309,7 +458,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
 
         {/* Options */}
         <View style={styles.optionsContainer}>
-          {currentQ.options.map((opt, i) => (
+          {currentQ.options.map((opt: string, i: number) => (
             <TouchableOpacity 
               key={i} 
               style={styles.optionButton}
@@ -320,247 +469,94 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           ))}
         </View>
 
+        {/* Emoji Bar */}
+        <View style={styles.emojiBar}>
+          {['🔥', '🤯', '😭', '😡'].map(emoji => (
+            <TouchableOpacity key={emoji} onPress={() => sendEmoji(emoji)} style={styles.emojiBtn}>
+              <Text style={styles.emojiText}>{emoji}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
       </SafeAreaView>
     </LinearGradient>
   );
 }
 
+const FloatingEmojiComponent = ({ emoji, xPosition }: { emoji: string, xPosition: number }) => {
+  const animY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const animOpacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(animY, {
+        toValue: SCREEN_HEIGHT / 2,
+        duration: 2000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(animOpacity, {
+        toValue: 0,
+        duration: 2000,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.Text style={[styles.floatingEmoji, { left: `${xPosition}%`, transform: [{ translateY: animY }], opacity: animOpacity }]}>
+      {emoji}
+    </Animated.Text>
+  );
+};
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  backButton: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10,
-  },
-  waitingTitle: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 24,
-    color: '#FFF',
-    marginBottom: 10,
-  },
-  roomCodeText: {
-    fontFamily: 'Poppins_500Medium',
-    fontSize: 18,
-    color: '#93C5FD',
-    letterSpacing: 2,
-  },
-  opponentFound: {
-    alignItems: 'center',
-    marginTop: 40,
-  },
-  opponentText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 18,
-    color: '#10B981',
-    marginTop: 10,
-  },
-  startButton: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 40,
-    paddingVertical: 16,
-    borderRadius: 30,
-    marginTop: 50,
-  },
-  startButtonText: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 18,
-    color: '#FFF',
-  },
-  waitingHostText: {
-    fontFamily: 'Poppins_400Regular',
-    fontSize: 16,
-    color: '#94A3B8',
-    marginTop: 50,
-  },
-  resultTitle: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 32,
-    marginVertical: 20,
-  },
-  finalScoreText: {
-    fontFamily: 'Poppins_500Medium',
-    fontSize: 18,
-    color: '#475569',
-    marginBottom: 10,
-  },
-  leaveButton: {
-    backgroundColor: '#0F172A',
-    paddingHorizontal: 30,
-    paddingVertical: 14,
-    borderRadius: 20,
-    marginTop: 40,
-  },
-  leaveButtonText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 16,
-    color: '#FFF',
-  },
-  scoreBoard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 20,
-  },
-  scorePill: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 16,
-    alignItems: 'center',
-  },
-  myScorePill: {
-    backgroundColor: '#DBEAFE',
-  },
-  oppScorePill: {
-    backgroundColor: '#FEE2E2',
-  },
-  scoreLabel: {
-    fontFamily: 'Poppins_500Medium',
-    fontSize: 12,
-    color: '#64748B',
-  },
-  scoreValue: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 24,
-    color: '#0F172A',
-  },
-  vsCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#0F172A',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 15,
-  },
-  vsText: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 14,
-    color: '#FFF',
-  },
-  progressContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  progressBarBg: {
-    height: 6,
-    backgroundColor: '#E2E8F0',
-    borderRadius: 3,
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: '#3B82F6',
-    borderRadius: 3,
-  },
-  questionCard: {
-    marginHorizontal: 20,
-    backgroundColor: '#FFF',
-    borderRadius: 24,
-    padding: 30,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.05,
-    shadowRadius: 20,
-    elevation: 5,
-    marginBottom: 20,
-  },
-  questionLabel: {
-    fontFamily: 'Poppins_500Medium',
-    fontSize: 14,
-    color: '#94A3B8',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 10,
-  },
-  kapampanganWord: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 28,
-    color: '#0F172A',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  kulitanContainer: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'center',
-    gap: 20,
-  },
-  verticalWordColumn: {
-    alignItems: 'center',
-  },
-  kulitanText: {
-    fontFamily: 'Kulitan',
-    fontSize: 40,
-    color: '#3B82F6',
-    lineHeight: 50,
-  },
-  optionsContainer: {
-    paddingHorizontal: 20,
-    gap: 12,
-  },
-  optionButton: {
-    backgroundColor: '#FFF',
-    borderWidth: 2,
-    borderColor: '#E2E8F0',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-  },
-  optionText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 16,
-    color: '#334155',
-    textAlign: 'center',
-  },
-  vsScreenContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  vsPlayerText: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 48,
-    color: '#FFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 4 },
-    textShadowRadius: 10,
-    marginVertical: 40,
-  },
-  vsBigCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#EF4444',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#EF4444',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  vsBigText: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 40,
-    color: '#FFF',
-  },
+  container: { flex: 1 },
+  safeArea: { flex: 1 },
+  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  backButton: { position: 'absolute', top: 50, left: 20, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
+  waitingTitle: { fontFamily: 'Poppins_700Bold', fontSize: 24, color: '#FFF', marginBottom: 10 },
+  roomCodeText: { fontFamily: 'Poppins_500Medium', fontSize: 18, color: '#93C5FD', letterSpacing: 2 },
+  opponentFound: { alignItems: 'center', marginTop: 40 },
+  opponentText: { fontFamily: 'Poppins_600SemiBold', fontSize: 18, color: '#10B981', marginTop: 10 },
+  startButton: { backgroundColor: '#3B82F6', paddingHorizontal: 40, paddingVertical: 16, borderRadius: 30, marginTop: 50 },
+  startButtonText: { fontFamily: 'Poppins_700Bold', fontSize: 18, color: '#FFF' },
+  waitingHostText: { fontFamily: 'Poppins_400Regular', fontSize: 16, color: '#94A3B8', marginTop: 20 },
+  resultTitle: { fontFamily: 'Poppins_700Bold', fontSize: 32, marginVertical: 20 },
+  finalScoreText: { fontFamily: 'Poppins_500Medium', fontSize: 18, color: '#475569', marginBottom: 10 },
+  xpText: { fontFamily: 'Poppins_700Bold', fontSize: 20, color: '#10B981', marginTop: 10 },
+  xpTextNegative: { fontFamily: 'Poppins_700Bold', fontSize: 20, color: '#EF4444', marginTop: 10 },
+  rematchContainer: { marginTop: 40, alignItems: 'center', minHeight: 80 },
+  rematchButton: { flexDirection: 'row', backgroundColor: '#3B82F6', paddingHorizontal: 30, paddingVertical: 14, borderRadius: 20, alignItems: 'center', gap: 10 },
+  rematchButtonText: { fontFamily: 'Poppins_600SemiBold', fontSize: 16, color: '#FFF' },
+  opponentRematchText: { fontFamily: 'Poppins_500Medium', color: '#3B82F6', marginTop: 10 },
+  leaveButton: { backgroundColor: '#0F172A', paddingHorizontal: 30, paddingVertical: 14, borderRadius: 20, marginTop: 20 },
+  leaveButtonText: { fontFamily: 'Poppins_600SemiBold', fontSize: 16, color: '#FFF' },
+  scoreBoard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 50, paddingBottom: 20, zIndex: 1 },
+  scorePill: { flex: 1, paddingVertical: 12, borderRadius: 16, alignItems: 'center' },
+  myScorePill: { backgroundColor: '#DBEAFE' },
+  oppScorePill: { backgroundColor: '#FEE2E2' },
+  scoreLabel: { fontFamily: 'Poppins_500Medium', fontSize: 12, color: '#64748B' },
+  scoreValue: { fontFamily: 'Poppins_700Bold', fontSize: 24, color: '#0F172A' },
+  vsCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#0F172A', alignItems: 'center', justifyContent: 'center', marginHorizontal: 15 },
+  vsText: { fontFamily: 'Poppins_700Bold', fontSize: 14, color: '#FFF' },
+  progressContainer: { paddingHorizontal: 20, marginBottom: 20 },
+  timerBarBg: { height: 8, backgroundColor: '#E2E8F0', borderRadius: 4, overflow: 'hidden' },
+  timerBarFill: { height: '100%', borderRadius: 4 },
+  questionCard: { marginHorizontal: 20, backgroundColor: '#FFF', borderRadius: 24, padding: 30, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 20, elevation: 5, marginBottom: 20, zIndex: 1 },
+  questionLabel: { fontFamily: 'Poppins_500Medium', fontSize: 14, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 },
+  kapampanganWord: { fontFamily: 'Poppins_700Bold', fontSize: 28, color: '#0F172A', textAlign: 'center', marginBottom: 20 },
+  kulitanContainer: { flexDirection: 'row-reverse', justifyContent: 'center', gap: 20 },
+  verticalWordColumn: { alignItems: 'center' },
+  kulitanText: { fontFamily: 'Kulitan', fontSize: 40, color: '#3B82F6', lineHeight: 50 },
+  optionsContainer: { paddingHorizontal: 20, gap: 12, zIndex: 1 },
+  optionButton: { backgroundColor: '#FFF', borderWidth: 2, borderColor: '#E2E8F0', borderRadius: 16, paddingVertical: 16, paddingHorizontal: 20 },
+  optionText: { fontFamily: 'Poppins_600SemiBold', fontSize: 16, color: '#334155', textAlign: 'center' },
+  emojiBar: { flexDirection: 'row', justifyContent: 'center', gap: 20, marginTop: 'auto', marginBottom: 20, zIndex: 2 },
+  emojiBtn: { width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(255,255,255,0.8)', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10 },
+  emojiText: { fontSize: 24 },
+  floatingEmoji: { position: 'absolute', fontSize: 40, zIndex: 0 },
+  vsScreenContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  vsPlayerText: { fontFamily: 'Poppins_700Bold', fontSize: 48, color: '#FFF', textShadowColor: 'rgba(0, 0, 0, 0.5)', textShadowOffset: { width: 0, height: 4 }, textShadowRadius: 10, marginVertical: 40 },
+  vsBigCircle: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#EF4444', alignItems: 'center', justifyContent: 'center', shadowColor: '#EF4444', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 20, elevation: 10 },
+  vsBigText: { fontFamily: 'Poppins_700Bold', fontSize: 40, color: '#FFF' },
 });

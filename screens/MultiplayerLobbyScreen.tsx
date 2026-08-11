@@ -6,6 +6,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
+import { getRandomQuestions } from '../utils/quizQuestions';
 
 type MultiplayerLobbyScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -86,14 +87,15 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
         // 3. No rooms available. Create a new one and wait.
         setStatusMessage('Creating a lobby...');
         
+        const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        const initialQuestions = getRandomQuestions(5);
+
         const { data: newRoom, error: createError } = await supabase
           .from('quiz_rooms')
-          .insert([{ 
-            room_code: Math.random().toString(36).substring(7).toUpperCase(), 
-            host_id: user.id, 
-            status: 'waiting', 
-            current_question_index: 0 
-          }])
+          .insert([
+            { room_code: newCode, host_id: user.id, status: 'waiting', current_question_index: 0, questions: initialQuestions }
+          ])
           .select()
           .single();
 
