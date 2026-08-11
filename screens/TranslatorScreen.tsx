@@ -76,7 +76,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
         <View style={{ width: 44 }} />
       </View>
 
-      <ScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.contentContainer} contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
         <View style={styles.inputCard}>
           <Text style={styles.cardHeader}>FROM</Text>
           <View style={styles.languageSelector}>
