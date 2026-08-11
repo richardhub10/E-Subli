@@ -40,9 +40,16 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   const [rematchStatus, setRematchStatus] = useState<'none' | 'waiting' | 'accepted'>('none');
   const [opponentWantsRematch, setOpponentWantsRematch] = useState(false);
   const [hasAwardedXP, setHasAwardedXP] = useState(false);
+  
+  // Animation & Selection State
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [isCorrectSelected, setIsCorrectSelected] = useState<boolean | null>(null);
 
   const [floatingEmojis, setFloatingEmojis] = useState<FloatingEmoji[]>([]);
   const timerAnim = useRef(new Animated.Value(100)).current;
+  const cardFloatAnim = useRef(new Animated.Value(0)).current;
+  const optionsSlideAnim = useRef(new Animated.Value(50)).current;
+  const optionsOpacityAnim = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const broadcastChannelRef = useRef<any>(null);
 
@@ -188,6 +195,29 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   // Game Timer (Urgency)
   useEffect(() => {
     if (status === 'playing' && hasShownVsScreen && currentQuestionIndex < questions.length) {
+      // Reset selection state
+      setSelectedOption(null);
+      setIsCorrectSelected(null);
+      
+      // Reset entry animations
+      optionsSlideAnim.setValue(50);
+      optionsOpacityAnim.setValue(0);
+
+      // Start entry animations
+      Animated.parallel([
+        Animated.spring(optionsSlideAnim, {
+          toValue: 0,
+          friction: 6,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+        Animated.timing(optionsOpacityAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        })
+      ]).start();
+
       // Reset timer animation to 100%
       timerAnim.setValue(100);
       Animated.timing(timerAnim, {
@@ -196,6 +226,14 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         easing: Easing.linear,
         useNativeDriver: false,
       }).start();
+
+      // Start Card Floating Animation
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(cardFloatAnim, { toValue: -8, duration: 1500, useNativeDriver: true }),
+          Animated.timing(cardFloatAnim, { toValue: 0, duration: 1500, useNativeDriver: true }),
+        ])
+      ).start();
 
       // Only host triggers the timeout update to avoid race conditions
       if (isHost) {
@@ -207,6 +245,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       return () => {
         if (timerRef.current) clearTimeout(timerRef.current);
         timerAnim.stopAnimation();
+        cardFloatAnim.stopAnimation();
       };
     }
   }, [currentQuestionIndex, status, hasShownVsScreen, questions]);
@@ -238,32 +277,48 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     await supabase.from('quiz_rooms').update({ status: 'playing', current_question_index: 0 }).eq('id', roomId);
   };
 
-  const handleAnswer = async (selectedOption: string) => {
-    if (status !== 'playing') return;
+  const handleAnswer = async (selectedOpt: string) => {
+    if (status !== 'playing' || selectedOption !== null) return;
 
     const currentQ = questions[currentQuestionIndex];
+    const isCorrect = selectedOpt === currentQ.correct;
     
-    if (selectedOption === currentQ.correct) {
-      // Clear timeout if host answered correctly
-      if (isHost && timerRef.current) clearTimeout(timerRef.current);
+    setSelectedOption(selectedOpt);
+    setIsCorrectSelected(isCorrect);
+    
+    // Clear timeout immediately
+    if (isHost && timerRef.current) clearTimeout(timerRef.current);
+    timerAnim.stopAnimation();
 
-      const newScore = myScore + 10;
-      setMyScore(newScore);
-      
-      const nextIndex = currentQuestionIndex + 1;
-      
-      if (nextIndex >= questions.length) {
-        setStatus('finished');
-        await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user?.id);
-        await supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId);
+    // Wait 800ms to show the red/green feedback before advancing
+    setTimeout(async () => {
+      if (isCorrect) {
+        const newScore = myScore + 10;
+        setMyScore(newScore);
+        
+        const nextIndex = currentQuestionIndex + 1;
+        
+        if (nextIndex >= questions.length) {
+          setStatus('finished');
+          await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user?.id);
+          await supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId);
+        } else {
+          setCurrentQuestionIndex(nextIndex);
+          await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user?.id);
+          await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
+        }
       } else {
-        setCurrentQuestionIndex(nextIndex);
-        await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user?.id);
-        await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
+        // Just advance if incorrect, but no score
+        const nextIndex = currentQuestionIndex + 1;
+        if (nextIndex >= questions.length) {
+          setStatus('finished');
+          if (isHost) await supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId);
+        } else {
+          setCurrentQuestionIndex(nextIndex);
+          if (isHost) await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
+        }
       }
-    } else {
-      Alert.alert("Incorrect", "Try the next one or wait for your opponent!");
-    }
+    }, 800);
   };
 
   const requestRematch = async () => {
@@ -443,7 +498,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         </View>
 
         {/* Question Area */}
-        <View style={styles.questionCard}>
+        <Animated.View style={[styles.questionCard, { transform: [{ translateY: cardFloatAnim }] }]}>
           <Text style={styles.questionLabel}>What does this mean?</Text>
           <Text style={styles.kapampanganWord}>{currentQ.kapampangan}</Text>
           
@@ -454,20 +509,38 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
               </View>
             ))}
           </View>
-        </View>
+        </Animated.View>
 
         {/* Options */}
-        <View style={styles.optionsContainer}>
-          {currentQ.options.map((opt: string, i: number) => (
-            <TouchableOpacity 
-              key={i} 
-              style={styles.optionButton}
-              onPress={() => handleAnswer(opt)}
-            >
-              <Text style={styles.optionText}>{opt}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <Animated.View style={[styles.optionsContainer, { 
+          opacity: optionsOpacityAnim, 
+          transform: [{ translateY: optionsSlideAnim }] 
+        }]}>
+          {currentQ.options.map((opt: string, i: number) => {
+            const isSelected = selectedOption === opt;
+            const isCorrect = isSelected && isCorrectSelected;
+            const isWrong = isSelected && !isCorrectSelected;
+
+            return (
+              <TouchableOpacity 
+                key={i} 
+                style={[
+                  styles.optionButton,
+                  isCorrect && styles.optionCorrect,
+                  isWrong && styles.optionWrong
+                ]}
+                onPress={() => handleAnswer(opt)}
+                activeOpacity={0.7}
+                disabled={selectedOption !== null}
+              >
+                <Text style={[
+                  styles.optionText,
+                  (isCorrect || isWrong) && styles.optionTextSelected
+                ]}>{opt}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </Animated.View>
 
         {/* Emoji Bar */}
         <View style={styles.emojiBar}>
@@ -542,15 +615,55 @@ const styles = StyleSheet.create({
   progressContainer: { paddingHorizontal: 20, marginBottom: 20 },
   timerBarBg: { height: 8, backgroundColor: '#E2E8F0', borderRadius: 4, overflow: 'hidden' },
   timerBarFill: { height: '100%', borderRadius: 4 },
-  questionCard: { marginHorizontal: 20, backgroundColor: '#FFF', borderRadius: 24, padding: 30, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 20, elevation: 5, marginBottom: 20, zIndex: 1 },
+  questionCard: { 
+    marginHorizontal: 20, 
+    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+    borderRadius: 30, 
+    padding: 30, 
+    alignItems: 'center', 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 15 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 30, 
+    elevation: 8, 
+    marginBottom: 30, 
+    zIndex: 1,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+  },
   questionLabel: { fontFamily: 'Poppins_500Medium', fontSize: 14, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 },
   kapampanganWord: { fontFamily: 'Poppins_700Bold', fontSize: 28, color: '#0F172A', textAlign: 'center', marginBottom: 20 },
   kulitanContainer: { flexDirection: 'row-reverse', justifyContent: 'center', gap: 20 },
   verticalWordColumn: { alignItems: 'center' },
   kulitanText: { fontFamily: 'Kulitan', fontSize: 40, color: '#3B82F6', lineHeight: 50 },
-  optionsContainer: { paddingHorizontal: 20, gap: 12, zIndex: 1 },
-  optionButton: { backgroundColor: '#FFF', borderWidth: 2, borderColor: '#E2E8F0', borderRadius: 16, paddingVertical: 16, paddingHorizontal: 20 },
+  optionsContainer: { paddingHorizontal: 20, gap: 14, zIndex: 1 },
+  optionButton: { 
+    backgroundColor: '#FFF', 
+    borderRadius: 20, 
+    paddingVertical: 18, 
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  optionCorrect: {
+    backgroundColor: '#10B981',
+    borderWidth: 0,
+    shadowColor: '#10B981',
+    shadowOpacity: 0.4,
+  },
+  optionWrong: {
+    backgroundColor: '#EF4444',
+    borderWidth: 0,
+    shadowColor: '#EF4444',
+    shadowOpacity: 0.4,
+  },
   optionText: { fontFamily: 'Poppins_600SemiBold', fontSize: 16, color: '#334155', textAlign: 'center' },
+  optionTextSelected: {
+    color: '#FFF',
+  },
   emojiBar: { flexDirection: 'row', justifyContent: 'center', gap: 20, marginTop: 'auto', marginBottom: 20, zIndex: 2 },
   emojiBtn: { width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(255,255,255,0.8)', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10 },
   emojiText: { fontSize: 24 },
