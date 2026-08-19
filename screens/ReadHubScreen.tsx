@@ -7,6 +7,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import Flashcard from '../components/Flashcard';
 import { kulitanSyllables } from '../data/kulitanData';
 import { useProfile } from '../context/ProfileContext';
+import { useLanguage } from '../context/LanguageContext';
 
 type ReadHubScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -18,6 +19,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [resumeData, setResumeData] = useState<{index: number, category: string} | null>(null);
   const { profile, updateProfile, addXP, incrementFlashcards } = useProfile();
+  const { t, language } = useLanguage();
 
   const filteredData = useMemo(() => {
     if (category === 'Vowels') return kulitanSyllables.slice(0, 5);
@@ -71,7 +73,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Read Hub</Text>
+        <Text style={styles.headerTitle}>{t('read_hub')}</Text>
         <View style={{ width: 44 }} />
       </View>
 
@@ -82,14 +84,16 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
             style={[styles.tabButton, category === cat && styles.tabButtonActive]}
             onPress={() => handleCategoryChange(cat as any)}
           >
-            <Text style={[styles.tabText, category === cat && styles.tabTextActive]}>{cat}</Text>
+            <Text style={[styles.tabText, category === cat && styles.tabTextActive]}>
+              {cat === 'All' ? (language === 'EN' ? 'All' : 'Lahat') : cat === 'Vowels' ? (language === 'EN' ? 'Vowels' : 'Patinig') : (language === 'EN' ? 'Consonants' : 'Katinig')}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
 
       <View style={styles.progressContainer}>
         <Text style={styles.progressText}>
-          LEARN {category.toUpperCase()} ({currentIndex + 1}/{filteredData.length})
+          {language === 'EN' ? 'LEARN' : 'PAG-ARALAN'} {category.toUpperCase()} ({currentIndex + 1}/{filteredData.length})
         </Text>
         <View style={styles.progressBarBackground}>
           <View style={[styles.progressBarFill, { width: `${progressPercentage}%` }]} />
@@ -104,7 +108,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
           onPress={handlePrevious}
           disabled={currentIndex === 0}
         >
-          <Text style={styles.controlButtonText}>Previous</Text>
+          <Text style={styles.controlButtonText}>{language === 'EN' ? 'Previous' : 'Nakaraan'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -112,7 +116,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
           onPress={handleNext}
           disabled={currentIndex === filteredData.length - 1}
         >
-          <Text style={[styles.controlButtonText, styles.controlButtonTextPrimary]}>Next</Text>
+          <Text style={[styles.controlButtonText, styles.controlButtonTextPrimary]}>{language === 'EN' ? 'Next' : 'Susunod'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -123,9 +127,9 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Resume Progress?</Text>
+            <Text style={styles.modalTitle}>{language === 'EN' ? 'Resume Progress?' : 'Ituloy ang Progreso?'}</Text>
             <Text style={styles.modalDescription}>
-              Do you want to continue from {resumeData?.category} card {resumeData ? resumeData.index + 1 : 1}?
+              {language === 'EN' ? 'Do you want to continue from' : 'Nais mo bang ituloy mula sa'} {resumeData?.category} {language === 'EN' ? 'card' : 'card'} {resumeData ? resumeData.index + 1 : 1}?
             </Text>
             
             <View style={styles.modalButtons}>
@@ -136,7 +140,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
                   setShowResumeModal(false);
                 }}
               >
-                <Text style={styles.modalButtonSecondaryText}>Start Over</Text>
+                <Text style={styles.modalButtonSecondaryText}>{language === 'EN' ? 'Start Over' : 'Ulitin'}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -149,7 +153,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
                   setShowResumeModal(false);
                 }}
               >
-                <Text style={styles.modalButtonPrimaryText}>Resume</Text>
+                <Text style={styles.modalButtonPrimaryText}>{language === 'EN' ? 'Continue' : 'Ituloy'}</Text>
               </TouchableOpacity>
             </View>
           </View>

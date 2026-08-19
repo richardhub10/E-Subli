@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityInd
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../supabaseClient';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useLanguage } from '../context/LanguageContext';
 
 type LoginScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -12,6 +13,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t, language } = useLanguage();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -45,14 +47,14 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.innerContainer}>
         
         <View style={styles.headerContainer}>
-          <Text style={styles.subtitle}>Welcome to</Text>
+          <Text style={styles.subtitle}>{language === 'EN' ? 'Welcome to' : language === 'PH' ? 'Maligayang pagdating sa' : 'Malaus ko pu king'}</Text>
           <Text style={styles.title}>E-Subli</Text>
         </View>
         
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Email Address"
+            placeholder={t('email')}
             placeholderTextColor="#888"
             value={email}
             onChangeText={setEmail}
@@ -62,7 +64,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
           
           <TextInput
             style={styles.input}
-            placeholder="Password"
+            placeholder={t('password')}
             placeholderTextColor="#888"
             value={password}
             onChangeText={setPassword}
@@ -79,13 +81,13 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             disabled={loading}
           >
             <LinearGradient colors={['#E87954', '#D1582D']} style={styles.button}>
-              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Log In</Text>}
+              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{t('login')}</Text>}
             </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
 
         <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.linkButton}>
-          <Text style={styles.linkText}>New here? <Text style={styles.linkTextBold}>Create an account</Text></Text>
+          <Text style={styles.linkText}>{t('dont_have_account')} <Text style={styles.linkTextBold}>{t('create_account')}</Text></Text>
         </TouchableOpacity>
         
       </KeyboardAvoidingView>

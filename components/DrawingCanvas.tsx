@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, PanResponder, GestureResponderEvent } from 'react-native';
+import { View, StyleSheet, PanResponder, GestureResponderEvent, Animated } from 'react-native';
 import Svg, { Path, G } from 'react-native-svg';
 
 export type Point = { x: number; y: number };
@@ -14,6 +14,7 @@ type DrawingCanvasProps = {
   guideOffsetY?: number;
   canvasWidth?: number;
   canvasHeight?: number;
+  guideStartPoint?: Point;
 };
 
 // Forward ref so the parent can call "clear"
@@ -23,9 +24,10 @@ export type DrawingCanvasRef = {
 };
 
 export const DrawingCanvas = React.forwardRef<DrawingCanvasRef, DrawingCanvasProps>(
-  ({ strokeColor = '#0B2046', strokeWidth = 5, onDrawEnd, guidePath, guideOffsetX = 0, guideOffsetY = 0, canvasWidth = 0, canvasHeight = 0 }, ref) => {
+  ({ strokeColor = '#0B2046', strokeWidth = 5, onDrawEnd, guidePath, guideOffsetX = 0, guideOffsetY = 0, canvasWidth = 0, canvasHeight = 0, guideStartPoint }, ref) => {
     const [currentStroke, setCurrentStroke] = useState<Stroke | null>(null);
     const [strokes, setStrokes] = useState<Stroke[]>([]);
+    const pulseAnim = useRef(new Animated.Value(0.4)).current;
     
     // Use refs to avoid stale closures in the PanResponder
     const colorRef = useRef(strokeColor);
@@ -35,6 +37,15 @@ export const DrawingCanvas = React.forwardRef<DrawingCanvasRef, DrawingCanvasPro
       colorRef.current = strokeColor;
       widthRef.current = strokeWidth;
     }, [strokeColor, strokeWidth]);
+    
+    React.useEffect(() => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 0.4, duration: 800, useNativeDriver: true })
+        ])
+      ).start();
+    }, []);
     
     // Support clearing the canvas from parent
     React.useImperativeHandle(ref, () => ({
@@ -121,6 +132,23 @@ export const DrawingCanvas = React.forwardRef<DrawingCanvasRef, DrawingCanvasPro
             />
           )}
         </Svg>
+        
+        {/* Pulsing Guide Point Indicator */}
+        {strokes.length === 0 && !currentStroke && guideStartPoint && canvasWidth > 0 && canvasHeight > 0 && (
+          <Animated.View
+            style={[
+              styles.startPointIndicator,
+              {
+                left: (canvasWidth / 2) + guideOffsetX + guideStartPoint.x - 12, // 12 is half width/height
+                top: (canvasHeight / 2) + guideOffsetY + guideStartPoint.y - 12,
+                opacity: pulseAnim,
+                transform: [{ scale: pulseAnim }]
+              }
+            ]}
+          >
+            <View style={styles.startPointCore} />
+          </Animated.View>
+        )}
       </View>
     );
   }
@@ -133,5 +161,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     // @ts-ignore - Required for Web to prevent scrolling when drawing
     touchAction: 'none',
+  },
+  startPointIndicator: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(16, 185, 129, 0.4)', // Green glow
+    justifyContent: 'center',
+    alignItems: 'center',
+    pointerEvents: 'none',
+  },
+  startPointCore: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981', // Solid Green core
   }
 });

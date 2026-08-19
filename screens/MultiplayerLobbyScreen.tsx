@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
+import { useLanguage } from '../context/LanguageContext';
 import { getRandomQuestions } from '../utils/quizQuestions';
 
 type MultiplayerLobbyScreenProps = {
@@ -18,6 +19,8 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
   const [roomId, setRoomId] = useState<string | null>(null);
   const { user } = useAuth();
   const { profile } = useProfile();
+  const { t, language } = useLanguage();
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   // Handle host waiting for a player to join
   useEffect(() => {
@@ -52,7 +55,7 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
   const findMatch = async () => {
     if (!user) return;
     setIsSearching(true);
-    setStatusMessage('Searching for opponents...');
+    setStatusMessage(t('searching'));
     setRoomId(null);
     
     try {
@@ -65,7 +68,7 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
         .limit(1);
 
       if (waitingRooms && waitingRooms.length > 0) {
-        setStatusMessage('Match found! Joining...');
+        setStatusMessage(t('match_found'));
         const room = waitingRooms[0];
         
         // 2a. Join the room as player 2
@@ -85,7 +88,7 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
         
       } else {
         // 3. No rooms available. Create a new one and wait.
-        setStatusMessage('Creating a lobby...');
+        setStatusMessage(t('creating_lobby'));
         
         const newCode = Math.floor(100000 + Math.random() * 900000).toString();
         
@@ -107,7 +110,7 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
           .insert([{ room_id: newRoom.id, user_id: user.id, score: 0, player_name: myName }]);
 
         setRoomId(newRoom.id);
-        setStatusMessage('Waiting for an opponent to join...');
+        setStatusMessage(t('waiting_opponent'));
       }
     } catch (err: any) {
       console.error(err);
@@ -133,22 +136,24 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
 
         <View style={styles.content}>
           <Ionicons name="game-controller" size={80} color="#3B82F6" style={styles.icon} />
-          <Text style={styles.title}>Quiz Battle</Text>
-          <Text style={styles.subtitle}>Test your Kapampangan skills against real players!</Text>
+          <Text style={styles.title}>{t('multiplayer_battle')}</Text>
+          <Text style={styles.subtitle}>
+            {language === 'EN' ? 'Match with other scholars in a real-time Quiz Battle!' : language === 'PH' ? 'Lumaban sa ibang mga iskolar sa real-time Quiz Battle!' : 'Lumaban karing aliwang iskolar keng real-time Quiz Battle!'}
+          </Text>
 
           <View style={styles.matchContainer}>
             {isSearching ? (
-              <View style={styles.searchingBox}>
+              <Animated.View style={[styles.searchingBox, { transform: [{ scale: pulseAnim }] }]}>
                 <ActivityIndicator size="large" color="#3B82F6" />
                 <Text style={styles.searchingText}>{statusMessage}</Text>
                 
                 <TouchableOpacity style={styles.cancelButton} onPress={cancelSearch}>
-                  <Text style={styles.cancelButtonText}>Cancel Search</Text>
+                  <Text style={styles.cancelButtonText}>{language === 'EN' ? 'Cancel' : language === 'PH' ? 'Kanselahin' : 'Kanselan'}</Text>
                 </TouchableOpacity>
-              </View>
+              </Animated.View>
             ) : (
               <TouchableOpacity style={styles.findMatchButton} onPress={findMatch}>
-                <Text style={styles.findMatchText}>Find Match</Text>
+                <Text style={styles.findMatchText}>{t('find_match')}</Text>
                 <Ionicons name="search" size={24} color="#FFF" style={{ marginLeft: 10 }} />
               </TouchableOpacity>
             )}

@@ -4,6 +4,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabaseClient';
+import { useLanguage } from '../context/LanguageContext';
 
 type LeaderboardScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -19,6 +20,7 @@ type LeaderboardEntry = {
 export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
   const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -68,7 +70,7 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
         </View>
         <View style={styles.infoContainer}>
           <Text style={styles.emailText} numberOfLines={1}>{item.name}</Text>
-          <Text style={styles.levelText}>Lvl {item.level}</Text>
+          <Text style={styles.levelText}>{language === 'EN' ? 'Lvl' : 'Antas'} {item.level}</Text>
         </View>
         <View style={styles.xpContainer}>
           <Text style={styles.xpText}>{item.xp} XP</Text>
@@ -83,7 +85,7 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Leaderboard</Text>
+        <Text style={styles.headerTitle}>{t('leaderboard')}</Text>
         <View style={{ width: 44 }} />
       </View>
 
@@ -91,7 +93,7 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
         {loading ? (
           <ActivityIndicator size="large" color="#D1582D" />
         ) : leaders.length === 0 ? (
-          <Text style={styles.emptyText}>No challengers yet.</Text>
+          <Text style={styles.emptyText}>{t('no_challengers_yet')}</Text>
         ) : (
           <FlatList
             data={leaders}

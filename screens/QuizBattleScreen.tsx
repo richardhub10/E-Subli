@@ -6,6 +6,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
+import { useLanguage } from '../context/LanguageContext';
 import { getRandomQuestions } from '../utils/quizQuestions';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -25,6 +26,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   const { roomId, roomCode, isHost } = route.params;
   const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
+  const { t, language } = useLanguage();
   
   const [questions, setQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -412,12 +414,12 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
             <Ionicons name="arrow-back" size={24} color="#FFF" />
           </TouchableOpacity>
           <View style={styles.centerContainer}>
-            <Text style={styles.waitingTitle}>Waiting for opponent...</Text>
-            <Text style={styles.roomCodeText}>Room Code: {roomCode}</Text>
+            <Text style={styles.waitingTitle}>{language === 'EN' ? 'Waiting for opponent...' : language === 'PH' ? 'Naghihintay sa kalaban...' : 'Panayan ne ing kalaban...'}</Text>
+            <Text style={styles.roomCodeText}>{language === 'EN' ? 'Room Code:' : 'Room Code:'} {roomCode}</Text>
             {opponentId ? (
               <View style={styles.opponentFound}>
                 <Ionicons name="checkmark-circle" size={48} color="#10B981" />
-                <Text style={styles.opponentText}>Opponent Joined!</Text>
+                <Text style={styles.opponentText}>{language === 'EN' ? 'Opponent Joined!' : language === 'PH' ? 'Sumali ang kalaban!' : 'Tinuki ne ing kalaban!'}</Text>
               </View>
             ) : (
               <ActivityIndicator size="large" color="#FFF" style={{ marginTop: 20 }} />
@@ -425,11 +427,11 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
             
             {isHost && opponentId && (
               <TouchableOpacity style={styles.startButton} onPress={startGame}>
-                <Text style={styles.startButtonText}>Start Battle</Text>
+                <Text style={styles.startButtonText}>{language === 'EN' ? 'Start Battle' : language === 'PH' ? 'Simulan ang Laban' : 'Umpisan ing Labanan'}</Text>
               </TouchableOpacity>
             )}
             {!isHost && opponentId && (
-              <Text style={styles.waitingHostText}>Waiting for host to start...</Text>
+              <Text style={styles.waitingHostText}>{language === 'EN' ? 'Waiting for host to start...' : language === 'PH' ? 'Naghihintay sa host...' : 'Panayan ing host...'}</Text>
             )}
           </View>
         </SafeAreaView>
@@ -537,7 +539,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Question Area */}
           <Animated.View style={[styles.questionCard, { transform: [{ translateY: cardFloatAnim }] }]}>
-            <Text style={styles.questionLabel}>What does this mean?</Text>
+            <Text style={styles.questionLabel}>{t('what_does_this_mean')}</Text>
             <Text style={styles.kapampanganWord}>{currentQ.kapampangan}</Text>
             
             <View style={styles.kulitanContainer}>

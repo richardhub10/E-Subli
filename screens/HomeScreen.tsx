@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { supabase } from '../supabaseClient';
 import { useProfile } from '../context/ProfileContext';
+import { useLanguage } from '../context/LanguageContext';
 
 type HomeScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -12,6 +13,7 @@ type HomeScreenProps = {
 
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const { profile } = useProfile();
+  const { t, language } = useLanguage();
 
   // Simple scale animation wrapper
   const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -22,13 +24,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     const onPressIn = () => {
       Animated.spring(scale, { toValue: 0.95, useNativeDriver: Platform.OS !== 'web' }).start();
     };
-    const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
 
     const onPressOut = () => {
       Animated.spring(scale, { toValue: 1, useNativeDriver: Platform.OS !== 'web' }).start();
@@ -67,7 +62,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       {/* Header Profile Section */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.welcomeText}>Welcome back,</Text>
+          <Text style={styles.welcomeText}>{t('welcome')},</Text>
           <Text style={styles.emailText}>{profile.firstName || profile.email?.split('@')[0] || 'Scholar'}</Text>
         </View>
         <TouchableOpacity 
@@ -86,26 +81,26 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       <ScrollView style={styles.scrollContainer} contentContainerStyle={{ paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
         
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Your Journey</Text>
+          <Text style={styles.sectionTitle}>{language === 'EN' ? 'Your Journey' : language === 'PH' ? 'Iyong Paglalakbay' : 'Ing Keka Paglakbe'}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Leaderboard')} style={styles.leaderboardButton}>
             <Ionicons name="trophy" size={20} color="#FBBF24" />
-            <Text style={styles.leaderboardText}>Rankings</Text>
+            <Text style={styles.leaderboardText}>{t('leaderboard')}</Text>
           </TouchableOpacity>
         </View>
 
         <Card 
-          title="Read Hub" 
-          subtitle="Master the Kulitan Syllables"
+          title={t('read_hub')} 
+          subtitle={language === 'EN' ? 'Master the Kulitan Syllables' : language === 'PH' ? 'Kabisaduhin ang Kulitan' : 'Kabisadwan ing Kulitan'}
           icon={<Ionicons name="book" size={40} color="rgba(255,255,255,0.8)" />}
           gradient={['#D9734E', '#B85331']}
           onPress={() => navigation.navigate('ReadHub')}
         />
 
         <Card 
-          title="Write & Trace" 
-          subtitle="Practice physical strokes"
+          title={t('write_trace')} 
+          subtitle={language === 'EN' ? 'Practice writing the script' : language === 'PH' ? 'Sanayin ang pagsulat' : 'Pagsanayan ing pamanyulat'}
           icon={<MaterialCommunityIcons name="draw-pen" size={40} color="rgba(255,255,255,0.8)" />}
-          gradient={['#3B82F6', '#2563EB']}
+          gradient={['#273E6A', '#13213B']}
           onPress={() => navigation.navigate('WriteTrace')}
         />
 
@@ -118,26 +113,26 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         />
 
         <Card 
-          title="Translator & Transliteration" 
-          subtitle="Tagalog/English to Kulitan"
+          title={t('translator')} 
+          subtitle={language === 'EN' ? 'Kapampangan dictionary' : language === 'PH' ? 'Diksyunaryong Kapampangan' : 'Diksyunaryung Kapampangan'}
           icon={<Ionicons name="language" size={40} color="rgba(255,255,255,0.8)" />}
-          gradient={['#8B5CF6', '#6D28D9']}
+          gradient={['#5A5A72', '#3C3C50']}
           onPress={() => navigation.navigate('Translator')}
         />
 
         <Card 
-          title="Multiplayer (Beta)" 
-          subtitle="1v1 Quiz Battle"
+          title={t('multiplayer_battle')} 
+          subtitle={language === 'EN' ? 'Challenge other scholars' : language === 'PH' ? 'Hamunin ang ibang iskolar' : 'Hamunan ding aliwang iskolar'}
           icon={<Ionicons name="people" size={40} color="rgba(255,255,255,0.8)" />}
-          gradient={['#EC4899', '#BE185D']}
+          gradient={['#427D6D', '#2B574A']}
           onPress={() => navigation.navigate('MultiplayerLobby')}
         />
 
         <Card 
-          title="Solo Quiz (Offline)" 
-          subtitle="Practice & Earn XP anywhere"
-          icon={<Ionicons name="game-controller" size={40} color="rgba(255,255,255,0.8)" />}
-          gradient={['#F59E0B', '#D97706']}
+          title={t('solo_practice')} 
+          subtitle={language === 'EN' ? 'Test your knowledge offline' : language === 'PH' ? 'Subukan ang galing (Offline)' : 'Subukan ing galing (Offline)'}
+          icon={<Ionicons name="flash" size={40} color="rgba(255,255,255,0.8)" />}
+          gradient={['#D4A373', '#A67C52']}
           onPress={() => navigation.navigate('OfflineQuiz')}
         />
 

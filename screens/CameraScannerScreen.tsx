@@ -6,6 +6,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { GoogleGenAI } from '@google/genai';
 import { useProfile } from '../context/ProfileContext';
+import { useLanguage } from '../context/LanguageContext';
 
 type CameraScannerScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -18,6 +19,7 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<'success' | 'fail' | null>(null);
   const { addXP } = useProfile();
+  const { t, language } = useLanguage();
   
   const cameraRef = useRef<CameraView>(null);
 
@@ -36,9 +38,9 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
           </TouchableOpacity>
         </View>
         <View style={styles.permissionContainer}>
-          <Text style={styles.permissionText}>We need your permission to use the camera</Text>
+          <Text style={styles.permissionText}>{language === 'EN' ? 'We need your permission to use the camera' : language === 'PH' ? 'Kailangan namin ang iyong pahintulot upang gamitin ang camera' : 'Kailangan mi ing keka pamanintulut ba yang magamit ing camera'}</Text>
           <TouchableOpacity style={styles.actionButton} onPress={requestPermission}>
-            <Text style={styles.actionButtonText}>Grant Permission</Text>
+            <Text style={styles.actionButtonText}>{language === 'EN' ? 'Grant Permission' : language === 'PH' ? 'Magbigay ng Pahintulot' : 'Bye Pahintulut'}</Text>
           </TouchableOpacity>
         </View>
       </LinearGradient>
@@ -119,7 +121,7 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>AI Scanner</Text>
+        <Text style={styles.headerTitle}>{language === 'EN' ? 'AI Scanner' : 'AI Scanner'}</Text>
         <View style={{ width: 44 }} /> 
       </View>
 
@@ -131,19 +133,21 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
             {isAnalyzing && (
               <View style={styles.overlay}>
                 <ActivityIndicator size="large" color="#FAF5EE" />
-                <Text style={styles.overlayText}>Analyzing Handwriting...</Text>
+                <Text style={styles.overlayText}>{language === 'EN' ? 'Analyzing Handwriting...' : language === 'PH' ? 'Sinusuri ang Sulat...' : 'Susuryan ing Sulat...'}</Text>
               </View>
             )}
 
             {analysisResult && (
               <View style={[styles.overlay, analysisResult === 'success' ? styles.successOverlay : styles.failOverlay]}>
                 <Text style={styles.resultTitle}>
-                  {analysisResult === 'success' ? 'EXCELLENT!' : 'KEEP PRACTICING!'}
+                  {analysisResult === 'success' 
+                    ? (language === 'EN' ? 'EXCELLENT!' : language === 'PH' ? 'MAGALING!' : 'MASANTING!')
+                    : (language === 'EN' ? 'KEEP PRACTICING!' : language === 'PH' ? 'IPAGPATULOY ANG PAGSASANAY!' : 'IPAGPATULUY ING PAGSANE!')}
                 </Text>
                 <Text style={styles.resultText}>
                   {analysisResult === 'success' 
-                    ? 'Your Kulitan handwriting is highly accurate.' 
-                    : 'The AI could not clearly read this symbol. Try writing it larger and clearer.'}
+                    ? (language === 'EN' ? 'Your Kulitan handwriting is highly accurate.' : language === 'PH' ? 'Ang iyong sulat Kulitan ay napakatumpak.' : 'Ing kekang sulat Kulitan masyado yang eksaktu.')
+                    : (language === 'EN' ? 'The AI could not clearly read this symbol. Try writing it larger and clearer.' : language === 'PH' ? 'Hindi mabasa nang malinaw ng AI ang simbolo. Subukang isulat ito nang mas malaki at malinaw.' : 'Eya abasa ning AI ing simbulu. Subukan mong isulat mas maragul at malino.')}
                 </Text>
               </View>
             )}

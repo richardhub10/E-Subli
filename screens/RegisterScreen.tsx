@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityInd
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../supabaseClient';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useLanguage } from '../context/LanguageContext';
 
 type RegisterScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -15,6 +16,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t, language } = useLanguage();
 
   const handleRegister = async () => {
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
@@ -60,14 +62,14 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.innerContainer}>
         
         <View style={styles.headerContainer}>
-          <Text style={styles.subtitle}>Join</Text>
+          <Text style={styles.subtitle}>{language === 'EN' ? 'Join' : language === 'PH' ? 'Sumali sa' : 'Makisali king'}</Text>
           <Text style={styles.title}>E-Subli</Text>
         </View>
         
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="First Name"
+            placeholder={t('first_name')}
             placeholderTextColor="#888"
             value={firstName}
             onChangeText={setFirstName}
@@ -75,7 +77,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
 
           <TextInput
             style={styles.input}
-            placeholder="Last Name"
+            placeholder={t('last_name')}
             placeholderTextColor="#888"
             value={lastName}
             onChangeText={setLastName}
@@ -83,7 +85,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
           
           <TextInput
             style={styles.input}
-            placeholder="Email Address"
+            placeholder={t('email')}
             placeholderTextColor="#888"
             value={email}
             onChangeText={setEmail}
@@ -93,7 +95,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
           
           <TextInput
             style={styles.input}
-            placeholder="Password"
+            placeholder={t('password')}
             placeholderTextColor="#888"
             value={password}
             onChangeText={setPassword}
@@ -102,7 +104,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
 
           <TextInput
             style={styles.input}
-            placeholder="Confirm Password"
+            placeholder={language === 'EN' ? 'Confirm Password' : language === 'PH' ? 'Kumpirmahin ang Password' : 'Kumpirman ing Password'}
             placeholderTextColor="#888"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -119,13 +121,13 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
             disabled={loading}
           >
             <LinearGradient colors={['#E87954', '#D1582D']} style={styles.button}>
-              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Create Account</Text>}
+              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{t('create_account')}</Text>}
             </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
 
         <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.linkButton}>
-          <Text style={styles.linkText}>Already have an account? <Text style={styles.linkTextBold}>Log in</Text></Text>
+          <Text style={styles.linkText}>{t('already_have_account')} <Text style={styles.linkTextBold}>{t('login')}</Text></Text>
         </TouchableOpacity>
         
       </KeyboardAvoidingView>

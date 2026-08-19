@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Pla
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { kulitanSyllables } from '../data/kulitanData';
+import { useLanguage } from '../context/LanguageContext';
 
 type KulitanGuideScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -15,6 +16,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
     (s.latin.length === 2 && s.latin.endsWith('a')) || 
     s.latin === 'nga'
   );
+  const { language } = useLanguage();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -24,30 +26,30 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#FBBF24" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>KULITAN GUIDE</Text>
+        <Text style={styles.headerTitle}>{language === 'EN' ? 'KULITAN GUIDE' : language === 'PH' ? 'GABAY SA KULITAN' : 'GABAY KING KULITAN'}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
         {/* The Writing System */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>THE WRITING SYSTEM</Text>
+          <Text style={styles.cardTitle}>{language === 'EN' ? 'THE WRITING SYSTEM' : language === 'PH' ? 'ANG SISTEMA NG PAGSULAT' : 'ING SISTEMA NING PAMANYULAT'}</Text>
           <Text style={styles.cardText}>
-            Kulitan (Sulat Kapampangan) is an indigenous vertical script used to write Kapampangan. Unlike other ancient Philippine scripts that flow horizontally, Kulitan flows vertically from top to bottom.
+            {language === 'EN' ? 'Kulitan (Sulat Kapampangan) is an indigenous vertical script used to write Kapampangan. Unlike other ancient Philippine scripts that flow horizontally, Kulitan flows vertically from top to bottom.' : language === 'PH' ? 'Ang Kulitan (Sulat Kapampangan) ay isang katutubong patayong script na ginagamit sa pagsulat ng Kapampangan. Hindi tulad ng ibang sinaunang script sa Pilipinas na pahalang, ang Kulitan ay patayo mula itaas pababa.' : 'Ing Kulitan (Sulat Kapampangan) metung yang katutubung patikdo a script a gagamitan king pamanulat Kapampangan. E kalupa ring aliwang matuang script king Pilipinas a pakera, ing Kulitan patikdo ya manibat babo pababa.'}
           </Text>
         </View>
 
         {/* Vertical Stacking */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>VERTICAL STACKING</Text>
+          <Text style={styles.cardTitle}>{language === 'EN' ? 'VERTICAL STACKING' : language === 'PH' ? 'PAGSASALANSAN NANG PATAYO' : 'PAMANSALANSAN A PATIKDO'}</Text>
           <Text style={styles.cardText}>
-            In traditional Kulitan, consonant clusters or combinations are stacked directly below each other in vertical columns. The columns then read from right to left.
+            {language === 'EN' ? 'In traditional Kulitan, consonant clusters or combinations are stacked directly below each other in vertical columns. The columns then read from right to left.' : language === 'PH' ? 'Sa tradisyonal na Kulitan, ang mga kumpol ng katinig o kumbinasyon ay pinagsasalansan nang direkta sa ibaba ng bawat isa sa mga patayong kolum. Ang mga kolum ay binabasa mula kanan pakaliwa.' : 'King tradisyunal a Kulitan, ding kumpol da ring katinig o kumbinasyun pansasalansan do mismu king lalam ning balang metung karing patikdong kolum. Ding kolum babasan la manibat wanang papunta kaili.'}
           </Text>
         </View>
 
         {/* The Kudlit */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>THE KUDLIT (VOWEL MARKS)</Text>
+          <Text style={styles.cardTitle}>{language === 'EN' ? 'THE KUDLIT (VOWEL MARKS)' : language === 'PH' ? 'ANG KUDLIT (MGA PATINIG)' : 'ING KUDLIT (DING PATINIG)'}</Text>
           <View style={styles.kudlitContainer}>
             <View style={styles.kudlitItem}>
               <View style={styles.kudlitBox}>
@@ -57,14 +59,14 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
                 <Text style={[styles.kudlitBase, { position: 'absolute' }]}>ki</Text>
               </View>
               <Text style={styles.kudlitLabel}>KE / KI</Text>
-              <Text style={styles.kudlitSub}>Top-Right Dot</Text>
+              <Text style={styles.kudlitSub}>{language === 'EN' ? 'Top-Right Dot' : language === 'PH' ? 'Tuldok sa Itaas-Kanan' : 'Tuldok king Babo-Wanan'}</Text>
             </View>
             <View style={styles.kudlitItem}>
               <View style={styles.kudlitBox}>
                 <Text style={[styles.kudlitBase, { position: 'absolute' }]}>ku</Text>
               </View>
               <Text style={styles.kudlitLabel}>KO / KU</Text>
-              <Text style={styles.kudlitSub}>Bottom-Left Dot</Text>
+              <Text style={styles.kudlitSub}>{language === 'EN' ? 'Bottom-Left Dot' : language === 'PH' ? 'Tuldok sa Ibaba-Kaliwa' : 'Tuldok king Lalam-Kaili'}</Text>
             </View>
           </View>
         </View>
@@ -72,7 +74,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
         {/* Syllabary */}
         <View style={styles.syllabarySection}>
           <Text style={[styles.cardTitle, { paddingHorizontal: 20, marginBottom: 15 }]}>
-            SYLLABARY (ALL 24 CHARACTERS)
+            {language === 'EN' ? 'SYLLABARY (ALL 24 CHARACTERS)' : language === 'PH' ? 'SILABARYO (LAHAT NG 24 NA LETRA)' : 'SILABARYO (EGANAGANANG 24 A LETRA)'}
           </Text>
           
           <View style={styles.card}>

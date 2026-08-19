@@ -6,6 +6,7 @@ import * as Haptics from 'expo-haptics';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { getRandomQuestions } from '../utils/quizQuestions';
 import { useProfile } from '../context/ProfileContext';
+import { useLanguage } from '../context/LanguageContext';
 
 type OfflineQuizScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -14,7 +15,8 @@ type OfflineQuizScreenProps = {
 const { width } = Dimensions.get('window');
 
 export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps) {
-  const { profile, addXP } = useProfile();
+  const { addXP } = useProfile();
+  const { t } = useLanguage();
   const [currentQ, setCurrentQ] = useState<any>(null);
   const [score, setScore] = useState(0);
   const [status, setStatus] = useState<'playing' | 'finished'>('playing');
@@ -156,10 +158,6 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
     }, 800);
   };
 
-  const finishGame = (finalScore = score) => {
-    setStatus('finished');
-  };
-
   const leaveRoom = () => {
     if (score > 0 && status === 'playing') {
       // Award XP when leaving endless mode manually
@@ -172,24 +170,21 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
     return (
       <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
         <View style={styles.centerContainer}>
-          <Ionicons name="trophy" size={80} color="#F59E0B" />
-          <Text style={[styles.resultTitle, { color: "#F59E0B" }]}>
-            Practice Complete!
-          </Text>
-          <Text style={styles.finalScoreText}>Score: {score}</Text>
-          <Text style={styles.xpText}>+{score} XP</Text>
-          
-          <View style={{ flexDirection: 'row', gap: 20, marginTop: 40 }}>
-            <TouchableOpacity style={styles.actionButton} onPress={startGame}>
-              <Ionicons name="refresh" size={24} color="#FFF" />
-              <Text style={styles.actionButtonText}>Retry</Text>
-            </TouchableOpacity>
+        {/* Finished State inside the endless logic isn't used much anymore, but keep for safety */}
+        {status === 'finished' && (
+          <View style={styles.finishedContainer}>
+            <Ionicons name="trophy" size={80} color="#FBBF24" />
+            <Text style={styles.finishedTitle}>{t('practice_complete')}</Text>
+            <Text style={styles.finalScoreText}>{t('score')}: {score}</Text>
             
-            <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#94A3B8' }]} onPress={leaveRoom}>
-              <Ionicons name="home" size={24} color="#FFF" />
-              <Text style={styles.actionButtonText}>Lobby</Text>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={leaveRoom}
+            >
+              <Text style={styles.actionButtonText}>{t('back')}</Text>
             </TouchableOpacity>
           </View>
+        )}
         </View>
       </LinearGradient>
     );
@@ -202,12 +197,15 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
       <SafeAreaView style={styles.safeArea}>
         
         <View style={styles.headerRow}>
-          <TouchableOpacity onPress={leaveRoom} style={styles.exitButton}>
-            <Ionicons name="close" size={28} color="#64748B" />
-          </TouchableOpacity>
-          <View style={styles.scorePill}>
-            <Ionicons name="star" size={20} color="#F59E0B" />
-            <Text style={styles.scorePillText}>{score}</Text>
+          <View style={styles.headerLeft}>
+            <TouchableOpacity onPress={leaveRoom} style={styles.exitButton}>
+              <Ionicons name="close" size={28} color="#64748B" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>{t('solo_practice')}</Text>
+          </View>
+          <View style={styles.scoreContainer}>
+            <Ionicons name="star" size={20} color="#FBBF24" />
+            <Text style={styles.scoreText}>{score}</Text>
           </View>
         </View>
 
@@ -228,7 +226,7 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
         <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Question Area */}
           <Animated.View style={[styles.questionCard, { transform: [{ translateY: cardFloatAnim }] }]}>
-            <Text style={styles.questionLabel}>What does this mean?</Text>
+            <Text style={styles.questionLabel}>{t('what_does_this_mean')}</Text>
             <Text style={styles.questionWord}>{currentQ.kapampangan}</Text>
             
             <View style={styles.kulitanContainer}>
@@ -291,9 +289,11 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 60 : 40 },
+  headerLeft: { flexDirection: 'row', alignItems: 'center' },
+  headerTitle: { fontFamily: 'Poppins_700Bold', fontSize: 20, color: '#0F172A', marginLeft: 10 },
   exitButton: { padding: 10 },
-  scorePill: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3, gap: 6 },
-  scorePillText: { fontFamily: 'Poppins_700Bold', fontSize: 18, color: '#334155' },
+  scoreContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3, gap: 6 },
+  scoreText: { fontFamily: 'Poppins_700Bold', fontSize: 18, color: '#334155' },
   timerContainer: { height: 8, backgroundColor: '#E2E8F0', borderRadius: 4, marginHorizontal: 20, marginTop: 20, overflow: 'hidden', flexShrink: 0 },
   timerFill: { height: '100%', borderRadius: 4 },
   scrollContent: { flexGrow: 1, paddingBottom: 40 },
@@ -309,6 +309,8 @@ const styles = StyleSheet.create({
   optionWrong: { backgroundColor: '#EF4444', shadowColor: '#EF4444' },
   optionText: { fontFamily: 'Poppins_600SemiBold', fontSize: 18, color: '#334155' },
   resultTitle: { fontFamily: 'Poppins_700Bold', fontSize: 40, marginTop: 20, marginBottom: 10 },
+  finishedContainer: { alignItems: 'center', padding: 20, backgroundColor: '#FFF', borderRadius: 20, elevation: 5 },
+  finishedTitle: { fontFamily: 'Poppins_700Bold', fontSize: 24, color: '#FBBF24', marginVertical: 10 },
   finalScoreText: { fontFamily: 'Poppins_600SemiBold', fontSize: 24, color: '#334155', marginBottom: 10 },
   xpText: { fontFamily: 'Poppins_700Bold', fontSize: 28, color: '#10B981' },
   actionButton: { flexDirection: 'row', backgroundColor: '#3B82F6', paddingHorizontal: 30, paddingVertical: 15, borderRadius: 30, alignItems: 'center', gap: 10, shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },

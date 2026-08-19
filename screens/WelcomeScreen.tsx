@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, StatusBar, Platform } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useLanguage } from '../context/LanguageContext';
+import { Language } from '../utils/translations';
 
 type WelcomeScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -9,7 +11,7 @@ type WelcomeScreenProps = {
 const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen({ navigation }: WelcomeScreenProps) {
-  const [selectedLang, setSelectedLang] = useState('EN');
+  const { language, setLanguage, t } = useLanguage();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -32,27 +34,27 @@ export default function WelcomeScreen({ navigation }: WelcomeScreenProps) {
 
       {/* Welcome Text */}
       <View style={styles.welcomeContainer}>
-        <Text style={styles.subtitle}>HERITAGE IN SCRIPT</Text>
+        <Text style={styles.subtitle}>{language === 'EN' ? 'HERITAGE IN SCRIPT' : language === 'PH' ? 'PAMANA SA SULAT' : 'MANA KING SULAT'}</Text>
         <Text style={styles.welcomeText}>
-          Welcome to Kapampangan, Tagalog,{'\n'}and English
+          {t('welcome')} {language === 'EN' ? "to Kapampangan, Tagalog,\nand English" : language === 'PH' ? "sa Kapampangan, Tagalog,\nat Ingles" : "king Kapampangan, Tagalog,\nampong Ingles"}
         </Text>
       </View>
 
       {/* Language Selector */}
       <View style={styles.langSelector}>
-        {['EN', 'PH', 'KPM'].map((lang) => (
+        {(['EN', 'PH', 'KPM'] as Language[]).map((lang) => (
           <TouchableOpacity 
             key={lang} 
-            onPress={() => setSelectedLang(lang)}
+            onPress={() => setLanguage(lang)}
             style={styles.langButton}
           >
             <Text style={[
               styles.langText, 
-              selectedLang === lang && styles.langTextActive
+              language === lang && styles.langTextActive
             ]}>
               {lang}
             </Text>
-            {selectedLang === lang && <View style={styles.langIndicator} />}
+            {language === lang && <View style={styles.langIndicator} />}
           </TouchableOpacity>
         ))}
       </View>
@@ -63,14 +65,14 @@ export default function WelcomeScreen({ navigation }: WelcomeScreenProps) {
           style={styles.primaryButton}
           onPress={() => navigation.navigate('Login')}
         >
-          <Text style={styles.primaryButtonText}>START JOURNEY</Text>
+          <Text style={styles.primaryButtonText}>{t('start_journey')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
           style={styles.secondaryButton}
           onPress={() => navigation.navigate('KulitanGuide')}
         >
-          <Text style={styles.secondaryButtonText}>KULITAN GUIDE</Text>
+          <Text style={styles.secondaryButtonText}>{t('kulitan_guide')}</Text>
         </TouchableOpacity>
       </View>
 

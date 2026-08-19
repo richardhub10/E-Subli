@@ -6,6 +6,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { GoogleGenAI } from '@google/genai';
 import * as Clipboard from 'expo-clipboard';
 import { useProfile } from '../context/ProfileContext';
+import { useLanguage } from '../context/LanguageContext';
 
 type TranslatorScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -20,6 +21,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
   const [showKulitan, setShowKulitan] = useState(true);
   const [orientation, setOrientation] = useState<'Horizontal' | 'Vertical'>('Horizontal');
   const { addXP } = useProfile();
+  const { t, language } = useLanguage();
 
   const handleTranslate = async () => {
     if (!sourceText.trim()) return;
@@ -91,7 +93,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Translator</Text>
+        <Text style={styles.headerTitle}>{t('translator')}</Text>
         <View style={{ width: 44 }} />
       </View>
 
@@ -101,7 +103,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.inputCard}>
-          <Text style={styles.cardHeader}>FROM</Text>
+          <Text style={styles.cardHeader}>{language === 'EN' ? 'FROM' : 'MULA SA'}</Text>
           <View style={styles.languageSelector}>
             {['Tagalog', 'English', 'Kapampangan'].map((lang) => (
               <TouchableOpacity 
@@ -114,7 +116,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
             ))}
           </View>
           
-          <Text style={[styles.cardHeader, { marginTop: 16 }]}>TO</Text>
+          <Text style={[styles.cardHeader, { marginTop: 16 }]}>{language === 'EN' ? 'TO' : 'PATUNGO SA'}</Text>
           <View style={styles.languageSelector}>
             {['Tagalog', 'English', 'Kapampangan'].map((lang) => (
               <TouchableOpacity 
@@ -132,14 +134,14 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
           <TextInput
             style={styles.textInput}
             multiline
-            placeholder={`Type ${sourceLanguage} here...`}
+            placeholder={language === 'EN' ? `Type ${sourceLanguage} here...` : `I-type ang ${sourceLanguage} dito...`}
             placeholderTextColor="#94A3B8"
             value={sourceText}
             onChangeText={setSourceText}
           />
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleText}>Show in Kulitan Script</Text>
+            <Text style={styles.toggleText}>{language === 'EN' ? 'Show in Kulitan Script' : 'Ipakita sa Kulitan Script'}</Text>
             <Switch
               value={showKulitan}
               onValueChange={setShowKulitan}
@@ -154,13 +156,13 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
                 style={[styles.orientationTab, orientation === 'Horizontal' && styles.orientationTabActive]}
                 onPress={() => setOrientation('Horizontal')}
               >
-                <Text style={[styles.orientationTabText, orientation === 'Horizontal' && styles.orientationTabTextActive]}>Horizontal</Text>
+                <Text style={[styles.orientationTabText, orientation === 'Horizontal' && styles.orientationTabTextActive]}>{language === 'EN' ? 'Horizontal' : 'Pahalang'}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.orientationTab, orientation === 'Vertical' && styles.orientationTabActive]}
                 onPress={() => setOrientation('Vertical')}
               >
-                <Text style={[styles.orientationTabText, orientation === 'Vertical' && styles.orientationTabTextActive]}>Vertical</Text>
+                <Text style={[styles.orientationTabText, orientation === 'Vertical' && styles.orientationTabTextActive]}>{language === 'EN' ? 'Vertical' : 'Pababa'}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -173,7 +175,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
             {isTranslating ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.translateButtonText}>Translate</Text>
+              <Text style={styles.translateButtonText}>{language === 'EN' ? 'Translate' : 'Isalin'}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -211,7 +213,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
             <View style={styles.actionButtonsRow}>
               <TouchableOpacity style={styles.actionButton} onPress={copyToClipboard}>
                 <Ionicons name="copy-outline" size={20} color="#FFFFFF" />
-                <Text style={styles.actionButtonText}>Copy</Text>
+                <Text style={styles.actionButtonText}>{language === 'EN' ? 'Copy' : 'Kopyahin'}</Text>
               </TouchableOpacity>
             </View>
           </View>

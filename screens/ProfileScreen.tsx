@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../context/ProfileContext';
 import { supabase } from '../supabaseClient';
+import { useLanguage } from '../context/LanguageContext';
 
 type ProfileScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -12,6 +13,7 @@ type ProfileScreenProps = {
 
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const { profile } = useProfile();
+  const { t, language } = useLanguage();
   
   const handleLogout = async () => {
     try {
@@ -27,7 +29,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profile</Text>
+        <Text style={styles.headerTitle}>{t('profile')}</Text>
         <View style={{ width: 44 }} /> 
       </View>
 
@@ -45,12 +47,12 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           
           <View style={styles.statsContainer}>
             <View style={styles.statBox}>
-              <Text style={styles.statValue}>Lvl {profile.level}</Text>
-              <Text style={styles.statLabel}>Current Level</Text>
+              <Text style={styles.statValue}>{language === 'EN' ? 'Lvl' : 'Antas'} {profile.level}</Text>
+              <Text style={styles.statLabel}>{language === 'EN' ? 'Current Level' : language === 'PH' ? 'Kasalukuyang Antas' : 'Kasalukuyan a Antas'}</Text>
             </View>
             <View style={styles.statBox}>
               <Text style={styles.statValue}>{profile.xp}</Text>
-              <Text style={styles.statLabel}>Total XP</Text>
+              <Text style={styles.statLabel}>{language === 'EN' ? 'Total XP' : 'Kabuuan XP'}</Text>
             </View>
           </View>
           
@@ -59,11 +61,11 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           <View style={styles.statsContainer}>
             <View style={styles.statBox}>
               <Text style={styles.statValue}>{profile.flashcardsRead}</Text>
-              <Text style={styles.statLabel}>Flashcards</Text>
+              <Text style={styles.statLabel}>{t('flashcards_read')}</Text>
             </View>
             <View style={styles.statBox}>
               <Text style={styles.statValue}>{profile.writingPractices}</Text>
-              <Text style={styles.statLabel}>Trace Practices</Text>
+              <Text style={styles.statLabel}>{t('writing_practices')}</Text>
             </View>
           </View>
         </View>
@@ -72,7 +74,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       <View style={styles.footer}>
         <TouchableOpacity onPress={handleLogout}>
           <LinearGradient colors={['#D1582D', '#B04724']} style={styles.logoutButton}>
-            <Text style={styles.logoutButtonText}>Log Out</Text>
+            <Text style={styles.logoutButtonText}>{t('log_out')}</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>

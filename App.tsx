@@ -15,6 +15,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import WelcomeScreen from './screens/WelcomeScreen';
 import KulitanGuideScreen from './screens/KulitanGuideScreen';
+import { LanguageProvider } from './context/LanguageContext';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
@@ -43,9 +44,10 @@ function AppNavigator() {
   }
 
   return (
-    <NavigationContainer>
-      {user ? (
-        <ProfileProvider>
+    <LanguageProvider>
+      <NavigationContainer>
+        {user ? (
+          <ProfileProvider>
           <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { flex: 1 } }}>
             {/* The routes are defined in the Auth listener above, but normally we'd structure it better. Let's just conditionally render here. */}
             <Stack.Screen name="Home" component={HomeScreen} />
@@ -68,7 +70,8 @@ function AppNavigator() {
           <Stack.Screen name="Register" component={RegisterScreen} />
         </Stack.Navigator>
       )}
-    </NavigationContainer>
+      </NavigationContainer>
+    </LanguageProvider>
   );
 }
 

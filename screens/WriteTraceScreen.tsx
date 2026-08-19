@@ -8,6 +8,7 @@ import { DrawingCanvas, DrawingCanvasRef } from '../components/DrawingCanvas';
 import { useProfile } from '../context/ProfileContext';
 import { kulitanSyllables } from '../data/kulitanData';
 import { kulitanPoints } from '../data/kulitanPoints';
+import { useLanguage } from '../context/LanguageContext';
 
 type WriteTraceScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -19,6 +20,7 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentSyllable = kulitanSyllables[currentIndex];
+  const { t, language } = useLanguage();
   
   const [isEraser, setIsEraser] = useState(false);
   const [currentColor, setCurrentColor] = useState('#0B2046'); 
@@ -197,13 +199,13 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Trace: {currentSyllable.latin.toUpperCase()}</Text>
+        <Text style={styles.headerTitle}>{language === 'EN' ? 'Trace' : language === 'PH' ? 'Sundan' : 'Tuntunan'}: {currentSyllable.latin.toUpperCase()}</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <View style={styles.guideContainer}>
         <Ionicons name="information-circle" size={16} color="#D9734E" />
-        <Text style={styles.guideText}>Tip: Trace strokes from top to bottom, right to left.</Text>
+        <Text style={styles.guideText}>{language === 'EN' ? 'Tip: Trace strokes from top to bottom, right to left.' : language === 'PH' ? 'Tip: Sundan ang mga guhit mula itaas pababa, kanan pakaliwa.' : 'Tip: Tuntunan la ring guhit manibat babo pababa, wanang papunta kaili.'}</Text>
       </View>
 
       <View 
@@ -218,6 +220,7 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
           guidePath={kulitanPoints[currentSyllable.latin]?.path}
           guideOffsetX={kulitanPoints[currentSyllable.latin]?.offsetX}
           guideOffsetY={kulitanPoints[currentSyllable.latin]?.offsetY}
+          guideStartPoint={kulitanPoints[currentSyllable.latin]?.points?.[0]}
           canvasWidth={canvasSize.width}
           canvasHeight={canvasSize.height}
         />
@@ -229,7 +232,7 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
           onPress={handlePen}
         >
           <Ionicons name="pencil" size={20} color={!isEraser ? "#FFFFFF" : "#64748B"} style={{marginRight: 8}} />
-          <Text style={[styles.toolButtonText, !isEraser && styles.toolButtonTextActive]}>Pen</Text>
+          <Text style={[styles.toolButtonText, !isEraser && styles.toolButtonTextActive]}>{language === 'EN' ? 'Pen' : 'Panulat'}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
@@ -237,7 +240,7 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
           onPress={handleEraser}
         >
           <Ionicons name="bandage" size={20} color={isEraser ? "#FFFFFF" : "#64748B"} style={{marginRight: 8}} />
-          <Text style={[styles.toolButtonText, isEraser && styles.toolButtonTextActive]}>Eraser</Text>
+          <Text style={[styles.toolButtonText, isEraser && styles.toolButtonTextActive]}>{language === 'EN' ? 'Eraser' : 'Pambura'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.toolButtonClear} onPress={handleClear}>
@@ -246,7 +249,7 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
 
         {/* New Check Button */}
         <TouchableOpacity style={styles.toolButtonCheck} onPress={handleCheck}>
-          <Text style={styles.toolButtonTextCheck}>Check</Text>
+          <Text style={styles.toolButtonTextCheck}>{language === 'EN' ? 'Check' : 'Suriin'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -262,23 +265,23 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
             {isAnalyzing ? (
               <>
                 <ActivityIndicator size="large" color="#D9734E" />
-                <Text style={styles.modalText}>Analyzing strokes...</Text>
+                <Text style={styles.modalText}>{language === 'EN' ? 'Analyzing strokes...' : 'Sinusuri...'}</Text>
               </>
             ) : (
               <>
                 <Text style={styles.scoreText}>{score}%</Text>
                 <Text style={styles.modalText}>
-                  {score && score >= 70 ? 'Excellent tracing!' : 'Keep practicing!'}
+                  {score && score >= 70 ? (language === 'EN' ? 'Excellent tracing!' : language === 'PH' ? 'Mahusay na pagsunod!' : 'Mayap a pamangawil!') : (language === 'EN' ? 'Keep practicing!' : language === 'PH' ? 'Ipagpatuloy ang pagsasanay!' : 'Ipagpatuluy ing pagsane!')}
                 </Text>
                 
                 <View style={styles.modalButtons}>
                   {score && score >= 70 ? (
                     <TouchableOpacity style={styles.modalButtonNext} onPress={handleNext}>
-                      <Text style={styles.modalButtonText}>Next</Text>
+                      <Text style={styles.modalButtonText}>{language === 'EN' ? 'Next' : 'Susunod'}</Text>
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity style={styles.modalButtonRetry} onPress={handleRetry}>
-                      <Text style={styles.modalButtonText}>Retry</Text>
+                      <Text style={styles.modalButtonText}>{language === 'EN' ? 'Retry' : 'Ulitin'}</Text>
                     </TouchableOpacity>
                   )}
                 </View>
