@@ -218,7 +218,7 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
           ]} />
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Question Area */}
           <Animated.View style={[styles.questionCard, { transform: [{ translateY: cardFloatAnim }] }]}>
             <Text style={styles.questionLabel}>What does this mean?</Text>
