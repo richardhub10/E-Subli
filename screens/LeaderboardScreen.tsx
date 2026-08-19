@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabaseClient';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
 type LeaderboardScreenProps = {
@@ -20,6 +21,7 @@ type LeaderboardEntry = {
 export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
   const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const { t, language } = useLanguage();
 
   useEffect(() => {
@@ -57,12 +59,63 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
     fetchLeaderboard();
   }, []);
 
+  const handleAddFriendFromLeaderboard = (friendId: string, friendName: string) => {
+    if (!user) return;
+    if (user.id === friendId) {
+      Alert.alert("Info", language === 'EN' ? "You can't add yourself." : "Hindi mo maaaring idagdag ang sarili mo.");
+      return;
+    }
+
+    Alert.alert(
+      language === 'EN' ? "Add Friend" : "Magdagdag ng Kaibigan",
+      language === 'EN' ? `Do you want to add ${friendName} as a friend?` : `Nais mo bang idagdag si ${friendName} bilang kaibigan?`,
+      [
+        { text: language === 'EN' ? "Cancel" : "Kanselahin", style: "cancel" },
+        { 
+          text: language === 'EN' ? "Add" : "Idagdag", 
+          onPress: async () => {
+            try {
+              // Check if already friends
+              const { data: existing } = await supabase
+                .from('friends')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('friend_id', friendId);
+                
+              if (existing && existing.length > 0) {
+                Alert.alert("Info", language === 'EN' ? "You are already friends!" : "Magkaibigan na kayo!");
+                return;
+              }
+              
+              const { error } = await supabase
+                .from('friends')
+                .insert([{ user_id: user.id, friend_id: friendId }]);
+                
+              if (error) throw error;
+              
+              Alert.alert("Success!", language === 'EN' ? "Friend added successfully." : "Tagumpay na naidagdag ang kaibigan.");
+              
+              // Also add reverse friendship for simplicity (optional, but good for UX)
+              await supabase.from('friends').insert([{ user_id: friendId, friend_id: user.id }]);
+            } catch (error) {
+              console.error("Add friend error:", error);
+              Alert.alert("Error", "Could not add friend.");
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const renderItem = ({ item, index }: { item: LeaderboardEntry; index: number }) => {
     const isTopThree = index < 3;
     const rankColors = ['#FBBF24', '#94A3B8', '#D97706']; // Gold, Silver, Bronze
 
     return (
-      <View style={[styles.entryCard, isTopThree && styles.topEntryCard]}>
+      <TouchableOpacity 
+        style={[styles.entryCard, isTopThree && styles.topEntryCard]}
+        onPress={() => handleAddFriendFromLeaderboard(item.id, item.name)}
+      >
         <View style={styles.rankContainer}>
           <Text style={[styles.rankText, isTopThree && { color: rankColors[index] }]}>
             #{index + 1}
@@ -75,7 +128,7 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
         <View style={styles.xpContainer}>
           <Text style={styles.xpText}>{item.xp} XP</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 

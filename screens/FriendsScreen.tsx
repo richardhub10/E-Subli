@@ -24,8 +24,8 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
   const [activeTab, setActiveTab] = useState<'List' | 'Add'>('List');
   const [friends, setFriends] = useState<FriendProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchEmail, setSearchEmail] = useState('');
-  const [searchResult, setSearchResult] = useState<FriendProfile | null>(null);
+  const [searchName, setSearchName] = useState('');
+  const [searchResults, setSearchResults] = useState<FriendProfile[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   
   const { user } = useAuth();
@@ -75,27 +75,25 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
   };
 
   const searchFriend = async () => {
-    if (!searchEmail.trim()) return;
-    if (searchEmail.toLowerCase() === user?.email?.toLowerCase()) {
-      Alert.alert("Error", language === 'EN' ? "You cannot add yourself!" : "Hindi mo maaaring idagdag ang sarili mo!");
-      return;
-    }
+    if (!searchName.trim()) return;
     
     setIsSearching(true);
-    setSearchResult(null);
+    setSearchResults([]);
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, first_name, last_name, xp, level, elo_rating')
-        .eq('email', searchEmail.toLowerCase())
-        .limit(1);
+        .ilike('first_name', `%${searchName}%`)
+        .limit(5);
         
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setSearchResult(data[0]);
+        // Filter out the current user just in case
+        const filteredData = data.filter(u => u.id !== user?.id);
+        setSearchResults(filteredData);
       } else {
-        Alert.alert("Not Found", language === 'EN' ? "No user found with that email." : "Walang gumagamit na natagpuan sa email na iyon.");
+        Alert.alert("Not Found", language === 'EN' ? "No user found with that name." : "Walang gumagamit na natagpuan sa pangalang iyon.");
       }
     } catch (error) {
       console.error("Search error:", error);
@@ -127,8 +125,8 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
       if (error) throw error;
       
       Alert.alert("Success!", language === 'EN' ? "Friend added successfully." : "Tagumpay na naidagdag ang kaibigan.");
-      setSearchEmail('');
-      setSearchResult(null);
+      setSearchName('');
+      setSearchResults([]);
       
       // Also add reverse friendship for simplicity (optional, but good for UX)
       await supabase.from('friends').insert([{ user_id: friendId, friend_id: user.id }]);
@@ -213,32 +211,38 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
         ) : (
           <View style={styles.addTabContainer}>
             <Text style={styles.searchPrompt}>
-              {language === 'EN' ? "Enter your friend's email address to add them:" : "Ilagay ang email ng iyong kaibigan upang idagdag:"}
+              {language === 'EN' ? "Enter your friend's name to add them:" : "Ilagay ang pangalan ng iyong kaibigan upang idagdag:"}
             </Text>
             <View style={styles.searchRow}>
               <TextInput
                 style={styles.searchInput}
-                placeholder="email@example.com"
-                value={searchEmail}
-                onChangeText={setSearchEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
+                placeholder={language === 'EN' ? "First Name" : "Pangalan"}
+                value={searchName}
+                onChangeText={setSearchName}
+                autoCapitalize="words"
               />
               <TouchableOpacity style={styles.searchBtn} onPress={searchFriend} disabled={isSearching}>
                 {isSearching ? <ActivityIndicator color="#FFF" /> : <Ionicons name="search" size={24} color="#FFF" />}
               </TouchableOpacity>
             </View>
 
-            {searchResult && (
-              <View style={styles.resultCard}>
-                <View style={styles.friendInfo}>
-                  <Text style={styles.friendName}>{searchResult.first_name || 'Scholar'} {searchResult.last_name || ''}</Text>
-                  <Text style={styles.friendStats}>Lvl {searchResult.level || 1} • {searchResult.xp || 0} XP</Text>
-                </View>
-                <TouchableOpacity style={styles.addConfirmBtn} onPress={() => addFriend(searchResult.id)}>
-                  <Text style={styles.addConfirmText}>{language === 'EN' ? "Add" : "Idagdag"}</Text>
-                </TouchableOpacity>
-              </View>
+            {searchResults.length > 0 && (
+              <FlatList
+                data={searchResults}
+                keyExtractor={item => item.id}
+                scrollEnabled={false}
+                renderItem={({ item }) => (
+                  <View style={styles.resultCard}>
+                    <View style={styles.friendInfo}>
+                      <Text style={styles.friendName}>{item.first_name || 'Scholar'} {item.last_name || ''}</Text>
+                      <Text style={styles.friendStats}>Lvl {item.level || 1} • {item.xp || 0} XP</Text>
+                    </View>
+                    <TouchableOpacity style={styles.addConfirmBtn} onPress={() => addFriend(item.id)}>
+                      <Text style={styles.addConfirmText}>{language === 'EN' ? "Add" : "Idagdag"}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
             )}
           </View>
         )}
