@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Platform, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { CommonActions } from '@react-navigation/native';
 import { navigationRef } from '../App';
 
 type ProfileData = {
@@ -258,9 +259,26 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
                   .update({ status: 'playing' })
                   .eq('id', payload.payload.roomId);
 
-                if (navigationRef.isReady()) {
-                  navigationRef.navigate('QuizBattle', { roomId: payload.payload.roomId, isHost: false });
-                }
+                const targetRoomId = payload.payload.roomId;
+                const performNavigation = () => {
+                  try {
+                    if (navigationRef.isReady()) {
+                      navigationRef.navigate('QuizBattle', { roomId: targetRoomId, isHost: false });
+                    } else {
+                      navigationRef.dispatch(
+                        CommonActions.navigate({
+                          name: 'QuizBattle',
+                          params: { roomId: targetRoomId, isHost: false }
+                        })
+                      );
+                    }
+                  } catch (navErr) {
+                    console.error("Navigation error:", navErr);
+                  }
+                };
+
+                performNavigation();
+                setTimeout(performNavigation, 150);
               } catch (e) {
                 console.error("Error accepting challenge:", e);
               }

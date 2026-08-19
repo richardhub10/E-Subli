@@ -23,7 +23,7 @@ type FloatingEmoji = {
 };
 
 export default function QuizBattleScreen({ navigation, route }: Props) {
-  const { roomId, roomCode, isHost } = route.params;
+  const { roomId, roomCode, isHost } = route?.params || {};
   const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
   const { t, language } = useLanguage();
