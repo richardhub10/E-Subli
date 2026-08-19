@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, ActivityIndicator, Alert, FlatList, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, ActivityIndicator, Alert, FlatList, Image, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -7,6 +7,7 @@ import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useProfile } from '../context/ProfileContext';
+import { getRandomQuestions } from '../utils/quizQuestions';
 
 type FriendsScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -154,70 +155,78 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
     }
   };
 
+  const executeChallenge = async (friend: FriendProfile) => {
+    try {
+      const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const initialQuestions = getRandomQuestions(30);
+      
+      const { data: newRoom, error: createError } = await supabase
+        .from('quiz_rooms')
+        .insert([{ 
+          room_code: newCode, 
+          host_id: user?.id, 
+          status: 'private_waiting', 
+          current_question_index: 0, 
+          questions: initialQuestions, 
+          host_elo: profile?.eloRating || 1000 
+        }])
+        .select()
+        .single();
+        
+      if (createError) throw createError;
+      
+      const myName = profile?.firstName ? profile.firstName.toUpperCase() : (user?.email?.split('@')[0]?.toUpperCase() || 'HOST');
+      await supabase
+        .from('quiz_room_players')
+        .insert([{ room_id: newRoom.id, user_id: user?.id, score: 0, player_name: myName }]);
+
+      const friendChannel = supabase.channel(`user_${friend.id}`);
+      friendChannel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await friendChannel.send({
+            type: 'broadcast',
+            event: 'challenge',
+            payload: { 
+              challengerName: profile?.firstName || user?.email?.split('@')[0] || 'A Scholar',
+              roomId: newRoom.id
+            }
+          });
+          supabase.removeChannel(friendChannel);
+        }
+      });
+
+      navigation.navigate('MultiplayerLobby', { privateRoomId: newRoom.id });
+      
+    } catch (err) {
+      console.error("Challenge error:", err);
+      if (Platform.OS === 'web') {
+        window.alert("Could not create challenge. Please try again.");
+      } else {
+        Alert.alert("Error", "Could not create challenge.");
+      }
+    }
+  };
+
   const challengeFriend = async (friend: FriendProfile) => {
     if (!user) return;
-    
-    Alert.alert(
-      "Direct Challenge", 
-      language === 'EN' ? `Challenge ${friend.first_name}?` : `Hamunin si ${friend.first_name}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Challenge", 
-          onPress: async () => {
-            try {
-              const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-              
-              // Helper to get some dummy questions or fetch them (assuming empty array for now as it's generated on host side, or let's just leave it empty)
-              // Wait, MultiplayerLobby creates a room. Let's just create one.
-              const { data: newRoom, error: createError } = await supabase
-                .from('quiz_rooms')
-                .insert([{ 
-                  room_code: newCode, 
-                  host_id: user.id, 
-                  status: 'private_waiting', 
-                  current_question_index: 0, 
-                  questions: [], 
-                  host_elo: profile?.eloRating || 1000 
-                }])
-                .select()
-                .single();
-                
-              if (createError) throw createError;
-              
-              // Join room as host
-              const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'HOST';
-              await supabase
-                .from('quiz_room_players')
-                .insert([{ room_id: newRoom.id, user_id: user.id, score: 0, player_name: myName }]);
+    const friendName = friend.first_name || friend.last_name || 'Scholar';
+    const msg = language === 'EN' ? `Challenge ${friendName} to a Quiz Battle?` : `Hamunin si ${friendName} sa Quiz Battle?`;
 
-              // Send broadcast to friend by temporarily subscribing
-              const friendChannel = supabase.channel(`user_${friend.id}`);
-              friendChannel.subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') {
-                  await friendChannel.send({
-                    type: 'broadcast',
-                    event: 'challenge',
-                    payload: { 
-                      challengerName: profile?.firstName || user.email?.split('@')[0] || 'A user',
-                      roomId: newRoom.id
-                    }
-                  });
-                  supabase.removeChannel(friendChannel);
-                }
-              });
-
-              // Navigate to Multiplayer Lobby passing the roomId so it can wait
-              navigation.navigate('MultiplayerLobby', { privateRoomId: newRoom.id });
-              
-            } catch (err) {
-              console.error("Challenge error:", err);
-              Alert.alert("Error", "Could not create challenge.");
-            }
-          } 
-        }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(msg);
+      if (confirmed) {
+        executeChallenge(friend);
+      }
+    } else {
+      Alert.alert(
+        "Direct Challenge", 
+        msg,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Challenge", onPress: () => executeChallenge(friend) }
+        ]
+      );
+    }
   };
 
   return (
@@ -283,8 +292,13 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                     <Text style={styles.friendStats}>Lvl {item.level || 1} • {item.xp || 0} XP</Text>
                     <Text style={styles.eloStats}>Elo: {item.elo_rating || 1000}</Text>
                   </View>
-                  <TouchableOpacity style={styles.challengeBtn} onPress={() => challengeFriend(item)}>
-                    <Ionicons name="game-controller" size={18} color="#FFF" />
+                  <TouchableOpacity 
+                    style={styles.challengeBtn} 
+                    activeOpacity={0.7}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    onPress={() => challengeFriend(item)}
+                  >
+                    <Ionicons name="game-controller" size={20} color="#FFF" />
                   </TouchableOpacity>
                 </View>
               )}
