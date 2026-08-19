@@ -1,10 +1,12 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, ScrollView, Platform, Image } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, ScrollView, Platform, Image, Dimensions } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
+
+const { width, height } = Dimensions.get('window');
 
 type HomeScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -13,6 +15,26 @@ type HomeScreenProps = {
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const { profile } = useProfile();
   const { t, language } = useLanguage();
+
+  const [expandingFeature, setExpandingFeature] = useState<any>(null);
+  const expandAnim = useRef(new Animated.Value(0)).current;
+
+  const handleFeaturePress = (route: string, title: string, icon: any, gradient: string[]) => {
+    setExpandingFeature({ route, title, icon, gradient });
+    expandAnim.setValue(0);
+    
+    Animated.timing(expandAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: false
+    }).start(() => {
+      navigation.navigate(route);
+      setTimeout(() => {
+        setExpandingFeature(null);
+        expandAnim.setValue(0);
+      }, 600);
+    });
+  };
 
   const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -120,7 +142,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           subtitle={language === 'EN' ? 'Master the Kulitan Syllables' : language === 'PH' ? 'Kabisaduhin ang Kulitan' : 'Kabisadwan ing Kulitan'}
           icon={<Ionicons name="book" size={44} color="rgba(255,255,255,0.9)" />}
           gradient={['#D1582D', '#9A3A17']}
-          onPress={() => navigation.navigate('ReadHub')}
+          onPress={() => handleFeaturePress('ReadHub', t('read_hub'), <Ionicons name="book" size={80} color="rgba(255,255,255,0.9)" />, ['#D1582D', '#9A3A17'])}
         />
 
         <HeroCard 
@@ -128,7 +150,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           subtitle={language === 'EN' ? 'Practice writing the script' : language === 'PH' ? 'Sanayin ang pagsulat' : 'Pagsanayan ing pamanyulat'}
           icon={<MaterialCommunityIcons name="draw-pen" size={44} color="rgba(255,255,255,0.9)" />}
           gradient={['#1E293B', '#0F172A']}
-          onPress={() => navigation.navigate('WriteTrace')}
+          onPress={() => handleFeaturePress('WriteTrace', t('write_trace'), <MaterialCommunityIcons name="draw-pen" size={80} color="rgba(255,255,255,0.9)" />, ['#1E293B', '#0F172A'])}
         />
 
         {/* SECTION 2: PRACTICE & PLAY (Grid) */}
@@ -138,13 +160,13 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             title={t('multiplayer_battle')} 
             icon={<Ionicons name="people" size={36} color="rgba(255,255,255,0.9)" />}
             gradient={['#059669', '#047857']}
-            onPress={() => navigation.navigate('MultiplayerLobby')}
+            onPress={() => handleFeaturePress('MultiplayerLobby', t('multiplayer_battle'), <Ionicons name="people" size={80} color="rgba(255,255,255,0.9)" />, ['#059669', '#047857'])}
           />
           <GridCard 
             title={t('solo_practice')} 
             icon={<Ionicons name="flash" size={36} color="rgba(255,255,255,0.9)" />}
             gradient={['#D97706', '#B45309']}
-            onPress={() => navigation.navigate('OfflineQuiz')}
+            onPress={() => handleFeaturePress('OfflineQuiz', t('solo_practice'), <Ionicons name="flash" size={80} color="rgba(255,255,255,0.9)" />, ['#D97706', '#B45309'])}
           />
         </View>
 
@@ -155,23 +177,62 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             title="Scanner" 
             icon={<Ionicons name="scan-circle" size={32} color="rgba(255,255,255,0.9)" />}
             gradient={['#8B5CF6', '#6D28D9']}
-            onPress={() => navigation.navigate('CameraScanner')}
+            onPress={() => handleFeaturePress('CameraScanner', 'Scanner', <Ionicons name="scan-circle" size={80} color="rgba(255,255,255,0.9)" />, ['#8B5CF6', '#6D28D9'])}
           />
           <ToolCard 
             title={t('translator')} 
             icon={<Ionicons name="language" size={32} color="rgba(255,255,255,0.9)" />}
             gradient={['#64748B', '#475569']}
-            onPress={() => navigation.navigate('Translator')}
+            onPress={() => handleFeaturePress('Translator', t('translator'), <Ionicons name="language" size={80} color="rgba(255,255,255,0.9)" />, ['#64748B', '#475569'])}
           />
           <ToolCard 
             title={t('phrasebook')} 
             icon={<Ionicons name="library" size={32} color="rgba(255,255,255,0.9)" />}
             gradient={['#0EA5E9', '#0284C7']}
-            onPress={() => navigation.navigate('Phrasebook')}
+            onPress={() => handleFeaturePress('Phrasebook', t('phrasebook'), <Ionicons name="library" size={80} color="rgba(255,255,255,0.9)" />, ['#0EA5E9', '#0284C7'])}
           />
         </ScrollView>
 
       </ScrollView>
+
+      {/* Pop-up Transition Overlay */}
+      {expandingFeature && (
+        <Animated.View style={[StyleSheet.absoluteFill, { 
+          zIndex: 999, 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          backgroundColor: expandAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['rgba(250,245,238,0)', 'rgba(250,245,238,1)']
+          })
+        }]} pointerEvents="none">
+          <Animated.View style={{
+            width: expandAnim.interpolate({ inputRange: [0, 1], outputRange: [100, width * 1.5] }),
+            height: expandAnim.interpolate({ inputRange: [0, 1], outputRange: [100, height * 1.5] }),
+            opacity: expandAnim.interpolate({ inputRange: [0, 0.8, 1], outputRange: [0, 1, 1] }),
+            transform: [
+              { scale: expandAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }) }
+            ],
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: expandAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }),
+            overflow: 'hidden',
+          }}>
+            <LinearGradient colors={expandingFeature.gradient} style={{...StyleSheet.absoluteFillObject, justifyContent:'center', alignItems:'center'}}>
+                {expandingFeature.icon}
+                <Animated.Text style={{
+                  color: 'white',
+                  fontFamily: 'Poppins_700Bold',
+                  fontSize: 32,
+                  marginTop: 20,
+                  opacity: expandAnim.interpolate({ inputRange: [0, 0.7, 1], outputRange: [0, 0, 1] })
+                }}>
+                  {expandingFeature.title}
+                </Animated.Text>
+            </LinearGradient>
+          </Animated.View>
+        </Animated.View>
+      )}
     </LinearGradient>
   );
 }
