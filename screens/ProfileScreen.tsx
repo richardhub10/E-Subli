@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ActivityIndicator, Alert, ScrollView, Image } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { decode } from 'base64-arraybuffer';
 import { useProfile } from '../context/ProfileContext';
 import { supabase } from '../supabaseClient';
 import { useLanguage } from '../context/LanguageContext';
@@ -46,6 +48,59 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     }
   };
 
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  const pickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        if (asset.base64) {
+          await uploadAvatar(asset.base64);
+        }
+      }
+    } catch (error) {
+      console.error("Image pick error", error);
+      Alert.alert("Error", "Could not pick image.");
+    }
+  };
+
+  const uploadAvatar = async (base64Str: string) => {
+    setIsUploadingAvatar(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
+      const filePath = `${user.id}/${new Date().getTime()}.jpg`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, decode(base64Str), {
+          contentType: 'image/jpeg',
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      
+      await updateProfile({ avatarUrl: data.publicUrl });
+      
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      Alert.alert("Upload Failed", error.message || "Failed to upload avatar.");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   // Elo logic
   const getRankData = (elo: number) => {
     if (elo < 1200) return { name: 'Bronze', color: '#CD7F32', icon: 'medal-outline' };
@@ -78,8 +133,14 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         <LinearGradient colors={['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.7)']} style={styles.card}>
           
           <View style={styles.avatarSection}>
-            <View style={styles.avatarContainer}>
-              <Text style={styles.avatarText}>{profile.firstName?.charAt(0).toUpperCase() || profile.email?.charAt(0).toUpperCase() || 'U'}</Text>
+            <TouchableOpacity style={styles.avatarContainer} onPress={pickImage} disabled={isUploadingAvatar}>
+              {isUploadingAvatar ? (
+                <ActivityIndicator color="#D1582D" size="large" />
+              ) : profile.avatarUrl ? (
+                <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
+              ) : (
+                <Text style={styles.avatarText}>{profile.firstName?.charAt(0).toUpperCase() || profile.email?.charAt(0).toUpperCase() || 'U'}</Text>
+              )}
               
               {/* Edit Button overlay */}
               <TouchableOpacity style={styles.editAvatarButton} onPress={() => {
@@ -89,7 +150,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
               }}>
                 <Ionicons name="pencil" size={16} color="#FFF" />
               </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
 
             <View style={styles.nameContainer}>
               {profile.firstName || profile.lastName ? (
@@ -299,6 +360,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 16,
     position: 'relative',
+    overflow: 'visible',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 40,
   },
   avatarText: {
     fontSize: 32,

@@ -16,6 +16,7 @@ type ProfileData = {
   lastLogin?: string; // ISO string YYYY-MM-DD
   srsData?: Record<string, { interval: number, easeFactor: number, nextReview: number }>;
   eloRating: number;
+  avatarUrl?: string;
 };
 
 type ProfileContextType = {
@@ -107,6 +108,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           lastLogin: data.last_login,
           srsData: data.srs_data || {},
           eloRating: data.elo_rating || 1000,
+          avatarUrl: data.avatar_url,
         });
 
         // Calculate Streaks
@@ -180,6 +182,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           lastLogin: initialProfileToInsert.last_login,
           srsData: initialProfileToInsert.srs_data,
           eloRating: initialProfileToInsert.elo_rating,
+          avatarUrl: initialProfileToInsert.avatar_url,
         });
       }
 
@@ -202,6 +205,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
               lastLogin: newData.last_login,
               srsData: newData.srs_data || {},
               eloRating: newData.elo_rating || 1000,
+              avatarUrl: newData.avatar_url,
             });
           }
         })
@@ -274,6 +278,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           read_hub_category: profileToSync.readHubCategory,
           srs_data: profileToSync.srsData,
           elo_rating: profileToSync.eloRating,
+          avatar_url: profileToSync.avatarUrl,
         });
       } catch (error) {
         console.error("Supabase Sync Error:", error);

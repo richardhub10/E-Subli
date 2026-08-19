@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Alert, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Alert, Modal, Pressable, Image } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +16,7 @@ type LeaderboardEntry = {
   name: string;
   xp: number;
   level: number;
+  avatarUrl?: string;
 };
 
 export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
@@ -47,6 +48,7 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
             name: name,
             xp: doc.xp || 0,
             level: doc.level || 1,
+            avatarUrl: doc.avatar_url,
           };
         });
 
@@ -117,6 +119,15 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
             #{index + 1}
           </Text>
         </View>
+        
+        {item.avatarUrl ? (
+          <Image source={{ uri: item.avatarUrl }} style={styles.entryAvatar} />
+        ) : (
+          <View style={styles.entryAvatarPlaceholder}>
+            <Text style={styles.entryAvatarText}>{item.name.charAt(0)}</Text>
+          </View>
+        )}
+        
         <View style={styles.infoContainer}>
           <Text style={styles.emailText} numberOfLines={1}>{item.name}</Text>
           <Text style={styles.levelText}>{language === 'EN' ? 'Lvl' : 'Antas'} {item.level}</Text>
@@ -166,7 +177,11 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
         <Pressable style={styles.modalOverlay} onPress={() => setSelectedUser(null)}>
           <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalHeader}>
-              <Ionicons name="person-circle" size={64} color="#3B82F6" />
+              {selectedUser?.avatarUrl ? (
+                <Image source={{ uri: selectedUser.avatarUrl }} style={styles.modalAvatar} />
+              ) : (
+                <Ionicons name="person-circle" size={80} color="#3B82F6" />
+              )}
               <Text style={styles.modalName}>{selectedUser?.name}</Text>
               <Text style={styles.modalLevel}>Lvl {selectedUser?.level} • {selectedUser?.xp} XP</Text>
             </View>
@@ -286,6 +301,26 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_700Bold',
     color: '#0F172A',
   },
+  entryAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  entryAvatarPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  entryAvatarText: {
+    fontSize: 18,
+    fontFamily: 'Poppins_700Bold',
+    color: '#64748B',
+  },
   infoContainer: {
     flex: 1,
     marginLeft: 12,
@@ -328,6 +363,12 @@ const styles = StyleSheet.create({
   modalHeader: {
     alignItems: 'center',
     marginBottom: 24,
+  },
+  modalAvatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 8,
   },
   modalName: {
     fontFamily: 'Poppins_700Bold',

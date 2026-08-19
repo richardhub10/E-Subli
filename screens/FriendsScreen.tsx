@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, ActivityIndicator, Alert, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, ActivityIndicator, Alert, FlatList, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -18,6 +18,7 @@ type FriendProfile = {
   xp: number;
   level: number;
   elo_rating: number;
+  avatar_url?: string;
 };
 
 export default function FriendsScreen({ navigation }: FriendsScreenProps) {
@@ -60,7 +61,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
       // 2. Fetch profiles for those IDs
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name, xp, level, elo_rating')
+        .select('id, first_name, last_name, xp, level, elo_rating, avatar_url')
         .in('id', friendIds)
         .order('xp', { ascending: false });
         
@@ -82,7 +83,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name, xp, level, elo_rating')
+        .select('id, first_name, last_name, xp, level, elo_rating, avatar_url')
         .ilike('first_name', `%${searchName}%`)
         .limit(5);
         
@@ -196,6 +197,13 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                   <View style={styles.rankBadge}>
                     <Text style={styles.rankText}>{index + 1}</Text>
                   </View>
+                  {item.avatar_url ? (
+                    <Image source={{ uri: item.avatar_url }} style={styles.friendAvatar} />
+                  ) : (
+                    <View style={styles.friendAvatarPlaceholder}>
+                      <Text style={styles.friendAvatarText}>{item.first_name ? item.first_name.charAt(0) : 'S'}</Text>
+                    </View>
+                  )}
                   <View style={styles.friendInfo}>
                     <Text style={styles.friendName}>{item.first_name || 'Scholar'} {item.last_name || ''}</Text>
                     <Text style={styles.friendStats}>Lvl {item.level || 1} • {item.xp || 0} XP</Text>
@@ -233,6 +241,13 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                 scrollEnabled={false}
                 renderItem={({ item }) => (
                   <View style={styles.resultCard}>
+                    {item.avatar_url ? (
+                      <Image source={{ uri: item.avatar_url }} style={styles.friendAvatar} />
+                    ) : (
+                      <View style={styles.friendAvatarPlaceholder}>
+                        <Text style={styles.friendAvatarText}>{item.first_name ? item.first_name.charAt(0) : 'S'}</Text>
+                      </View>
+                    )}
                     <View style={styles.friendInfo}>
                       <Text style={styles.friendName}>{item.first_name || 'Scholar'} {item.last_name || ''}</Text>
                       <Text style={styles.friendStats}>Lvl {item.level || 1} • {item.xp || 0} XP</Text>
@@ -329,15 +344,35 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#3B82F6',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   rankText: {
+    color: '#FFF',
     fontFamily: 'Poppins_700Bold',
-    fontSize: 16,
-    color: '#0F172A',
+    fontSize: 14,
+  },
+  friendAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+  },
+  friendAvatarPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  friendAvatarText: {
+    fontSize: 20,
+    fontFamily: 'Poppins_700Bold',
+    color: '#64748B',
   },
   friendInfo: {
     flex: 1,
