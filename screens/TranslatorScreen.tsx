@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { GoogleGenAI } from '@google/genai';
 import * as Clipboard from 'expo-clipboard';
+import * as Speech from 'expo-speech';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -66,6 +67,12 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
       if (Platform.OS === 'web') {
         window.alert('Copied to clipboard!');
       }
+    }
+  };
+
+  const speakTranslation = () => {
+    if (translatedText) {
+      Speech.speak(translatedText, { language: 'fil-PH', rate: 0.8 });
     }
   };
 
@@ -214,6 +221,10 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
               <TouchableOpacity style={styles.actionButton} onPress={copyToClipboard}>
                 <Ionicons name="copy-outline" size={20} color="#FFFFFF" />
                 <Text style={styles.actionButtonText}>{language === 'EN' ? 'Copy' : 'Kopyahin'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#0EA5E9' }]} onPress={speakTranslation}>
+                <Ionicons name="volume-high" size={20} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>{language === 'EN' ? 'Listen' : 'Pakinggan'}</Text>
               </TouchableOpacity>
             </View>
           </View>

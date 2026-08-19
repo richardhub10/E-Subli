@@ -14,6 +14,7 @@ type ProfileData = {
   readHubCategory?: string;
   streakCount: number;
   lastLogin?: string; // ISO string YYYY-MM-DD
+  srsData?: Record<string, { interval: number, easeFactor: number, nextReview: number }>;
 };
 
 type ProfileContextType = {
@@ -22,6 +23,7 @@ type ProfileContextType = {
   addXP: (amount: number) => Promise<void>;
   incrementFlashcards: () => Promise<void>;
   incrementWriting: () => Promise<void>;
+  updateSrsData: (cardId: string, rating: 'Hard' | 'Good' | 'Easy') => Promise<void>;
 };
 
 const defaultProfile: ProfileData = {
@@ -101,6 +103,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           readHubCategory: data.read_hub_category || 'All',
           streakCount: data.streak_count || 0,
           lastLogin: data.last_login,
+          srsData: data.srs_data || {},
         });
 
         // Calculate Streaks
@@ -156,6 +159,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           read_hub_category: defaultProfile.readHubCategory,
           streak_count: 1,
           last_login: new Date().toISOString().split('T')[0],
+          srs_data: {},
         };
         const { error: insertError } = await supabase.from('profiles').insert([initialProfileToInsert]);
         if (insertError) console.error("Insert Profile Error:", insertError);
@@ -170,6 +174,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           readHubCategory: initialProfileToInsert.read_hub_category,
           streakCount: initialProfileToInsert.streak_count,
           lastLogin: initialProfileToInsert.last_login,
+          srsData: initialProfileToInsert.srs_data,
         });
       }
 
@@ -190,6 +195,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
               readHubCategory: newData.read_hub_category || 'All',
               streakCount: newData.streak_count || 0,
               lastLogin: newData.last_login,
+              srsData: newData.srs_data || {},
             });
           }
         })
@@ -259,6 +265,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           writingpractices: profileToSync.writingPractices,
           read_hub_index: profileToSync.readHubIndex,
           read_hub_category: profileToSync.readHubCategory,
+          srs_data: profileToSync.srsData,
         });
       } catch (error) {
         console.error("Supabase Sync Error:", error);
@@ -288,8 +295,36 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     updateProfile({ writingPractices: (profileRef.current.writingPractices || 0) + 1 });
   };
 
+  const updateSrsData = async (cardId: string, rating: 'Hard' | 'Good' | 'Easy') => {
+    const srs = profileRef.current.srsData || {};
+    const cardSrs = srs[cardId] || { interval: 0, easeFactor: 2.5, nextReview: 0 };
+    
+    let nextInterval = cardSrs.interval;
+    let nextEase = cardSrs.easeFactor;
+    
+    if (rating === 'Hard') {
+      nextInterval = 0;
+      nextEase = Math.max(1.3, nextEase - 0.2);
+    } else if (rating === 'Good') {
+      nextInterval = nextInterval === 0 ? 1 : Math.round(nextInterval * nextEase);
+    } else if (rating === 'Easy') {
+      nextEase += 0.15;
+      nextInterval = nextInterval === 0 ? 4 : Math.round(nextInterval * nextEase * 1.3);
+    }
+    
+    // Calculate next review timestamp (Date.now() + days in ms)
+    const nextReview = Date.now() + (nextInterval * 24 * 60 * 60 * 1000);
+    
+    const newSrsData = {
+      ...srs,
+      [cardId]: { interval: nextInterval, easeFactor: nextEase, nextReview }
+    };
+    
+    updateProfile({ srsData: newSrsData });
+  };
+
   return (
-    <ProfileContext.Provider value={{ profile, updateProfile, addXP, incrementFlashcards, incrementWriting }}>
+    <ProfileContext.Provider value={{ profile, updateProfile, addXP, incrementFlashcards, incrementWriting, updateSrsData }}>
       {children}
     </ProfileContext.Provider>
   );

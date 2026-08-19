@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as Speech from 'expo-speech';
 import { SyllableData } from '../data/kulitanData';
 
 type FlashcardProps = {
@@ -19,6 +21,15 @@ export default function Flashcard({ data }: FlashcardProps) {
         {!isFlipped ? (
           // Front of the card
           <View style={styles.cardContent}>
+            <TouchableOpacity 
+              style={styles.speakerButton} 
+              onPress={(e) => {
+                e.stopPropagation();
+                Speech.speak(data.latin, { language: 'fil-PH', rate: 0.8 });
+              }}
+            >
+              <Ionicons name="volume-high" size={28} color="#0EA5E9" />
+            </TouchableOpacity>
             <Text style={styles.symbolText}>{data.kulitanSymbol}</Text>
             <Text style={styles.latinText}>{data.latin}</Text>
             <Text style={styles.instructionText}>Tap to reveal definition</Text>
@@ -65,6 +76,17 @@ const styles = StyleSheet.create({
   cardContent: {
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
+  },
+  speakerButton: {
+    position: 'absolute',
+    top: -10,
+    right: 0,
+    padding: 10,
+    backgroundColor: '#F0F9FF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
   },
   symbolText: {
     fontFamily: 'Kulitan',

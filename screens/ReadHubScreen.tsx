@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Modal, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Modal, Animated, Switch } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -18,14 +18,27 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [resumeData, setResumeData] = useState<{index: number, category: string} | null>(null);
-  const { profile, updateProfile, addXP, incrementFlashcards } = useProfile();
+  const [isPracticeMode, setIsPracticeMode] = useState(false);
+  const { profile, updateProfile, addXP, updateSrsData } = useProfile();
   const { t, language } = useLanguage();
 
   const filteredData = useMemo(() => {
-    if (category === 'Vowels') return kulitanSyllables.slice(0, 5);
-    if (category === 'Consonants') return kulitanSyllables.slice(5);
-    return kulitanSyllables;
-  }, [category]);
+    let data = [...kulitanSyllables];
+    if (category === 'Vowels') data = kulitanSyllables.slice(0, 5);
+    if (category === 'Consonants') data = kulitanSyllables.slice(5);
+
+    if (isPracticeMode) {
+      // Sort by due date (oldest first, i.e., cards due now or overdue)
+      // If a card has no SRS data, it's considered "new" and due immediately (nextReview = 0)
+      data.sort((a, b) => {
+        const dueA = profile.srsData?.[a.id]?.nextReview || 0;
+        const dueB = profile.srsData?.[b.id]?.nextReview || 0;
+        return dueA - dueB;
+      });
+    }
+
+    return data;
+  }, [category, isPracticeMode, profile.srsData]);
 
   React.useEffect(() => {
     // Only prompt once on mount if there is saved progress
@@ -78,6 +91,25 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
+  const handleRateCard = (rating: 'Hard' | 'Good' | 'Easy') => {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    updateSrsData(currentSyllable.id, rating);
+    
+    // Add XP for practicing
+    addXP(5);
+    updateProfile({ flashcardsRead: (profile.flashcardsRead || 0) + 1 });
+    
+    // Move to next card (since the current one's due date just increased, sorting might push it down, 
+    // but to avoid jumping around in the array if the user goes back to browse mode, we just increment currentIndex)
+    if (currentIndex < filteredData.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      // Finished all cards in practice mode for now
+      setCurrentIndex(0);
+      setIsPracticeMode(false);
+    }
+  };
+
   return (
     <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
       <View style={styles.header}>
@@ -89,22 +121,36 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
       </View>
 
       <View style={styles.tabsContainer}>
-        {['All', 'Vowels', 'Consonants'].map((cat) => (
-          <TouchableOpacity 
-            key={cat} 
-            style={[styles.tabButton, category === cat && styles.tabButtonActive]}
-            onPress={() => handleCategoryChange(cat as any)}
-          >
-            <Text style={[styles.tabText, category === cat && styles.tabTextActive]}>
-              {cat === 'All' ? (language === 'EN' ? 'All' : 'Lahat') : cat === 'Vowels' ? (language === 'EN' ? 'Vowels' : 'Patinig') : (language === 'EN' ? 'Consonants' : 'Katinig')}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        <View style={styles.practiceToggleContainer}>
+          <Text style={styles.practiceToggleText}>{language === 'EN' ? 'Practice Mode (SRS)' : 'Magsanay (SRS)'}</Text>
+          <Switch 
+            value={isPracticeMode} 
+            onValueChange={(val) => {
+              setIsPracticeMode(val);
+              setCurrentIndex(0);
+            }} 
+            trackColor={{ false: '#CBD5E1', true: '#10B981' }}
+            thumbColor={'#FFFFFF'}
+          />
+        </View>
+        <View style={styles.categoryRow}>
+          {['All', 'Vowels', 'Consonants'].map((cat) => (
+            <TouchableOpacity 
+              key={cat} 
+              style={[styles.tabButton, category === cat && styles.tabButtonActive]}
+              onPress={() => handleCategoryChange(cat as any)}
+            >
+              <Text style={[styles.tabText, category === cat && styles.tabTextActive]}>
+                {cat === 'All' ? (language === 'EN' ? 'All' : 'Lahat') : cat === 'Vowels' ? (language === 'EN' ? 'Vowels' : 'Patinig') : (language === 'EN' ? 'Consonants' : 'Katinig')}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
 
       <View style={styles.progressContainer}>
         <Text style={styles.progressText}>
-          {language === 'EN' ? 'LEARN' : 'PAG-ARALAN'} {category.toUpperCase()} ({currentIndex + 1}/{filteredData.length})
+          {isPracticeMode ? (language === 'EN' ? 'PRACTICE' : 'PAGSASANAY') : (language === 'EN' ? 'LEARN' : 'PAG-ARALAN')} {category.toUpperCase()} ({currentIndex + 1}/{filteredData.length})
         </Text>
         <View style={styles.progressBarBackground}>
           <View style={[styles.progressBarFill, { width: `${progressPercentage}%` }]} />
@@ -114,21 +160,37 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
       <Flashcard data={currentSyllable} />
 
       <View style={styles.controlsContainer}>
-        <TouchableOpacity 
-          style={[styles.controlButton, currentIndex === 0 && styles.controlButtonDisabled]} 
-          onPress={handlePrevious}
-          disabled={currentIndex === 0}
-        >
-          <Text style={styles.controlButtonText}>{language === 'EN' ? 'Previous' : 'Nakaraan'}</Text>
-        </TouchableOpacity>
+        {isPracticeMode ? (
+          <View style={styles.srsButtonsContainer}>
+            <TouchableOpacity style={[styles.srsButton, { backgroundColor: '#EF4444' }]} onPress={() => handleRateCard('Hard')}>
+              <Text style={styles.srsButtonText}>{language === 'EN' ? 'Hard' : 'Mahirap'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.srsButton, { backgroundColor: '#F59E0B' }]} onPress={() => handleRateCard('Good')}>
+              <Text style={styles.srsButtonText}>{language === 'EN' ? 'Good' : 'Tama lang'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.srsButton, { backgroundColor: '#10B981' }]} onPress={() => handleRateCard('Easy')}>
+              <Text style={styles.srsButtonText}>{language === 'EN' ? 'Easy' : 'Madali'}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <TouchableOpacity 
+              style={[styles.controlButton, currentIndex === 0 && styles.controlButtonDisabled]} 
+              onPress={handlePrevious}
+              disabled={currentIndex === 0}
+            >
+              <Text style={styles.controlButtonText}>{language === 'EN' ? 'Previous' : 'Nakaraan'}</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[styles.controlButton, styles.controlButtonPrimary, currentIndex === filteredData.length - 1 && styles.controlButtonDisabled]} 
-          onPress={handleNext}
-          disabled={currentIndex === filteredData.length - 1}
-        >
-          <Text style={[styles.controlButtonText, styles.controlButtonTextPrimary]}>{language === 'EN' ? 'Next' : 'Susunod'}</Text>
-        </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.controlButton, styles.controlButtonPrimary, currentIndex === filteredData.length - 1 && styles.controlButtonDisabled]} 
+              onPress={handleNext}
+              disabled={currentIndex === filteredData.length - 1}
+            >
+              <Text style={[styles.controlButtonText, styles.controlButtonTextPrimary]}>{language === 'EN' ? 'Next' : 'Susunod'}</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
 
       <Modal
@@ -206,10 +268,32 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_700Bold',
   },
   tabsContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  practiceToggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  practiceToggleText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 14,
+    color: '#0F172A',
+  },
+  categoryRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 20,
-    paddingHorizontal: 20,
   },
   tabButton: {
     paddingVertical: 8,
@@ -280,7 +364,30 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
   },
   controlButtonDisabled: {
-    opacity: 0.4,
+    opacity: 0.5,
+  },
+  srsButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 10,
+  },
+  srsButton: {
+    flex: 1,
+    paddingVertical: 15,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  srsButtonText: {
+    color: '#FFFFFF',
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 16,
   },
   controlButtonText: {
     color: '#64748B',
