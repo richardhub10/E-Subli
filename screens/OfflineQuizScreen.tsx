@@ -27,6 +27,13 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
   const cardFloatAnim = useRef(new Animated.Value(0)).current;
   const optionsSlideAnim = useRef(new Animated.Value(50)).current;
   const optionsOpacityAnim = useRef(new Animated.Value(0)).current;
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Parse Kulitan
