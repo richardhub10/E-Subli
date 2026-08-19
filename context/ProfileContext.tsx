@@ -16,7 +16,7 @@ type ProfileData = {
 
 type ProfileContextType = {
   profile: ProfileData;
-  updateProfile: (updates: Partial<ProfileData>) => Promise<void>;
+  updateProfile: (updates: Partial<ProfileData>, amount?: number) => Promise<void>;
   addXP: (amount: number) => Promise<void>;
   incrementFlashcards: () => Promise<void>;
   incrementWriting: () => Promise<void>;
@@ -161,6 +161,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const profileRef = useRef<ProfileData>(defaultProfile);
+  const syncQueueRef = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
     profileRef.current = profile;
@@ -186,38 +187,42 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     // Optimistic update for UI
     setProfile(newProfile);
     
-    // 2. Async database sync
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    
-    if (!newProfile.email && user.email) {
-      newProfile.email = user.email;
-    }
-    
-    try {
-      await supabase.from('profiles').upsert({
-        id: user.id,
-        first_name: newProfile.firstName,
-        last_name: newProfile.lastName,
-        xp: newProfile.xp,
-        level: newProfile.level,
-        flashcardsread: newProfile.flashcardsRead,
-        writingpractices: newProfile.writingPractices,
-        read_hub_index: newProfile.readHubIndex,
-        read_hub_category: newProfile.readHubCategory,
-      });
-    } catch (error) {
-      console.error("Supabase Sync Error:", error);
+    // 2. Async database sync via a Queue to prevent race conditions
+    syncQueueRef.current = syncQueueRef.current.then(async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
       
-      // If XP was updated, cache it offline
-      if (updates.xp !== undefined && amount > 0) {
-         try {
-           const stored = await AsyncStorage.getItem('offlineXP');
-           const currentOffline = stored ? parseInt(stored) : 0;
-           await AsyncStorage.setItem('offlineXP', (currentOffline + amount).toString());
-         } catch(e) {}
+      const profileToSync = profileRef.current; // Always use latest accumulated state for this sync
+      
+      if (!profileToSync.email && user.email) {
+        profileToSync.email = user.email;
       }
-    }
+      
+      try {
+        await supabase.from('profiles').upsert({
+          id: user.id,
+          first_name: profileToSync.firstName,
+          last_name: profileToSync.lastName,
+          xp: profileToSync.xp,
+          level: profileToSync.level,
+          flashcardsread: profileToSync.flashcardsRead,
+          writingpractices: profileToSync.writingPractices,
+          read_hub_index: profileToSync.readHubIndex,
+          read_hub_category: profileToSync.readHubCategory,
+        });
+      } catch (error) {
+        console.error("Supabase Sync Error:", error);
+        
+        // If XP was updated, cache it offline
+        if (updates.xp !== undefined && amount > 0) {
+           try {
+             const stored = await AsyncStorage.getItem('offlineXP');
+             const currentOffline = stored ? parseInt(stored) : 0;
+             await AsyncStorage.setItem('offlineXP', (currentOffline + amount).toString());
+           } catch(e) {}
+        }
+      }
+    });
   };
 
   const addXP = async (amount: number) => {

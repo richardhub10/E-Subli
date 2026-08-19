@@ -43,9 +43,14 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
     if (currentIndex < filteredData.length - 1) {
       if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setCurrentIndex(currentIndex + 1);
-      saveProgress(currentIndex + 1, category);
-      addXP(5);
-      incrementFlashcards();
+      
+      // Combine updates into a single call to prevent race conditions
+      updateProfile({ 
+        readHubIndex: currentIndex + 1, 
+        readHubCategory: category,
+        xp: profile.xp + 5,
+        flashcardsRead: (profile.flashcardsRead || 0) + 1
+      }, 5);
     }
   };
 
@@ -53,7 +58,10 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
     if (currentIndex > 0) {
       if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setCurrentIndex(currentIndex - 1);
-      saveProgress(currentIndex - 1, category);
+      updateProfile({ 
+        readHubIndex: currentIndex - 1, 
+        readHubCategory: category 
+      });
     }
   };
 
@@ -63,7 +71,10 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
   const handleCategoryChange = (newCategory: 'All' | 'Vowels' | 'Consonants') => {
     setCategory(newCategory);
     setCurrentIndex(0);
-    saveProgress(0, newCategory);
+    updateProfile({ 
+      readHubIndex: 0, 
+      readHubCategory: newCategory 
+    });
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
@@ -136,7 +147,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
               <TouchableOpacity 
                 style={styles.modalButtonSecondary}
                 onPress={() => {
-                  saveProgress(0, category);
+                  updateProfile({ readHubIndex: 0, readHubCategory: category });
                   setShowResumeModal(false);
                 }}
               >
