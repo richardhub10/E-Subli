@@ -555,8 +555,8 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
             </View>
           </Animated.View>
 
-          {/* Options */}
-          <View style={styles.optionsContainer}>
+          {/* Options in 2x2 Responsive Grid */}
+          <View style={styles.optionsGrid}>
             {currentQ.options.map((opt: string, i: number) => {
               const isSelected = selectedOption === opt;
               const isCorrect = isSelected && isCorrectSelected;
@@ -565,10 +565,13 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
               return (
                 <Animated.View 
                   key={i}
-                  style={{
-                    opacity: optionsOpacityAnim,
-                    transform: [{ translateY: optionsSlideAnim }]
-                  }}
+                  style={[
+                    styles.optionGridItem,
+                    {
+                      opacity: optionsOpacityAnim,
+                      transform: [{ translateY: optionsSlideAnim }]
+                    }
+                  ]}
                 >
                   <TouchableOpacity 
                     style={[
@@ -580,10 +583,21 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
                     activeOpacity={0.7}
                     disabled={selectedOption !== null || roundWinnerName !== null}
                   >
-                    <Text style={[
-                      styles.optionText,
-                      (isCorrect || isWrong) && styles.optionTextSelected
-                    ]}>{opt}</Text>
+                    <View style={[styles.optionBadge, (isCorrect || isWrong) && styles.optionBadgeActive]}>
+                      <Text style={[styles.optionBadgeText, (isCorrect || isWrong) && { color: '#FFF' }]}>
+                        {['A', 'B', 'C', 'D'][i]}
+                      </Text>
+                    </View>
+                    <Text 
+                      style={[
+                        styles.optionText,
+                        (isCorrect || isWrong) && styles.optionTextSelected
+                      ]}
+                      numberOfLines={2}
+                      adjustsFontSizeToFit
+                    >
+                      {opt}
+                    </Text>
                   </TouchableOpacity>
                 </Animated.View>
               );
@@ -634,7 +648,7 @@ const FloatingEmojiComponent = ({ emoji, xPosition }: { emoji: string, xPosition
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
-  scrollContent: { paddingBottom: 40 },
+  scrollContent: { flexGrow: 1, justifyContent: 'space-between', paddingBottom: 10 },
   centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   backButton: { position: 'absolute', top: 50, left: 20, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
   waitingTitle: { fontFamily: 'Poppins_700Bold', fontSize: 24, color: '#FFF', marginBottom: 10 },
@@ -654,69 +668,111 @@ const styles = StyleSheet.create({
   opponentRematchText: { fontFamily: 'Poppins_500Medium', color: '#3B82F6', marginTop: 10 },
   leaveButton: { backgroundColor: '#0F172A', paddingHorizontal: 30, paddingVertical: 14, borderRadius: 20, marginTop: 20 },
   leaveButtonText: { fontFamily: 'Poppins_600SemiBold', fontSize: 16, color: '#FFF' },
-  scoreBoard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 50, paddingBottom: 20, zIndex: 1 },
-  scorePill: { flex: 1, paddingVertical: 12, borderRadius: 16, alignItems: 'center' },
+  scoreBoard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: Platform.OS === 'ios' ? 12 : 20, paddingBottom: 10, zIndex: 1 },
+  scorePill: { flex: 1, paddingVertical: 8, borderRadius: 14, alignItems: 'center' },
   myScorePill: { backgroundColor: '#DBEAFE' },
   oppScorePill: { backgroundColor: '#FEE2E2' },
-  scoreLabel: { fontFamily: 'Poppins_500Medium', fontSize: 12, color: '#64748B' },
-  scoreValue: { fontFamily: 'Poppins_700Bold', fontSize: 24, color: '#0F172A' },
-  vsCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#0F172A', alignItems: 'center', justifyContent: 'center', marginHorizontal: 15 },
-  vsText: { fontFamily: 'Poppins_700Bold', fontSize: 14, color: '#FFF' },
-  progressContainer: { paddingHorizontal: 20, marginBottom: 20 },
-  timerBarBg: { height: 8, backgroundColor: '#E2E8F0', borderRadius: 4, overflow: 'hidden' },
-  timerBarFill: { height: '100%', borderRadius: 4 },
+  scoreLabel: { fontFamily: 'Poppins_500Medium', fontSize: 11, color: '#64748B' },
+  scoreValue: { fontFamily: 'Poppins_700Bold', fontSize: 20, color: '#0F172A' },
+  vsCircle: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#0F172A', alignItems: 'center', justifyContent: 'center', marginHorizontal: 10 },
+  vsText: { fontFamily: 'Poppins_700Bold', fontSize: 12, color: '#FFF' },
+  progressContainer: { paddingHorizontal: 16, marginBottom: 8 },
+  timerBarBg: { height: 6, backgroundColor: '#E2E8F0', borderRadius: 3, overflow: 'hidden' },
+  timerBarFill: { height: '100%', borderRadius: 3 },
   questionCard: { 
-    marginHorizontal: 20, 
+    marginHorizontal: 16, 
     backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-    borderRadius: 30, 
-    padding: 30, 
+    borderRadius: 24, 
+    paddingVertical: 14, 
+    paddingHorizontal: 20, 
     alignItems: 'center', 
     shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 15 }, 
-    shadowOpacity: 0.1, 
-    shadowRadius: 30, 
-    elevation: 8, 
-    marginBottom: 30, 
+    shadowOffset: { width: 0, height: 8 }, 
+    shadowOpacity: 0.08, 
+    shadowRadius: 16, 
+    elevation: 5, 
+    marginBottom: 10, 
     zIndex: 1,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderColor: 'rgba(255, 255, 255, 0.6)',
   },
-  questionLabel: { fontFamily: 'Poppins_500Medium', fontSize: 14, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 },
-  kapampanganWord: { fontFamily: 'Poppins_700Bold', fontSize: 28, color: '#0F172A', textAlign: 'center', marginBottom: 20 },
-  kulitanContainer: { flexDirection: 'row-reverse', justifyContent: 'center', gap: 20 },
+  questionLabel: { fontFamily: 'Poppins_500Medium', fontSize: 12, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
+  kapampanganWord: { fontFamily: 'Poppins_700Bold', fontSize: 22, color: '#0F172A', textAlign: 'center', marginBottom: 6 },
+  kulitanContainer: { flexDirection: 'row-reverse', justifyContent: 'center', gap: 16 },
   verticalWordColumn: { alignItems: 'center' },
-  kulitanText: { fontFamily: 'Kulitan', fontSize: 40, color: '#3B82F6', lineHeight: 50 },
-  optionsContainer: { paddingHorizontal: 20, gap: 14, zIndex: 1 },
+  kulitanText: { fontFamily: 'Kulitan', fontSize: 30, color: '#3B82F6', lineHeight: 38 },
+  optionsGrid: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    justifyContent: 'space-between', 
+    paddingHorizontal: 16, 
+    gap: 10, 
+    zIndex: 1 
+  },
+  optionGridItem: {
+    width: '48%',
+  },
   optionButton: { 
     backgroundColor: '#FFF', 
-    borderRadius: 20, 
-    paddingVertical: 18, 
-    paddingHorizontal: 20,
+    borderRadius: 18, 
+    paddingVertical: 12, 
+    paddingHorizontal: 10,
+    minHeight: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
     elevation: 3,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+  },
+  optionBadge: {
+    position: 'absolute',
+    top: 6,
+    left: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  optionBadgeActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  optionBadgeText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 10,
+    color: '#64748B',
   },
   optionCorrect: {
     backgroundColor: '#10B981',
-    borderWidth: 0,
+    borderColor: '#059669',
     shadowColor: '#10B981',
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.3,
   },
   optionWrong: {
     backgroundColor: '#EF4444',
-    borderWidth: 0,
+    borderColor: '#DC2626',
     shadowColor: '#EF4444',
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.3,
   },
-  optionText: { fontFamily: 'Poppins_600SemiBold', fontSize: 16, color: '#334155', textAlign: 'center' },
+  optionText: { 
+    fontFamily: 'Poppins_600SemiBold', 
+    fontSize: 14, 
+    color: '#1E293B', 
+    textAlign: 'center',
+    marginTop: 4,
+  },
   optionTextSelected: {
     color: '#FFF',
   },
-  emojiBar: { flexDirection: 'row', justifyContent: 'center', gap: 20, marginTop: 'auto', marginBottom: 20, zIndex: 2 },
-  emojiBtn: { width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(255,255,255,0.8)', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10 },
-  emojiText: { fontSize: 24 },
+  emojiBar: { flexDirection: 'row', justifyContent: 'center', gap: 16, marginTop: 8, marginBottom: 12, zIndex: 2 },
+  emojiBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.85)', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8 },
+  emojiText: { fontSize: 22 },
   floatingEmoji: { position: 'absolute', fontSize: 40, zIndex: 0 },
   vsScreenContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   vsPlayerText: { fontFamily: 'Poppins_700Bold', fontSize: 48, color: '#FFF', textShadowColor: 'rgba(0, 0, 0, 0.5)', textShadowOffset: { width: 0, height: 4 }, textShadowRadius: 10, marginVertical: 40 },

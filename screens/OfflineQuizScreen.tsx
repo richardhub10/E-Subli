@@ -238,8 +238,8 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
             </View>
           </Animated.View>
 
-          {/* Options */}
-          <View style={styles.optionsContainer}>
+          {/* Options in 2x2 Grid */}
+          <View style={styles.optionsGrid}>
             {currentQ.options.map((opt: string, index: number) => {
               const isSelected = selectedOption === opt;
               const isCorrect = isSelected && isCorrectSelected === true;
@@ -248,10 +248,13 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
               return (
                 <Animated.View 
                   key={index}
-                  style={{
-                    transform: [{ translateY: optionsSlideAnim }],
-                    opacity: optionsOpacityAnim
-                  }}
+                  style={[
+                    styles.optionGridItem,
+                    {
+                      transform: [{ translateY: optionsSlideAnim }],
+                      opacity: optionsOpacityAnim
+                    }
+                  ]}
                 >
                   <TouchableOpacity
                     style={[
@@ -263,10 +266,19 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
                     activeOpacity={0.7}
                     disabled={selectedOption !== null}
                   >
-                    <Text style={[
-                      styles.optionText,
-                      (isCorrect || isWrong) && { color: '#FFF' }
-                    ]}>
+                    <View style={[styles.optionBadge, (isCorrect || isWrong) && styles.optionBadgeActive]}>
+                      <Text style={[styles.optionBadgeText, (isCorrect || isWrong) && { color: '#FFF' }]}>
+                        {['A', 'B', 'C', 'D'][index]}
+                      </Text>
+                    </View>
+                    <Text 
+                      style={[
+                        styles.optionText,
+                        (isCorrect || isWrong) && { color: '#FFF' }
+                      ]}
+                      numberOfLines={2}
+                      adjustsFontSizeToFit
+                    >
                       {opt}
                     </Text>
                   </TouchableOpacity>
@@ -296,18 +308,22 @@ const styles = StyleSheet.create({
   scoreText: { fontFamily: 'Poppins_700Bold', fontSize: 18, color: '#334155' },
   timerContainer: { height: 8, backgroundColor: '#E2E8F0', borderRadius: 4, marginHorizontal: 20, marginTop: 20, overflow: 'hidden', flexShrink: 0 },
   timerFill: { height: '100%', borderRadius: 4 },
-  scrollContent: { flexGrow: 1, paddingBottom: 40 },
-  questionCard: { backgroundColor: 'rgba(255, 255, 255, 0.9)', marginHorizontal: 20, marginTop: 40, borderRadius: 30, padding: 30, alignItems: 'center', shadowColor: '#64748B', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)', flexShrink: 0 },
-  questionLabel: { fontFamily: 'Poppins_500Medium', fontSize: 14, color: '#94A3B8', letterSpacing: 2, marginBottom: 10 },
-  questionWord: { fontFamily: 'Poppins_700Bold', fontSize: 32, color: '#0F172A', textAlign: 'center', marginBottom: 20 },
-  kulitanContainer: { flexDirection: 'row-reverse', justifyContent: 'center', padding: 20, backgroundColor: '#F8FAFC', borderRadius: 20, width: '100%' },
-  verticalWordColumn: { marginHorizontal: 15, alignItems: 'center' },
-  kulitanText: { fontFamily: 'Kulitan', fontSize: 40, color: '#2563EB', lineHeight: 50, textAlign: 'center' },
-  optionsContainer: { paddingHorizontal: 20, marginTop: 30, gap: 15 },
-  optionButton: { backgroundColor: '#FFF', paddingVertical: 20, paddingHorizontal: 24, borderRadius: 25, shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 4, alignItems: 'center' },
-  optionCorrect: { backgroundColor: '#10B981', shadowColor: '#10B981' },
-  optionWrong: { backgroundColor: '#EF4444', shadowColor: '#EF4444' },
-  optionText: { fontFamily: 'Poppins_600SemiBold', fontSize: 18, color: '#334155' },
+  scrollContent: { flexGrow: 1, justifyContent: 'space-between', paddingBottom: 20 },
+  questionCard: { backgroundColor: 'rgba(255, 255, 255, 0.95)', marginHorizontal: 16, marginTop: 16, borderRadius: 24, paddingVertical: 16, paddingHorizontal: 20, alignItems: 'center', shadowColor: '#64748B', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 16, elevation: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.6)', flexShrink: 0 },
+  questionLabel: { fontFamily: 'Poppins_500Medium', fontSize: 12, color: '#94A3B8', letterSpacing: 1.5, marginBottom: 6, textTransform: 'uppercase' },
+  questionWord: { fontFamily: 'Poppins_700Bold', fontSize: 24, color: '#0F172A', textAlign: 'center', marginBottom: 10 },
+  kulitanContainer: { flexDirection: 'row-reverse', justifyContent: 'center', paddingVertical: 12, paddingHorizontal: 16, backgroundColor: '#F8FAFC', borderRadius: 16, width: '100%' },
+  verticalWordColumn: { marginHorizontal: 10, alignItems: 'center' },
+  kulitanText: { fontFamily: 'Kulitan', fontSize: 32, color: '#2563EB', lineHeight: 40, textAlign: 'center' },
+  optionsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 16, marginTop: 16, gap: 10 },
+  optionGridItem: { width: '48%' },
+  optionButton: { backgroundColor: '#FFF', paddingVertical: 14, paddingHorizontal: 12, minHeight: 64, borderRadius: 20, shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 6, elevation: 3, justifyContent: 'center', alignItems: 'center', position: 'relative', borderWidth: 1.5, borderColor: '#E2E8F0' },
+  optionBadge: { position: 'absolute', top: 6, left: 8, width: 20, height: 20, borderRadius: 10, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
+  optionBadgeActive: { backgroundColor: 'rgba(255, 255, 255, 0.3)' },
+  optionBadgeText: { fontFamily: 'Poppins_700Bold', fontSize: 10, color: '#64748B' },
+  optionCorrect: { backgroundColor: '#10B981', borderColor: '#059669', shadowColor: '#10B981' },
+  optionWrong: { backgroundColor: '#EF4444', borderColor: '#DC2626', shadowColor: '#EF4444' },
+  optionText: { fontFamily: 'Poppins_600SemiBold', fontSize: 15, color: '#334155', textAlign: 'center', marginTop: 4 },
   resultTitle: { fontFamily: 'Poppins_700Bold', fontSize: 40, marginTop: 20, marginBottom: 10 },
   finishedContainer: { alignItems: 'center', padding: 20, backgroundColor: '#FFF', borderRadius: 20, elevation: 5 },
   finishedTitle: { fontFamily: 'Poppins_700Bold', fontSize: 24, color: '#FBBF24', marginVertical: 10 },
