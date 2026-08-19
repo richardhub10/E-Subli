@@ -13,6 +13,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { ActivityIndicator, View } from 'react-native';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
+import WelcomeScreen from './screens/WelcomeScreen';
+import KulitanGuideScreen from './screens/KulitanGuideScreen';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
@@ -59,7 +61,9 @@ function AppNavigator() {
           </Stack.Navigator>
         </ProfileProvider>
       ) : (
-        <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { flex: 1 } }}>
+        <Stack.Navigator initialRouteName="Welcome" screenOptions={{ headerShown: false, cardStyle: { flex: 1 } }}>
+          <Stack.Screen name="Welcome" component={WelcomeScreen} />
+          <Stack.Screen name="KulitanGuide" component={KulitanGuideScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
         </Stack.Navigator>
