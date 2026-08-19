@@ -82,10 +82,17 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{language === 'EN' ? 'Your Journey' : language === 'PH' ? 'Iyong Paglalakbay' : 'Ing Keka Paglakbe'}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Leaderboard')} style={styles.leaderboardButton}>
-            <Ionicons name="trophy" size={20} color="#FBBF24" />
-            <Text style={styles.leaderboardText}>{t('leaderboard')}</Text>
-          </TouchableOpacity>
+          
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={styles.streakBadge}>
+              <Text style={styles.streakIcon}>🔥</Text>
+              <Text style={styles.streakText}>{profile.streakCount || 0}</Text>
+            </View>
+            <TouchableOpacity onPress={() => navigation.navigate('Leaderboard')} style={styles.leaderboardButton}>
+              <Ionicons name="trophy" size={20} color="#FBBF24" />
+              <Text style={styles.leaderboardText}>{t('leaderboard')}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <Card 
@@ -118,6 +125,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           icon={<Ionicons name="language" size={40} color="rgba(255,255,255,0.8)" />}
           gradient={['#5A5A72', '#3C3C50']}
           onPress={() => navigation.navigate('Translator')}
+        />
+
+        <Card 
+          title={language === 'EN' ? 'Phrasebook' : language === 'PH' ? 'Talasalitaan' : 'Talasalitan'} 
+          subtitle={language === 'EN' ? 'Common Kapampangan phrases' : language === 'PH' ? 'Mga karaniwang parirala' : 'Deng pangkaraniwan a salita'}
+          icon={<Ionicons name="library" size={40} color="rgba(255,255,255,0.8)" />}
+          gradient={['#0EA5E9', '#0369A1']}
+          onPress={() => navigation.navigate('Phrasebook')}
         />
 
         <Card 
@@ -233,6 +248,25 @@ const styles = StyleSheet.create({
   leaderboardText: {
     color: '#0F172A',
     fontFamily: 'Poppins_600SemiBold',
+    fontSize: 14,
+    marginLeft: 6,
+  },
+  streakBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  streakIcon: {
+    fontSize: 16,
+  },
+  streakText: {
+    color: '#D97706',
+    fontFamily: 'Poppins_700Bold',
     fontSize: 14,
     marginLeft: 6,
   },

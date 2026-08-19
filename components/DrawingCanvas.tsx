@@ -1,6 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { View, StyleSheet, PanResponder, GestureResponderEvent, Animated } from 'react-native';
 import Svg, { Path, G } from 'react-native-svg';
+import { svgPathProperties } from 'svg-path-properties';
+
+const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 export type Point = { x: number; y: number };
 export type Stroke = { points: Point[]; color: string; width: number };
@@ -27,7 +30,10 @@ export const DrawingCanvas = React.forwardRef<DrawingCanvasRef, DrawingCanvasPro
   ({ strokeColor = '#0B2046', strokeWidth = 5, onDrawEnd, guidePath, guideOffsetX = 0, guideOffsetY = 0, canvasWidth = 0, canvasHeight = 0, guideStartPoint }, ref) => {
     const [currentStroke, setCurrentStroke] = useState<Stroke | null>(null);
     const [strokes, setStrokes] = useState<Stroke[]>([]);
+    const [pathLength, setPathLength] = useState<number>(0);
+    
     const pulseAnim = useRef(new Animated.Value(0.4)).current;
+    const strokeAnim = useRef(new Animated.Value(0)).current;
     
     // Use refs to avoid stale closures in the PanResponder
     const colorRef = useRef(strokeColor);
@@ -46,6 +52,33 @@ export const DrawingCanvas = React.forwardRef<DrawingCanvasRef, DrawingCanvasPro
         ])
       ).start();
     }, []);
+    
+    // Animate the outline stroke
+    React.useEffect(() => {
+      if (guidePath) {
+        try {
+          const properties = new svgPathProperties(guidePath);
+          const length = properties.getTotalLength();
+          setPathLength(length);
+          
+          strokeAnim.setValue(length);
+          
+          Animated.loop(
+            Animated.sequence([
+              Animated.delay(500),
+              Animated.timing(strokeAnim, {
+                toValue: 0,
+                duration: Math.min(Math.max(length * 1.5, 1500), 4000), // Dynamic speed
+                useNativeDriver: true,
+              }),
+              Animated.delay(1000)
+            ])
+          ).start();
+        } catch(e) {
+          console.warn("Failed to parse svg path length", e);
+        }
+      }
+    }, [guidePath]);
     
     // Support clearing the canvas from parent
     React.useImperativeHandle(ref, () => ({
@@ -106,6 +139,20 @@ export const DrawingCanvas = React.forwardRef<DrawingCanvasRef, DrawingCanvasPro
             <G x={canvasWidth / 2} y={canvasHeight / 2}>
               <G x={guideOffsetX} y={guideOffsetY}>
                 <Path d={guidePath} fill="rgba(217, 115, 78, 0.2)" />
+                
+                {/* Animated Outline Guide */}
+                {pathLength > 0 && strokes.length === 0 && !currentStroke && (
+                  <AnimatedPath 
+                    d={guidePath} 
+                    fill="none" 
+                    stroke="rgba(16, 185, 129, 0.6)" 
+                    strokeWidth={3}
+                    strokeDasharray={`${pathLength} ${pathLength}`}
+                    strokeDashoffset={strokeAnim}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                )}
               </G>
             </G>
           )}

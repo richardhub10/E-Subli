@@ -23,6 +23,7 @@ import ReadHubScreen from './screens/ReadHubScreen';
 import WriteTraceScreen from './screens/WriteTraceScreen';
 import CameraScannerScreen from './screens/CameraScannerScreen';
 import TranslatorScreen from './screens/TranslatorScreen';
+import PhrasebookScreen from './screens/PhrasebookScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import LeaderboardScreen from './screens/LeaderboardScreen';
 import MultiplayerLobbyScreen from './screens/MultiplayerLobbyScreen';
@@ -55,6 +56,7 @@ function AppNavigator() {
             <Stack.Screen name="WriteTrace" component={WriteTraceScreen} />
             <Stack.Screen name="CameraScanner" component={CameraScannerScreen} />
             <Stack.Screen name="Translator" component={TranslatorScreen} />
+            <Stack.Screen name="Phrasebook" component={PhrasebookScreen} />
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="MultiplayerLobby" component={MultiplayerLobbyScreen} />

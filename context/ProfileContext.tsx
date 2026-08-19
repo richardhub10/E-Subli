@@ -12,6 +12,8 @@ type ProfileData = {
   lastName?: string;
   readHubIndex?: number;
   readHubCategory?: string;
+  streakCount: number;
+  lastLogin?: string; // ISO string YYYY-MM-DD
 };
 
 type ProfileContextType = {
@@ -29,6 +31,7 @@ const defaultProfile: ProfileData = {
   writingPractices: 0,
   readHubIndex: 0,
   readHubCategory: 'All',
+  streakCount: 0,
 };
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -96,7 +99,48 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           lastName: data.last_name || user.user_metadata?.last_name || '',
           readHubIndex: data.read_hub_index || 0,
           readHubCategory: data.read_hub_category || 'All',
+          streakCount: data.streak_count || 0,
+          lastLogin: data.last_login,
         });
+
+        // Calculate Streaks
+        const todayStr = new Date().toISOString().split('T')[0]; // Local date YYYY-MM-DD
+        const lastLoginStr = data.last_login;
+        let newStreak = data.streak_count || 0;
+
+        if (lastLoginStr !== todayStr) {
+          const today = new Date(todayStr);
+          const lastLogin = lastLoginStr ? new Date(lastLoginStr) : null;
+          
+          if (lastLogin) {
+            // Check if last login was exactly yesterday
+            const diffTime = Math.abs(today.getTime() - lastLogin.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) {
+              newStreak += 1;
+            } else {
+              newStreak = 1; // Broke the streak, reset to 1
+            }
+          } else {
+            newStreak = 1; // First time logging in
+          }
+          
+          // Update Supabase with new streak
+          const { error: streakError } = await supabase
+            .from('profiles')
+            .update({ streak_count: newStreak, last_login: todayStr })
+            .eq('id', user.id);
+            
+          if (!streakError) {
+            setProfile(prev => ({
+              ...prev,
+              streakCount: newStreak,
+              lastLogin: todayStr,
+            }));
+          }
+        }
+
       } else {
         // Initialize new profile (only send columns that exist in SQL)
         const initialProfileToInsert = { 
@@ -110,6 +154,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           writingpractices: defaultProfile.writingPractices,
           read_hub_index: defaultProfile.readHubIndex,
           read_hub_category: defaultProfile.readHubCategory,
+          streak_count: 1,
+          last_login: new Date().toISOString().split('T')[0],
         };
         const { error: insertError } = await supabase.from('profiles').insert([initialProfileToInsert]);
         if (insertError) console.error("Insert Profile Error:", insertError);
@@ -122,6 +168,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           lastName: initialProfileToInsert.last_name,
           readHubIndex: initialProfileToInsert.read_hub_index,
           readHubCategory: initialProfileToInsert.read_hub_category,
+          streakCount: initialProfileToInsert.streak_count,
+          lastLogin: initialProfileToInsert.last_login,
         });
       }
 
@@ -140,6 +188,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
               lastName: newData.last_name || '',
               readHubIndex: newData.read_hub_index || 0,
               readHubCategory: newData.read_hub_category || 'All',
+              streakCount: newData.streak_count || 0,
+              lastLogin: newData.last_login,
             });
           }
         })
