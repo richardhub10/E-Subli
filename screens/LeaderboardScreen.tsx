@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Alert, Modal, Pressable } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,6 +21,8 @@ type LeaderboardEntry = {
 export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
   const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<LeaderboardEntry | null>(null);
+  const [isAddingFriend, setIsAddingFriend] = useState(false);
   const { user } = useAuth();
   const { t, language } = useLanguage();
 
@@ -59,52 +61,46 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
     fetchLeaderboard();
   }, []);
 
-  const handleAddFriendFromLeaderboard = (friendId: string, friendName: string) => {
+  const handleAddFriend = async (friendId: string, friendName: string) => {
     if (!user) return;
     if (user.id === friendId) {
       Alert.alert("Info", language === 'EN' ? "You can't add yourself." : "Hindi mo maaaring idagdag ang sarili mo.");
+      setSelectedUser(null);
       return;
     }
 
-    Alert.alert(
-      language === 'EN' ? "Add Friend" : "Magdagdag ng Kaibigan",
-      language === 'EN' ? `Do you want to add ${friendName} as a friend?` : `Nais mo bang idagdag si ${friendName} bilang kaibigan?`,
-      [
-        { text: language === 'EN' ? "Cancel" : "Kanselahin", style: "cancel" },
-        { 
-          text: language === 'EN' ? "Add" : "Idagdag", 
-          onPress: async () => {
-            try {
-              // Check if already friends
-              const { data: existing } = await supabase
-                .from('friends')
-                .select('*')
-                .eq('user_id', user.id)
-                .eq('friend_id', friendId);
-                
-              if (existing && existing.length > 0) {
-                Alert.alert("Info", language === 'EN' ? "You are already friends!" : "Magkaibigan na kayo!");
-                return;
-              }
-              
-              const { error } = await supabase
-                .from('friends')
-                .insert([{ user_id: user.id, friend_id: friendId }]);
-                
-              if (error) throw error;
-              
-              Alert.alert("Success!", language === 'EN' ? "Friend added successfully." : "Tagumpay na naidagdag ang kaibigan.");
-              
-              // Also add reverse friendship for simplicity (optional, but good for UX)
-              await supabase.from('friends').insert([{ user_id: friendId, friend_id: user.id }]);
-            } catch (error) {
-              console.error("Add friend error:", error);
-              Alert.alert("Error", "Could not add friend.");
-            }
-          }
-        }
-      ]
-    );
+    setIsAddingFriend(true);
+    try {
+      // Check if already friends
+      const { data: existing } = await supabase
+        .from('friends')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('friend_id', friendId);
+        
+      if (existing && existing.length > 0) {
+        Alert.alert("Info", language === 'EN' ? "You are already friends!" : "Magkaibigan na kayo!");
+        setSelectedUser(null);
+        return;
+      }
+      
+      const { error } = await supabase
+        .from('friends')
+        .insert([{ user_id: user.id, friend_id: friendId }]);
+        
+      if (error) throw error;
+      
+      Alert.alert("Success!", language === 'EN' ? "Friend added successfully." : "Tagumpay na naidagdag ang kaibigan.");
+      
+      // Also add reverse friendship for simplicity
+      await supabase.from('friends').insert([{ user_id: friendId, friend_id: user.id }]);
+      setSelectedUser(null);
+    } catch (error) {
+      console.error("Add friend error:", error);
+      Alert.alert("Error", "Could not add friend.");
+    } finally {
+      setIsAddingFriend(false);
+    }
   };
 
   const renderItem = ({ item, index }: { item: LeaderboardEntry; index: number }) => {
@@ -114,7 +110,7 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
     return (
       <TouchableOpacity 
         style={[styles.entryCard, isTopThree && styles.topEntryCard]}
-        onPress={() => handleAddFriendFromLeaderboard(item.id, item.name)}
+        onPress={() => setSelectedUser(item)}
       >
         <View style={styles.rankContainer}>
           <Text style={[styles.rankText, isTopThree && { color: rankColors[index] }]}>
@@ -159,6 +155,48 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
           />
         )}
       </View>
+
+      {/* Profile Modal */}
+      <Modal
+        visible={!!selectedUser}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setSelectedUser(null)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setSelectedUser(null)}>
+          <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+            <View style={styles.modalHeader}>
+              <Ionicons name="person-circle" size={64} color="#3B82F6" />
+              <Text style={styles.modalName}>{selectedUser?.name}</Text>
+              <Text style={styles.modalLevel}>Lvl {selectedUser?.level} • {selectedUser?.xp} XP</Text>
+            </View>
+            
+            <View style={styles.modalActions}>
+              <TouchableOpacity 
+                style={styles.modalAddButton}
+                onPress={() => selectedUser && handleAddFriend(selectedUser.id, selectedUser.name)}
+                disabled={isAddingFriend}
+              >
+                {isAddingFriend ? (
+                  <ActivityIndicator color="#FFF" />
+                ) : (
+                  <>
+                    <Ionicons name="person-add" size={20} color="#FFF" style={{ marginRight: 8 }} />
+                    <Text style={styles.modalAddText}>{language === 'EN' ? 'Add Friend' : 'Idagdag'}</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.modalCancelButton}
+                onPress={() => setSelectedUser(null)}
+              >
+                <Text style={styles.modalCancelText}>{language === 'EN' ? 'Cancel' : 'Kanselahin'}</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -273,5 +311,64 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontFamily: 'Poppins_700Bold',
     fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+    alignItems: 'center',
+  },
+  modalHeader: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalName: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 22,
+    color: '#0F172A',
+    marginTop: 8,
+  },
+  modalLevel: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 16,
+    color: '#64748B',
+  },
+  modalActions: {
+    width: '100%',
+    gap: 12,
+  },
+  modalAddButton: {
+    flexDirection: 'row',
+    backgroundColor: '#3B82F6',
+    paddingVertical: 14,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
+  modalAddText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 16,
+    color: '#FFF',
+  },
+  modalCancelButton: {
+    paddingVertical: 14,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    backgroundColor: '#F1F5F9',
+  },
+  modalCancelText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 16,
+    color: '#64748B',
   },
 });
