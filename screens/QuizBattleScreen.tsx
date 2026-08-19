@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated, Easing, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated, Easing, Dimensions, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -527,50 +527,56 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           </Animated.View>
         )}
 
-        {/* Question Area */}
-        <Animated.View style={[styles.questionCard, { transform: [{ translateY: cardFloatAnim }] }]}>
-          <Text style={styles.questionLabel}>What does this mean?</Text>
-          <Text style={styles.kapampanganWord}>{currentQ.kapampangan}</Text>
-          
-          <View style={styles.kulitanContainer}>
-            {getKulitanSyllables(currentQ.kapampangan).map((syllables, index) => (
-              <View key={index} style={styles.verticalWordColumn}>
-                <Text style={styles.kulitanText}>{syllables.join('\n')}</Text>
-              </View>
-            ))}
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* Question Area */}
+          <Animated.View style={[styles.questionCard, { transform: [{ translateY: cardFloatAnim }] }]}>
+            <Text style={styles.questionLabel}>What does this mean?</Text>
+            <Text style={styles.kapampanganWord}>{currentQ.kapampangan}</Text>
+            
+            <View style={styles.kulitanContainer}>
+              {getKulitanSyllables(currentQ.kapampangan).map((syllables, index) => (
+                <View key={index} style={styles.verticalWordColumn}>
+                  <Text style={styles.kulitanText}>{syllables.join('\n')}</Text>
+                </View>
+              ))}
+            </View>
+          </Animated.View>
+
+          {/* Options */}
+          <View style={styles.optionsContainer}>
+            {currentQ.options.map((opt: string, i: number) => {
+              const isSelected = selectedOption === opt;
+              const isCorrect = isSelected && isCorrectSelected;
+              const isWrong = isSelected && !isCorrectSelected;
+
+              return (
+                <Animated.View 
+                  key={i}
+                  style={{
+                    opacity: optionsOpacityAnim,
+                    transform: [{ translateY: optionsSlideAnim }]
+                  }}
+                >
+                  <TouchableOpacity 
+                    style={[
+                      styles.optionButton,
+                      isCorrect && styles.optionCorrect,
+                      isWrong && styles.optionWrong
+                    ]}
+                    onPress={() => handleAnswer(opt)}
+                    activeOpacity={0.7}
+                    disabled={selectedOption !== null || roundWinnerName !== null}
+                  >
+                    <Text style={[
+                      styles.optionText,
+                      (isCorrect || isWrong) && styles.optionTextSelected
+                    ]}>{opt}</Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
           </View>
-        </Animated.View>
-
-        {/* Options */}
-        <Animated.View style={[styles.optionsContainer, { 
-          opacity: optionsOpacityAnim, 
-          transform: [{ translateY: optionsSlideAnim }] 
-        }]}>
-          {currentQ.options.map((opt: string, i: number) => {
-            const isSelected = selectedOption === opt;
-            const isCorrect = isSelected && isCorrectSelected;
-            const isWrong = isSelected && !isCorrectSelected;
-
-            return (
-              <TouchableOpacity 
-                key={i} 
-                style={[
-                  styles.optionButton,
-                  isCorrect && styles.optionCorrect,
-                  isWrong && styles.optionWrong
-                ]}
-                onPress={() => handleAnswer(opt)}
-                activeOpacity={0.7}
-                disabled={selectedOption !== null || roundWinnerName !== null}
-              >
-                <Text style={[
-                  styles.optionText,
-                  (isCorrect || isWrong) && styles.optionTextSelected
-                ]}>{opt}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </Animated.View>
+        </ScrollView>
 
         {/* Emoji Bar */}
         <View style={styles.emojiBar}>
@@ -615,6 +621,7 @@ const FloatingEmojiComponent = ({ emoji, xPosition }: { emoji: string, xPosition
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
+  scrollContent: { paddingBottom: 40 },
   centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   backButton: { position: 'absolute', top: 50, left: 20, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
   waitingTitle: { fontFamily: 'Poppins_700Bold', fontSize: 24, color: '#FFF', marginBottom: 10 },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Easing, Platform, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Easing, Platform, Dimensions, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -15,8 +15,7 @@ const { width } = Dimensions.get('window');
 
 export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps) {
   const { profile, addXP } = useProfile();
-  const [questions, setQuestions] = useState<any[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentQ, setCurrentQ] = useState<any>(null);
   const [score, setScore] = useState(0);
   const [status, setStatus] = useState<'playing' | 'finished'>('playing');
 
@@ -44,8 +43,7 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
   };
 
   const startGame = () => {
-    setQuestions(getRandomQuestions(10)); // 10 questions for offline practice
-    setCurrentQuestionIndex(0);
+    setCurrentQ(getRandomQuestions(1)[0]);
     setScore(0);
     setStatus('playing');
   };
@@ -76,7 +74,7 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
 
   // Game Timer (Urgency) & Animations
   useEffect(() => {
-    if (status === 'playing' && currentQuestionIndex < questions.length) {
+    if (status === 'playing' && currentQ) {
       // Reset selection state
       setSelectedOption(null);
       setIsCorrectSelected(null);
@@ -115,25 +113,20 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
         handleTimeOut();
       }, 10000);
     }
-  }, [currentQuestionIndex, status]);
+  }, [currentQ, status]);
 
   const handleTimeOut = () => {
     if (status !== 'playing') return;
     
     if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     
-    const nextIndex = currentQuestionIndex + 1;
-    if (nextIndex >= questions.length) {
-      finishGame();
-    } else {
-      setCurrentQuestionIndex(nextIndex);
-    }
+    // Endless mode: just give a new question
+    setCurrentQ(getRandomQuestions(1)[0]);
   };
 
   const handleAnswer = (selectedOpt: string) => {
     if (status !== 'playing' || selectedOption !== null) return;
 
-    const currentQ = questions[currentQuestionIndex];
     const isCorrect = selectedOpt === currentQ.correct;
     
     setSelectedOption(selectedOpt);
@@ -148,32 +141,23 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
         const newScore = score + 10;
         setScore(newScore);
         
-        const nextIndex = currentQuestionIndex + 1;
-        if (nextIndex >= questions.length) {
-          finishGame(newScore);
-        } else {
-          setCurrentQuestionIndex(nextIndex);
-        }
+        setCurrentQ(getRandomQuestions(1)[0]);
       } else {
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        const nextIndex = currentQuestionIndex + 1;
-        if (nextIndex >= questions.length) {
-          finishGame();
-        } else {
-          setCurrentQuestionIndex(nextIndex);
-        }
+        setCurrentQ(getRandomQuestions(1)[0]);
       }
     }, 800);
   };
 
   const finishGame = (finalScore = score) => {
     setStatus('finished');
-    if (finalScore > 0) {
-      addXP(finalScore);
-    }
   };
 
   const leaveRoom = () => {
+    if (score > 0 && status === 'playing') {
+      // Award XP when leaving endless mode manually
+      addXP(score);
+    }
     navigation.goBack();
   };
 
@@ -204,8 +188,7 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
     );
   }
 
-  if (questions.length === 0) return null;
-  const currentQ = questions[currentQuestionIndex];
+  if (!currentQ) return null;
 
   return (
     <LinearGradient colors={['#E2E8F0', '#CBD5E1']} style={styles.container}>
@@ -235,56 +218,58 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
           ]} />
         </View>
 
-        {/* Question Area */}
-        <Animated.View style={[styles.questionCard, { transform: [{ translateY: cardFloatAnim }] }]}>
-          <Text style={styles.questionLabel}>What does this mean?</Text>
-          <Text style={styles.questionWord}>{currentQ.kapampangan}</Text>
-          
-          <View style={styles.kulitanContainer}>
-            {getKulitanSyllables(currentQ.kapampangan).map((syllables, index) => (
-              <View key={index} style={styles.verticalWordColumn}>
-                <Text style={styles.kulitanText}>{syllables.join('\n')}</Text>
-              </View>
-            ))}
-          </View>
-        </Animated.View>
-
-        {/* Options */}
-        <View style={styles.optionsContainer}>
-          {currentQ.options.map((opt: string, index: number) => {
-            const isSelected = selectedOption === opt;
-            const isCorrect = isSelected && isCorrectSelected === true;
-            const isWrong = isSelected && isCorrectSelected === false;
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* Question Area */}
+          <Animated.View style={[styles.questionCard, { transform: [{ translateY: cardFloatAnim }] }]}>
+            <Text style={styles.questionLabel}>What does this mean?</Text>
+            <Text style={styles.questionWord}>{currentQ.kapampangan}</Text>
             
-            return (
-              <Animated.View 
-                key={index}
-                style={{
-                  transform: [{ translateY: optionsSlideAnim }],
-                  opacity: optionsOpacityAnim
-                }}
-              >
-                <TouchableOpacity
-                  style={[
-                    styles.optionButton,
-                    isCorrect && styles.optionCorrect,
-                    isWrong && styles.optionWrong
-                  ]}
-                  onPress={() => handleAnswer(opt)}
-                  activeOpacity={0.7}
-                  disabled={selectedOption !== null}
+            <View style={styles.kulitanContainer}>
+              {getKulitanSyllables(currentQ.kapampangan).map((syllables, index) => (
+                <View key={index} style={styles.verticalWordColumn}>
+                  <Text style={styles.kulitanText}>{syllables.join('\n')}</Text>
+                </View>
+              ))}
+            </View>
+          </Animated.View>
+
+          {/* Options */}
+          <View style={styles.optionsContainer}>
+            {currentQ.options.map((opt: string, index: number) => {
+              const isSelected = selectedOption === opt;
+              const isCorrect = isSelected && isCorrectSelected === true;
+              const isWrong = isSelected && isCorrectSelected === false;
+              
+              return (
+                <Animated.View 
+                  key={index}
+                  style={{
+                    transform: [{ translateY: optionsSlideAnim }],
+                    opacity: optionsOpacityAnim
+                  }}
                 >
-                  <Text style={[
-                    styles.optionText,
-                    (isCorrect || isWrong) && { color: '#FFF' }
-                  ]}>
-                    {opt}
-                  </Text>
-                </TouchableOpacity>
-              </Animated.View>
-            );
-          })}
-        </View>
+                  <TouchableOpacity
+                    style={[
+                      styles.optionButton,
+                      isCorrect && styles.optionCorrect,
+                      isWrong && styles.optionWrong
+                    ]}
+                    onPress={() => handleAnswer(opt)}
+                    activeOpacity={0.7}
+                    disabled={selectedOption !== null}
+                  >
+                    <Text style={[
+                      styles.optionText,
+                      (isCorrect || isWrong) && { color: '#FFF' }
+                    ]}>
+                      {opt}
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
+          </View>
+        </ScrollView>
 
       </SafeAreaView>
     </LinearGradient>
@@ -302,15 +287,16 @@ const styles = StyleSheet.create({
   exitButton: { padding: 10 },
   scorePill: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3, gap: 6 },
   scorePillText: { fontFamily: 'Poppins_700Bold', fontSize: 18, color: '#334155' },
-  timerContainer: { height: 8, backgroundColor: '#E2E8F0', borderRadius: 4, marginHorizontal: 20, marginTop: 20, overflow: 'hidden' },
+  timerContainer: { height: 8, backgroundColor: '#E2E8F0', borderRadius: 4, marginHorizontal: 20, marginTop: 20, overflow: 'hidden', flexShrink: 0 },
   timerFill: { height: '100%', borderRadius: 4 },
-  questionCard: { backgroundColor: 'rgba(255, 255, 255, 0.9)', marginHorizontal: 20, marginTop: 40, borderRadius: 30, padding: 30, alignItems: 'center', shadowColor: '#64748B', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)' },
+  scrollContent: { flexGrow: 1, paddingBottom: 40 },
+  questionCard: { backgroundColor: 'rgba(255, 255, 255, 0.9)', marginHorizontal: 20, marginTop: 40, borderRadius: 30, padding: 30, alignItems: 'center', shadowColor: '#64748B', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)', flexShrink: 0 },
   questionLabel: { fontFamily: 'Poppins_500Medium', fontSize: 14, color: '#94A3B8', letterSpacing: 2, marginBottom: 10 },
   questionWord: { fontFamily: 'Poppins_700Bold', fontSize: 32, color: '#0F172A', textAlign: 'center', marginBottom: 20 },
   kulitanContainer: { flexDirection: 'row-reverse', justifyContent: 'center', padding: 20, backgroundColor: '#F8FAFC', borderRadius: 20, width: '100%' },
   verticalWordColumn: { marginHorizontal: 15, alignItems: 'center' },
   kulitanText: { fontFamily: 'Kulitan', fontSize: 40, color: '#2563EB', lineHeight: 50, textAlign: 'center' },
-  optionsContainer: { paddingHorizontal: 20, marginTop: 'auto', paddingBottom: 40, gap: 15 },
+  optionsContainer: { paddingHorizontal: 20, marginTop: 30, gap: 15 },
   optionButton: { backgroundColor: '#FFF', paddingVertical: 20, paddingHorizontal: 24, borderRadius: 25, shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 4, alignItems: 'center' },
   optionCorrect: { backgroundColor: '#10B981', shadowColor: '#10B981' },
   optionWrong: { backgroundColor: '#EF4444', shadowColor: '#EF4444' },
