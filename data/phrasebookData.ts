@@ -45,7 +45,7 @@ export const phrasebookData: Phrase[] = [
   { id: 'b6', category: 'Basics', english: 'Please', kapampangan: 'Paki', kulitan: 'pa-ki' },
   { id: 'b7', category: 'Basics', english: 'Sorry', kapampangan: 'Pasensya na', kulitan: 'pa-se-n-sya na' },
   { id: 'b8', category: 'Basics', english: 'I understand', kapampangan: 'Aintindian ku', kulitan: 'a-i-n-ti-n-dya-n ku' },
-  { id: 'b9', category: 'Basics', english: 'I don\\'t understand', kapampangan: 'Eku aintindian', kulitan: 'e-ku a-i-n-ti-n-dya-n' },
+  { id: 'b9', category: 'Basics', english: "I don't understand", kapampangan: 'Eku aintindian', kulitan: 'e-ku a-i-n-ti-n-dya-n' },
   { id: 'b10', category: 'Basics', english: 'Where is the restroom?', kapampangan: 'Nokarin ya ing banyu?', kulitan: 'no-ka-ri-n ya i-ng ba-nyu' },
   { id: 'b11', category: 'Basics', english: 'Who', kapampangan: 'Ninu', kulitan: 'ni-nu' },
   { id: 'b12', category: 'Basics', english: 'What', kapampangan: 'Nanu', kulitan: 'na-nu' },
