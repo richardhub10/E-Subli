@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useProfile } from '../context/ProfileContext';
 import { supabase } from '../supabaseClient';
 import { useLanguage } from '../context/LanguageContext';
@@ -12,9 +12,14 @@ type ProfileScreenProps = {
 };
 
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
-  const { profile } = useProfile();
+  const { profile, updateProfile } = useProfile();
   const { t, language } = useLanguage();
   
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editFirstName, setEditFirstName] = useState(profile.firstName || '');
+  const [editLastName, setEditLastName] = useState(profile.lastName || '');
+  const [isSaving, setIsSaving] = useState(false);
+
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
@@ -22,6 +27,40 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       console.error('Logout error:', error);
     }
   };
+
+  const saveProfile = async () => {
+    if (!editFirstName.trim()) {
+      Alert.alert('Error', language === 'EN' ? 'First name cannot be empty.' : 'Hindi maaaring maging blangko ang unang pangalan.');
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      await updateProfile({ firstName: editFirstName.trim(), lastName: editLastName.trim() });
+      setIsEditModalVisible(false);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      Alert.alert('Error', 'Failed to update profile.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Elo logic
+  const getRankData = (elo: number) => {
+    if (elo < 1200) return { name: 'Bronze', color: '#CD7F32', icon: 'medal-outline' };
+    if (elo < 1500) return { name: 'Silver', color: '#C0C0C0', icon: 'medal' };
+    if (elo < 1800) return { name: 'Gold', color: '#FFD700', icon: 'trophy-outline' };
+    if (elo < 2100) return { name: 'Platinum', color: '#E5E4E2', icon: 'trophy' };
+    return { name: 'Diamond', color: '#B9F2FF', icon: 'diamond-stone' };
+  };
+  
+  const rank = getRankData(profile.eloRating);
+
+  // Progress logic
+  const nextLevelXp = profile.level * 100;
+  const currentLevelProgress = profile.xp % 100;
+  const progressPercent = Math.min(100, Math.max(0, (currentLevelProgress / 100) * 100));
 
   return (
     <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
@@ -33,51 +72,167 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         <View style={{ width: 44 }} /> 
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.card}>
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{profile.firstName?.charAt(0).toUpperCase() || profile.email?.charAt(0).toUpperCase() || 'U'}</Text>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        
+        {/* Main Glassmorphism Profile Card */}
+        <LinearGradient colors={['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.7)']} style={styles.card}>
+          
+          <View style={styles.avatarSection}>
+            <View style={styles.avatarContainer}>
+              <Text style={styles.avatarText}>{profile.firstName?.charAt(0).toUpperCase() || profile.email?.charAt(0).toUpperCase() || 'U'}</Text>
+              
+              {/* Edit Button overlay */}
+              <TouchableOpacity style={styles.editAvatarButton} onPress={() => {
+                setEditFirstName(profile.firstName || '');
+                setEditLastName(profile.lastName || '');
+                setIsEditModalVisible(true);
+              }}>
+                <Ionicons name="pencil" size={16} color="#FFF" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.nameContainer}>
+              {profile.firstName || profile.lastName ? (
+                <Text style={styles.nameText}>
+                  {profile.firstName} {profile.lastName}
+                </Text>
+              ) : (
+                <Text style={styles.nameText}>{language === 'EN' ? 'Anonymous Scholar' : 'Hindi Kilalang Iskolar'}</Text>
+              )}
+              <Text style={styles.emailText}>{profile.email}</Text>
+            </View>
           </View>
-          {profile.firstName || profile.lastName ? (
-            <Text style={[styles.emailText, { fontSize: 24, fontWeight: '700', color: '#333' }]}>
-              {profile.firstName} {profile.lastName}
+
+          {/* Gamified Badges Row (Streak & Rank) */}
+          <View style={styles.badgesRow}>
+            <View style={styles.badgeContainer}>
+              <View style={[styles.iconCircle, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
+                <MaterialCommunityIcons name="fire" size={28} color="#EF4444" />
+              </View>
+              <View>
+                <Text style={styles.badgeValue}>{profile.streakCount} {language === 'EN' ? 'Days' : 'Araw'}</Text>
+                <Text style={styles.badgeLabel}>Day Streak</Text>
+              </View>
+            </View>
+            
+            <View style={styles.badgeDivider} />
+            
+            <View style={styles.badgeContainer}>
+              <View style={[styles.iconCircle, { backgroundColor: `rgba(0, 0, 0, 0.05)` }]}>
+                <MaterialCommunityIcons name={rank.icon as any} size={24} color={rank.color} />
+              </View>
+              <View>
+                <Text style={[styles.badgeValue, { color: rank.color }]}>{rank.name}</Text>
+                <Text style={styles.badgeLabel}>{profile.eloRating} Elo</Text>
+              </View>
+            </View>
+          </View>
+          
+          {/* Level Progress Bar */}
+          <View style={styles.progressContainer}>
+            <View style={styles.progressHeader}>
+              <Text style={styles.progressTitle}>{language === 'EN' ? 'Lvl' : 'Antas'} {profile.level}</Text>
+              <Text style={styles.progressDetail}>{currentLevelProgress} / 100 XP</Text>
+            </View>
+            <View style={styles.progressBarBackground}>
+              <LinearGradient 
+                colors={['#10B981', '#34D399']} 
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} 
+                style={[styles.progressBarFill, { width: `${progressPercent}%` }]} 
+              />
+            </View>
+            <Text style={styles.progressFooter}>
+              {100 - currentLevelProgress} XP to Lvl {profile.level + 1}
             </Text>
-          ) : null}
-          <Text style={styles.emailText}>{profile.email}</Text>
-          
-          <View style={styles.statsContainer}>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>{language === 'EN' ? 'Lvl' : 'Antas'} {profile.level}</Text>
-              <Text style={styles.statLabel}>{language === 'EN' ? 'Current Level' : language === 'PH' ? 'Kasalukuyang Antas' : 'Kasalukuyan a Antas'}</Text>
-            </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>{profile.xp}</Text>
-              <Text style={styles.statLabel}>{language === 'EN' ? 'Total XP' : 'Kabuuan XP'}</Text>
-            </View>
+          </View>
+
+        </LinearGradient>
+
+        {/* Stats Grid */}
+        <Text style={styles.sectionTitle}>{language === 'EN' ? 'Learning Stats' : 'Istatistika'}</Text>
+        <View style={styles.statsGrid}>
+          <View style={styles.statBox}>
+            <Ionicons name="flash" size={24} color="#F59E0B" style={styles.statIcon} />
+            <Text style={styles.statValue}>{profile.xp}</Text>
+            <Text style={styles.statLabel}>{language === 'EN' ? 'Total XP' : 'Kabuuan XP'}</Text>
           </View>
           
-          <View style={styles.divider} />
+          <View style={styles.statBox}>
+            <Ionicons name="book" size={24} color="#3B82F6" style={styles.statIcon} />
+            <Text style={styles.statValue}>{profile.flashcardsRead}</Text>
+            <Text style={styles.statLabel}>{t('flashcards_read')}</Text>
+          </View>
           
-          <View style={styles.statsContainer}>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>{profile.flashcardsRead}</Text>
-              <Text style={styles.statLabel}>{t('flashcards_read')}</Text>
-            </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>{profile.writingPractices}</Text>
-              <Text style={styles.statLabel}>{t('writing_practices')}</Text>
-            </View>
+          <View style={styles.statBox}>
+            <Ionicons name="pencil" size={24} color="#8B5CF6" style={styles.statIcon} />
+            <Text style={styles.statValue}>{profile.writingPractices}</Text>
+            <Text style={styles.statLabel}>{t('writing_practices')}</Text>
+          </View>
+
+          <View style={styles.statBox}>
+            <Ionicons name="game-controller" size={24} color="#EF4444" style={styles.statIcon} />
+            <Text style={styles.statValue}>{profile.eloRating}</Text>
+            <Text style={styles.statLabel}>Match Elo</Text>
           </View>
         </View>
-      </View>
 
-      <View style={styles.footer}>
-        <TouchableOpacity onPress={handleLogout}>
+        {/* Footer Logout */}
+        <TouchableOpacity onPress={handleLogout} style={{ width: '100%', marginTop: 10 }}>
           <LinearGradient colors={['#D1582D', '#B04724']} style={styles.logoutButton}>
             <Text style={styles.logoutButtonText}>{t('log_out')}</Text>
           </LinearGradient>
         </TouchableOpacity>
-      </View>
+        
+      </ScrollView>
+
+      {/* Edit Profile Modal */}
+      <Modal visible={isEditModalVisible} transparent animationType="slide" onRequestClose={() => setIsEditModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{language === 'EN' ? 'Edit Profile' : 'I-edit ang Profile'}</Text>
+              <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
+                <Ionicons name="close" size={28} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{language === 'EN' ? 'First Name' : 'Unang Pangalan'}</Text>
+              <TextInput
+                style={styles.inputField}
+                value={editFirstName}
+                onChangeText={setEditFirstName}
+                placeholder="e.g. Juan"
+                placeholderTextColor="#94A3B8"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{language === 'EN' ? 'Last Name' : 'Apelyido'}</Text>
+              <TextInput
+                style={styles.inputField}
+                value={editLastName}
+                onChangeText={setEditLastName}
+                placeholder="e.g. Dela Cruz"
+                placeholderTextColor="#94A3B8"
+              />
+            </View>
+
+            <TouchableOpacity 
+              style={styles.saveButton} 
+              onPress={saveProfile}
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.saveButtonText}>{language === 'EN' ? 'Save Changes' : 'I-save'}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </LinearGradient>
   );
 }
@@ -92,7 +247,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 10,
   },
   backButton: {
     width: 44,
@@ -113,63 +268,176 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_700Bold',
   },
   content: {
-    flex: 1,
-    padding: 24,
+    padding: 20,
+    paddingBottom: 60,
     alignItems: 'center',
   },
   card: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
     borderRadius: 24,
-    padding: 30,
-    alignItems: 'center',
+    padding: 24,
+    marginBottom: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.1,
     shadowRadius: 16,
     elevation: 10,
   },
+  avatarSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
   avatarContainer: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: '#FAF5EE',
     borderWidth: 3,
     borderColor: '#D1582D',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginRight: 16,
+    position: 'relative',
   },
   avatarText: {
-    fontSize: 40,
+    fontSize: 32,
     fontFamily: 'Poppins_700Bold',
     color: '#D1582D',
   },
-  emailText: {
-    fontSize: 18,
-    color: '#0F172A',
-    marginBottom: 32,
-    fontFamily: 'Poppins_600SemiBold',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 24,
-  },
-  statBox: {
-    flex: 1,
+  editAvatarButton: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    backgroundColor: '#3B82F6',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  nameContainer: {
+    flex: 1,
+  },
+  nameText: {
+    fontSize: 22,
+    fontFamily: 'Poppins_700Bold',
+    color: '#0F172A',
+  },
+  emailText: {
+    fontSize: 14,
+    color: '#64748B',
+    fontFamily: 'Poppins_500Medium',
+  },
+  badgesRow: {
+    flexDirection: 'row',
     backgroundColor: '#F8FAFC',
     borderRadius: 16,
-    paddingVertical: 16,
-    marginHorizontal: 8,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    padding: 16,
+    marginBottom: 24,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  badgeValue: {
+    fontSize: 18,
+    fontFamily: 'Poppins_700Bold',
+    color: '#0F172A',
+  },
+  badgeLabel: {
+    fontSize: 12,
+    fontFamily: 'Poppins_500Medium',
+    color: '#64748B',
+  },
+  badgeDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: '#E2E8F0',
+    marginHorizontal: 16,
+  },
+  progressContainer: {
+    width: '100%',
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  progressTitle: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 16,
+    color: '#10B981',
+  },
+  progressDetail: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 14,
+    color: '#64748B',
+  },
+  progressBarBackground: {
+    width: '100%',
+    height: 12,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 6,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 6,
+  },
+  progressFooter: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 12,
+    color: '#94A3B8',
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    width: '100%',
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 18,
+    color: '#334155',
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 10,
+  },
+  statBox: {
+    width: '48%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statIcon: {
+    marginBottom: 8,
   },
   statValue: {
     fontSize: 22,
-    color: '#10B981',
+    color: '#0F172A',
     fontFamily: 'Poppins_700Bold',
   },
   statLabel: {
@@ -177,16 +445,7 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontFamily: 'Poppins_500Medium',
     marginTop: 4,
-  },
-  divider: {
-    width: '80%',
-    height: 1,
-    backgroundColor: '#E2E8F0',
-    marginBottom: 24,
-  },
-  footer: {
-    padding: 24,
-    paddingBottom: 40,
+    textAlign: 'center',
   },
   logoutButton: {
     paddingVertical: 18,
@@ -199,6 +458,63 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   logoutButtonText: {
+    color: '#FFFFFF',
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 16,
+  },
+  
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: 'Poppins_700Bold',
+    color: '#0F172A',
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 14,
+    color: '#334155',
+    marginBottom: 8,
+  },
+  inputField: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 16,
+    color: '#0F172A',
+  },
+  saveButton: {
+    backgroundColor: '#3B82F6',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  saveButtonText: {
     color: '#FFFFFF',
     fontFamily: 'Poppins_700Bold',
     fontSize: 16,
