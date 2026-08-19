@@ -132,6 +132,10 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             <Ionicons name="trophy" size={20} color="#FBBF24" />
             <Text style={styles.leaderboardText}>{t('leaderboard')}</Text>
           </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Friends')} style={styles.friendsButton}>
+            <Ionicons name="people" size={20} color="#3B82F6" />
+            <Text style={styles.leaderboardText}>{language === 'EN' ? 'Friends' : 'Kaibigan'}</Text>
+          </TouchableOpacity>
         </View>
 
         {/* SECTION 1: PRIMARY LEARNING */}
@@ -323,8 +327,22 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  friendsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
   leaderboardText: {
     color: '#0F172A',

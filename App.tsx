@@ -8,7 +8,7 @@ import {
   Poppins_600SemiBold,
   Poppins_700Bold,
 } from '@expo-google-fonts/poppins';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import { ActivityIndicator, View } from 'react-native';
 
@@ -34,6 +34,8 @@ import { ProfileProvider } from './context/ProfileContext';
 
 const Stack = createStackNavigator();
 
+export const navigationRef = createNavigationContainerRef<any>();
+
 function AppNavigator() {
   const { user, loading } = useAuth();
 
@@ -47,7 +49,7 @@ function AppNavigator() {
 
   return (
     <LanguageProvider>
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef}>
         {user ? (
           <ProfileProvider>
           <Stack.Navigator screenOptions={{ 

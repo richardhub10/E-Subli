@@ -11,9 +11,10 @@ import { getRandomQuestions } from '../utils/quizQuestions';
 
 type MultiplayerLobbyScreenProps = {
   navigation: StackNavigationProp<any, any>;
+  route: any;
 };
 
-export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyScreenProps) {
+export default function MultiplayerLobbyScreen({ navigation, route }: MultiplayerLobbyScreenProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -21,6 +22,15 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
   const { profile } = useProfile();
   const { t, language } = useLanguage();
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // If we came from a direct challenge, we already have a privateRoomId
+  useEffect(() => {
+    if (route.params?.privateRoomId) {
+      setRoomId(route.params.privateRoomId);
+      setIsSearching(true);
+      setStatusMessage(language === 'EN' ? 'Waiting for friend to accept...' : 'Naghihintay na tanggapin...');
+    }
+  }, [route.params?.privateRoomId]);
 
   // Handle host waiting for a player to join
   useEffect(() => {

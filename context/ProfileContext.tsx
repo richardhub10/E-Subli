@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../supabaseClient';
+import { Alert } from 'react-native';
+import { navigationRef } from '../App';
 
 type ProfileData = {
   xp: number;
@@ -210,6 +212,46 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           }
         })
         .subscribe();
+
+      // Listen to personal broadcast channel for notifications and challenges
+      const personalChannel = supabase.channel(`user_${user.id}`)
+        .on('broadcast', { event: 'friend_request' }, (payload) => {
+          Alert.alert("New Friend!", `${payload.payload.senderName} has added you as a friend!`);
+        })
+        .on('broadcast', { event: 'challenge' }, (payload) => {
+          Alert.alert(
+            "Challenge Received! ⚔️",
+            `${payload.payload.challengerName} has challenged you to a Quiz Battle!`,
+            [
+              { text: "Decline", style: "cancel" },
+              { 
+                text: "Accept", 
+                onPress: async () => {
+                  // Join the room as player 2
+                  const myName = data?.first_name ? data.first_name.toUpperCase() : 'PLAYER 2';
+                  await supabase
+                    .from('quiz_room_players')
+                    .insert([{ room_id: payload.payload.roomId, user_id: user.id, score: 0, player_name: myName }]);
+                    
+                  // Start game
+                  await supabase
+                    .from('quiz_rooms')
+                    .update({ status: 'playing' })
+                    .eq('id', payload.payload.roomId);
+
+                  // Navigate
+                  if (navigationRef.isReady()) {
+                    navigationRef.navigate('QuizBattle', { roomId: payload.payload.roomId, isHost: false });
+                  }
+                }
+              }
+            ]
+          );
+        })
+        .subscribe();
+
+      // We attach the personalChannel to the subscription so we can remove it later
+      subscription.personalChannel = personalChannel;
     };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -222,7 +264,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       authSub.unsubscribe();
-      if (subscription) supabase.removeChannel(subscription);
+      if (subscription) {
+        supabase.removeChannel(subscription);
+        if (subscription.personalChannel) {
+          supabase.removeChannel(subscription.personalChannel);
+        }
+      }
     };
   }, []);
 

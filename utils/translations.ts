@@ -55,6 +55,11 @@ export const translations: TranslationDictionary = {
     PH: "Lobby",
     KPM: "Lobby"
   },
+  phrasebook: {
+    EN: "Phrasebook",
+    PH: "Talasalitaan",
+    KPM: "Talasalitan"
+  },
 
   // Auth
   login: {

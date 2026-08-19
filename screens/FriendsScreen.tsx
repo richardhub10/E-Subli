@@ -6,6 +6,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useProfile } from '../context/ProfileContext';
 
 type FriendsScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -30,6 +31,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
   const [isSearching, setIsSearching] = useState(false);
   
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { t, language } = useLanguage();
 
   useEffect(() => {
@@ -132,17 +134,77 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
       // Also add reverse friendship for simplicity (optional, but good for UX)
       await supabase.from('friends').insert([{ user_id: friendId, friend_id: user.id }]);
       
+      // Send broadcast notification to the friend
+      const senderName = profile?.firstName || user.email?.split('@')[0] || 'A user';
+      await supabase.channel(`user_${friendId}`).send({
+        type: 'broadcast',
+        event: 'friend_request',
+        payload: { senderName }
+      });
+
     } catch (error) {
       console.error("Add friend error:", error);
       Alert.alert("Error", "Could not add friend.");
     }
   };
 
-  const challengeFriend = () => {
-    // Navigate to multiplayer lobby and automatically start a room, maybe copy code.
+  const challengeFriend = async (friend: FriendProfile) => {
+    if (!user) return;
+    
     Alert.alert(
       "Direct Challenge", 
-      language === 'EN' ? "To challenge a friend, go to Multiplayer and share your room code!" : "Upang hamunin ang kaibigan, pumunta sa Multiplayer at ibahagi ang room code!"
+      language === 'EN' ? `Challenge ${friend.first_name}?` : `Hamunin si ${friend.first_name}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Challenge", 
+          onPress: async () => {
+            try {
+              const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+              
+              // Helper to get some dummy questions or fetch them (assuming empty array for now as it's generated on host side, or let's just leave it empty)
+              // Wait, MultiplayerLobby creates a room. Let's just create one.
+              const { data: newRoom, error: createError } = await supabase
+                .from('quiz_rooms')
+                .insert([{ 
+                  room_code: newCode, 
+                  host_id: user.id, 
+                  status: 'private_waiting', 
+                  current_question_index: 0, 
+                  questions: [], 
+                  host_elo: profile?.eloRating || 1000 
+                }])
+                .select()
+                .single();
+                
+              if (createError) throw createError;
+              
+              // Join room as host
+              const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'HOST';
+              await supabase
+                .from('quiz_room_players')
+                .insert([{ room_id: newRoom.id, user_id: user.id, score: 0, player_name: myName }]);
+
+              // Send broadcast to friend
+              await supabase.channel(`user_${friend.id}`).send({
+                type: 'broadcast',
+                event: 'challenge',
+                payload: { 
+                  challengerName: profile?.firstName || user.email?.split('@')[0] || 'A user',
+                  roomId: newRoom.id
+                }
+              });
+
+              // Navigate to Multiplayer Lobby passing the roomId so it can wait
+              navigation.navigate('MultiplayerLobby', { privateRoomId: newRoom.id });
+              
+            } catch (err) {
+              console.error("Challenge error:", err);
+              Alert.alert("Error", "Could not create challenge.");
+            }
+          } 
+        }
+      ]
     );
   };
 
@@ -209,7 +271,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                     <Text style={styles.friendStats}>Lvl {item.level || 1} • {item.xp || 0} XP</Text>
                     <Text style={styles.eloStats}>Elo: {item.elo_rating || 1000}</Text>
                   </View>
-                  <TouchableOpacity style={styles.challengeBtn} onPress={challengeFriend}>
+                  <TouchableOpacity style={styles.challengeBtn} onPress={() => challengeFriend(item)}>
                     <Ionicons name="game-controller" size={18} color="#FFF" />
                   </TouchableOpacity>
                 </View>
