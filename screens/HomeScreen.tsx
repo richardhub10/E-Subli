@@ -25,14 +25,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     
     Animated.timing(expandAnim, {
       toValue: 1,
-      duration: 400,
+      duration: 700,
       useNativeDriver: false
     }).start(() => {
       navigation.navigate(route);
       setTimeout(() => {
         setExpandingFeature(null);
         expandAnim.setValue(0);
-      }, 600);
+      }, 900);
     });
   };
 
