@@ -9,7 +9,7 @@ import {
   Poppins_700Bold,
 } from '@expo-google-fonts/poppins';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import { ActivityIndicator, View } from 'react-native';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -50,7 +50,11 @@ function AppNavigator() {
       <NavigationContainer>
         {user ? (
           <ProfileProvider>
-          <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { flex: 1 } }}>
+          <Stack.Navigator screenOptions={{ 
+            headerShown: false, 
+            cardStyle: { flex: 1 },
+            ...TransitionPresets.SlideFromRightIOS
+          }}>
             {/* The routes are defined in the Auth listener above, but normally we'd structure it better. Let's just conditionally render here. */}
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="ReadHub" component={ReadHubScreen} />
@@ -67,7 +71,11 @@ function AppNavigator() {
           </Stack.Navigator>
         </ProfileProvider>
       ) : (
-        <Stack.Navigator initialRouteName="Welcome" screenOptions={{ headerShown: false, cardStyle: { flex: 1 } }}>
+        <Stack.Navigator initialRouteName="Welcome" screenOptions={{ 
+          headerShown: false, 
+          cardStyle: { flex: 1 },
+          ...TransitionPresets.SlideFromRightIOS
+        }}>
           <Stack.Screen name="Welcome" component={WelcomeScreen} />
           <Stack.Screen name="KulitanGuide" component={KulitanGuideScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
