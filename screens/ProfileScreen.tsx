@@ -133,23 +133,21 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         <LinearGradient colors={['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.7)']} style={styles.card}>
           
           <View style={styles.avatarSection}>
-            <TouchableOpacity style={styles.avatarContainer} onPress={pickImage} disabled={isUploadingAvatar}>
-              {isUploadingAvatar ? (
-                <ActivityIndicator color="#D1582D" size="large" />
-              ) : profile.avatarUrl ? (
+            <TouchableOpacity style={styles.avatarContainer} onPress={() => {
+              setEditFirstName(profile.firstName || '');
+              setEditLastName(profile.lastName || '');
+              setIsEditModalVisible(true);
+            }}>
+              {profile.avatarUrl ? (
                 <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
               ) : (
                 <Text style={styles.avatarText}>{profile.firstName?.charAt(0).toUpperCase() || profile.email?.charAt(0).toUpperCase() || 'U'}</Text>
               )}
               
               {/* Edit Button overlay */}
-              <TouchableOpacity style={styles.editAvatarButton} onPress={() => {
-                setEditFirstName(profile.firstName || '');
-                setEditLastName(profile.lastName || '');
-                setIsEditModalVisible(true);
-              }}>
+              <View style={styles.editAvatarButton}>
                 <Ionicons name="pencil" size={16} color="#FFF" />
-              </TouchableOpacity>
+              </View>
             </TouchableOpacity>
 
             <View style={styles.nameContainer}>
@@ -255,6 +253,22 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
               <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
                 <Ionicons name="close" size={28} color="#64748B" />
               </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalAvatarSection}>
+              <TouchableOpacity style={styles.modalAvatarContainer} onPress={pickImage} disabled={isUploadingAvatar}>
+                {isUploadingAvatar ? (
+                  <ActivityIndicator color="#D1582D" size="large" />
+                ) : profile.avatarUrl ? (
+                  <Image source={{ uri: profile.avatarUrl }} style={styles.modalAvatarImage} />
+                ) : (
+                  <Text style={styles.modalAvatarText}>{profile.firstName?.charAt(0).toUpperCase() || profile.email?.charAt(0).toUpperCase() || 'U'}</Text>
+                )}
+                <View style={styles.modalAvatarEditOverlay}>
+                  <Ionicons name="camera" size={16} color="#FFF" />
+                </View>
+              </TouchableOpacity>
+              <Text style={styles.modalAvatarHint}>{language === 'EN' ? 'Tap to change photo' : 'Pindutin para palitan'}</Text>
             </View>
 
             <View style={styles.inputGroup}>
@@ -585,5 +599,49 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontFamily: 'Poppins_700Bold',
     fontSize: 16,
+  },
+  modalAvatarSection: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalAvatarContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FAF5EE',
+    borderWidth: 2,
+    borderColor: '#D1582D',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    position: 'relative',
+  },
+  modalAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 40,
+  },
+  modalAvatarText: {
+    fontSize: 32,
+    fontFamily: 'Poppins_700Bold',
+    color: '#D1582D',
+  },
+  modalAvatarEditOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#3B82F6',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  modalAvatarHint: {
+    fontSize: 12,
+    color: '#64748B',
+    fontFamily: 'Poppins_400Regular',
   }
 });
