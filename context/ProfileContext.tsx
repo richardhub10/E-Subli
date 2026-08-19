@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../supabaseClient';
 
 type ProfileData = {
@@ -56,9 +57,38 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         .maybeSingle();
 
       if (data) {
+        let currentRemoteXp = data.xp || 0;
+        let currentRemoteLevel = data.level || 1;
+
+        // Sync offline XP if it exists
+        try {
+          const storedOfflineXp = await AsyncStorage.getItem('offlineXP');
+          if (storedOfflineXp) {
+            const offlineAmount = parseInt(storedOfflineXp);
+            if (offlineAmount > 0) {
+              const newXp = currentRemoteXp + offlineAmount;
+              const newLevel = Math.floor(newXp / 100) + 1;
+              
+              const { error: syncError } = await supabase
+                .from('profiles')
+                .update({ xp: newXp, level: newLevel })
+                .eq('id', user.id);
+                
+              if (!syncError) {
+                currentRemoteXp = newXp;
+                currentRemoteLevel = newLevel;
+                await AsyncStorage.removeItem('offlineXP');
+                console.log(`Synced ${offlineAmount} offline XP!`);
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Error syncing offline XP:", e);
+        }
+
         setProfile({
-          xp: data.xp || 0,
-          level: data.level || 1,
+          xp: currentRemoteXp,
+          level: currentRemoteLevel,
           flashcardsRead: data.flashcardsread ?? data.flashcardsRead ?? 0,
           writingPractices: data.writingpractices ?? data.writingPractices ?? 0,
           email: data.email || user.email,
@@ -141,7 +171,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     return Math.floor(currentXp / 100) + 1;
   };
 
-  const updateProfile = async (updates: Partial<ProfileData>) => {
+  const updateProfile = async (updates: Partial<ProfileData>, amount: number = 0) => {
     // 1. Synchronously bypass stale closures by using the latest ref
     const currentProfile = profileRef.current;
     const newProfile = { ...currentProfile, ...updates };
@@ -182,11 +212,21 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       });
     } catch (error) {
       console.error("Supabase Sync Error:", error);
+      
+      // If XP was updated, cache it offline
+      if (updates.xp !== undefined && amount > 0) {
+         try {
+           const stored = await AsyncStorage.getItem('offlineXP');
+           const currentOffline = stored ? parseInt(stored) : 0;
+           await AsyncStorage.setItem('offlineXP', (currentOffline + amount).toString());
+         } catch(e) {}
+      }
     }
   };
 
   const addXP = async (amount: number) => {
-    updateProfile({ xp: profileRef.current.xp + amount });
+    // Pass amount to updateProfile for caching logic
+    updateProfile({ xp: profileRef.current.xp + amount }, amount);
   };
 
   const incrementFlashcards = async () => {

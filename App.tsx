@@ -24,6 +24,7 @@ import ProfileScreen from './screens/ProfileScreen';
 import LeaderboardScreen from './screens/LeaderboardScreen';
 import MultiplayerLobbyScreen from './screens/MultiplayerLobbyScreen';
 import QuizBattleScreen from './screens/QuizBattleScreen';
+import OfflineQuizScreen from './screens/OfflineQuizScreen';
 import { ProfileProvider } from './context/ProfileContext';
 
 const Stack = createStackNavigator();
@@ -54,6 +55,7 @@ function AppNavigator() {
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="MultiplayerLobby" component={MultiplayerLobbyScreen} />
             <Stack.Screen name="QuizBattle" component={QuizBattleScreen} />
+            <Stack.Screen name="OfflineQuiz" component={OfflineQuizScreen} />
           </Stack.Navigator>
         </ProfileProvider>
       ) : (

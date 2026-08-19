@@ -198,7 +198,12 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
           <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Trace: {currentSyllable.latin.toUpperCase()}</Text>
-        <View style={{ width: 44 }} />
+        <View style={{ width: 24 }} />
+      </View>
+
+      <View style={styles.guideContainer}>
+        <Ionicons name="information-circle" size={16} color="#D9734E" />
+        <Text style={styles.guideText}>Tip: Trace strokes from top to bottom, right to left.</Text>
       </View>
 
       <View 
@@ -297,6 +302,19 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
+  },
+  guideContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+    gap: 6,
+  },
+  guideText: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 12,
+    color: '#D9734E',
   },
   backButton: {
     width: 44,

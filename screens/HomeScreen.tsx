@@ -133,6 +133,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           onPress={() => navigation.navigate('MultiplayerLobby')}
         />
 
+        <Card 
+          title="Solo Quiz (Offline)" 
+          subtitle="Practice & Earn XP anywhere"
+          icon={<Ionicons name="game-controller" size={40} color="rgba(255,255,255,0.8)" />}
+          gradient={['#F59E0B', '#D97706']}
+          onPress={() => navigation.navigate('OfflineQuiz')}
+        />
+
       </ScrollView>
     </LinearGradient>
   );
