@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../supabaseClient';
-import { Alert, Platform } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, Platform, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { navigationRef } from '../App';
 
 type ProfileData = {
@@ -45,6 +47,16 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<ProfileData>(defaultProfile);
+  const [inAppAlert, setInAppAlert] = useState<{
+    visible: boolean;
+    type: 'challenge' | 'friend_request';
+    title: string;
+    subtitle: string;
+    senderName: string;
+    roomId?: string;
+    onAccept?: () => void;
+    onDecline?: () => void;
+  } | null>(null);
 
   useEffect(() => {
     let subscription: any = null;
@@ -216,47 +228,47 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       // Listen to personal broadcast channel for notifications and challenges
       const personalChannel = supabase.channel(`user_${user.id}`)
         .on('broadcast', { event: 'friend_request' }, (payload) => {
-          if (Platform.OS === 'web') {
-            window.alert(`New Friend! 🤝\n\n${payload.payload.senderName} has added you as a friend!`);
-          } else {
-            Alert.alert("New Friend! 🤝", `${payload.payload.senderName} has added you as a friend!`);
-          }
+          const sender = payload.payload.senderName || 'A scholar';
+          setInAppAlert({
+            visible: true,
+            type: 'friend_request',
+            title: 'New Friend Added! 🤝',
+            subtitle: `${sender} has added you to their friends list!`,
+            senderName: sender,
+          });
         })
         .on('broadcast', { event: 'challenge' }, (payload) => {
-          const executeAccept = async () => {
-            // Join the room as player 2
-            const myName = data?.first_name ? data.first_name.toUpperCase() : 'PLAYER 2';
-            await supabase
-              .from('quiz_room_players')
-              .insert([{ room_id: payload.payload.roomId, user_id: user.id, score: 0, player_name: myName }]);
-              
-            // Start game
-            await supabase
-              .from('quiz_rooms')
-              .update({ status: 'playing' })
-              .eq('id', payload.payload.roomId);
+          const challenger = payload.payload.challengerName || 'A scholar';
+          setInAppAlert({
+            visible: true,
+            type: 'challenge',
+            title: `${challenger} Challenged You! ⚔️`,
+            subtitle: 'Ready for a live Kulitan Quiz Battle? Tap Accept to jump straight into the duel arena!',
+            senderName: challenger,
+            roomId: payload.payload.roomId,
+            onAccept: async () => {
+              try {
+                const myName = profileRef.current.firstName ? profileRef.current.firstName.toUpperCase() : (user?.email?.split('@')[0]?.toUpperCase() || 'PLAYER 2');
+                await supabase
+                  .from('quiz_room_players')
+                  .insert([{ room_id: payload.payload.roomId, user_id: user.id, score: 0, player_name: myName }]);
+                  
+                await supabase
+                  .from('quiz_rooms')
+                  .update({ status: 'playing' })
+                  .eq('id', payload.payload.roomId);
 
-            // Navigate
-            if (navigationRef.isReady()) {
-              navigationRef.navigate('QuizBattle', { roomId: payload.payload.roomId, isHost: false });
+                if (navigationRef.isReady()) {
+                  navigationRef.navigate('QuizBattle', { roomId: payload.payload.roomId, isHost: false });
+                }
+              } catch (e) {
+                console.error("Error accepting challenge:", e);
+              }
+            },
+            onDecline: () => {
+              console.log("Challenge declined");
             }
-          };
-
-          if (Platform.OS === 'web') {
-            const confirmed = window.confirm(`Challenge Received! ⚔️\n\n${payload.payload.challengerName} has challenged you to a Quiz Battle!`);
-            if (confirmed) {
-              executeAccept();
-            }
-          } else {
-            Alert.alert(
-              "Challenge Received! ⚔️",
-              `${payload.payload.challengerName} has challenged you to a Quiz Battle!`,
-              [
-                { text: "Decline", style: "cancel" },
-                { text: "Accept", onPress: executeAccept }
-              ]
-            );
-          }
+          });
         })
         .subscribe();
 
@@ -396,9 +408,223 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   return (
     <ProfileContext.Provider value={{ profile, updateProfile, addXP, incrementFlashcards, incrementWriting, updateSrsData }}>
       {children}
+      {inAppAlert && inAppAlert.visible && (
+        <Modal visible={true} transparent animationType="fade" onRequestClose={() => setInAppAlert(null)}>
+          <View style={modalStyles.modalOverlay}>
+            <View style={modalStyles.modalContainer}>
+              <LinearGradient
+                colors={inAppAlert.type === 'challenge' ? ['#1E1B4B', '#0F172A'] : ['#0F2942', '#0A192F']}
+                style={modalStyles.modalCard}
+              >
+                {/* Top Badge */}
+                <View style={[modalStyles.modalBadge, inAppAlert.type === 'challenge' ? modalStyles.challengeBadge : modalStyles.friendBadge]}>
+                  <Ionicons 
+                    name={inAppAlert.type === 'challenge' ? 'flash' : 'people'} 
+                    size={15} 
+                    color={inAppAlert.type === 'challenge' ? '#F59E0B' : '#38BDF8'} 
+                  />
+                  <Text style={[modalStyles.modalBadgeText, inAppAlert.type === 'challenge' ? { color: '#F59E0B' } : { color: '#38BDF8' }]}>
+                    {inAppAlert.type === 'challenge' ? 'DUEL CHALLENGE' : 'NEW FRIEND'}
+                  </Text>
+                </View>
+
+                {/* Center Graphic */}
+                <View style={[modalStyles.iconCircle, inAppAlert.type === 'challenge' ? modalStyles.challengeIconBg : modalStyles.friendIconBg]}>
+                  <Ionicons 
+                    name={inAppAlert.type === 'challenge' ? 'game-controller' : 'person-add'} 
+                    size={40} 
+                    color="#FFF" 
+                  />
+                </View>
+
+                {/* Title & Subtitle */}
+                <Text style={modalStyles.modalTitle}>{inAppAlert.title}</Text>
+                <Text style={modalStyles.modalSubtitle}>{inAppAlert.subtitle}</Text>
+
+                {/* Actions */}
+                <View style={modalStyles.modalActions}>
+                  {inAppAlert.type === 'challenge' ? (
+                    <>
+                      <TouchableOpacity 
+                        style={modalStyles.declineButton}
+                        activeOpacity={0.7}
+                        onPress={() => {
+                          inAppAlert.onDecline?.();
+                          setInAppAlert(null);
+                        }}
+                      >
+                        <Text style={modalStyles.declineButtonText}>Decline</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={modalStyles.acceptButton}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          const acceptFn = inAppAlert.onAccept;
+                          setInAppAlert(null);
+                          acceptFn?.();
+                        }}
+                      >
+                        <LinearGradient colors={['#EF4444', '#DC2626']} style={modalStyles.acceptGradient}>
+                          <Ionicons name="flash" size={16} color="#FFF" />
+                          <Text style={modalStyles.acceptButtonText}>Accept ⚔️</Text>
+                        </LinearGradient>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <TouchableOpacity 
+                      style={modalStyles.singleActionButton}
+                      activeOpacity={0.8}
+                      onPress={() => setInAppAlert(null)}
+                    >
+                      <LinearGradient colors={['#3B82F6', '#2563EB']} style={modalStyles.acceptGradient}>
+                        <Text style={modalStyles.acceptButtonText}>Awesome! 🌟</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </LinearGradient>
+            </View>
+          </View>
+        </Modal>
+      )}
     </ProfileContext.Provider>
   );
 };
+
+const modalStyles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContainer: {
+    width: '100%',
+    maxWidth: 380,
+    borderRadius: 28,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.35,
+    shadowRadius: 30,
+    elevation: 20,
+  },
+  modalCard: {
+    padding: 28,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 28,
+  },
+  modalBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
+    marginBottom: 20,
+  },
+  challengeBadge: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  friendBadge: {
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.4)',
+  },
+  modalBadgeText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 12,
+    letterSpacing: 1.5,
+  },
+  iconCircle: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  challengeIconBg: {
+    backgroundColor: '#EF4444',
+  },
+  friendIconBg: {
+    backgroundColor: '#3B82F6',
+  },
+  modalTitle: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 22,
+    color: '#FFF',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 14,
+    color: '#94A3B8',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+    paddingHorizontal: 8,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  declineButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  declineButtonText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 15,
+    color: '#CBD5E1',
+  },
+  acceptButton: {
+    flex: 1.2,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  singleActionButton: {
+    width: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  acceptGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  acceptButtonText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 15,
+    color: '#FFF',
+  },
+});
 
 export const useProfile = () => {
   const context = useContext(ProfileContext);

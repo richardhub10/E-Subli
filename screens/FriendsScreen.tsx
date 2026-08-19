@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, ActivityIndicator, Alert, FlatList, Image, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, ActivityIndicator, Alert, FlatList, Image, Platform, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -30,6 +30,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
   const [searchName, setSearchName] = useState('');
   const [searchResults, setSearchResults] = useState<FriendProfile[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [challengeModalFriend, setChallengeModalFriend] = useState<FriendProfile | null>(null);
   
   const { user } = useAuth();
   const { profile } = useProfile();
@@ -207,26 +208,9 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
     }
   };
 
-  const challengeFriend = async (friend: FriendProfile) => {
+  const challengeFriend = (friend: FriendProfile) => {
     if (!user) return;
-    const friendName = friend.first_name || friend.last_name || 'Scholar';
-    const msg = language === 'EN' ? `Challenge ${friendName} to a Quiz Battle?` : `Hamunin si ${friendName} sa Quiz Battle?`;
-
-    if (Platform.OS === 'web') {
-      const confirmed = window.confirm(msg);
-      if (confirmed) {
-        executeChallenge(friend);
-      }
-    } else {
-      Alert.alert(
-        "Direct Challenge", 
-        msg,
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Challenge", onPress: () => executeChallenge(friend) }
-        ]
-      );
-    }
+    setChallengeModalFriend(friend);
   };
 
   return (
@@ -349,6 +333,78 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
             )}
           </View>
         )}
+
+        {/* Custom In-App Challenge Modal */}
+        {challengeModalFriend && (
+          <Modal visible={true} transparent animationType="fade" onRequestClose={() => setChallengeModalFriend(null)}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContainer}>
+                <LinearGradient colors={['#1E1B4B', '#0F172A']} style={styles.modalCard}>
+                  <View style={styles.modalBadge}>
+                    <Ionicons name="flash" size={15} color="#F59E0B" />
+                    <Text style={styles.modalBadgeText}>DIRECT CHALLENGE</Text>
+                  </View>
+
+                  <View style={styles.modalAvatarContainer}>
+                    {challengeModalFriend.avatar_url ? (
+                      <Image source={{ uri: challengeModalFriend.avatar_url }} style={styles.modalAvatar} />
+                    ) : (
+                      <View style={styles.modalAvatarPlaceholder}>
+                        <Text style={styles.modalAvatarText}>
+                          {challengeModalFriend.first_name ? challengeModalFriend.first_name.charAt(0).toUpperCase() : 'S'}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  <Text style={styles.modalFriendName}>
+                    {challengeModalFriend.first_name || 'Scholar'} {challengeModalFriend.last_name || ''}
+                  </Text>
+                  
+                  <View style={styles.modalStatsRow}>
+                    <Text style={styles.modalStatsText}>Lvl {challengeModalFriend.level || 1}</Text>
+                    <Text style={styles.modalStatsDot}>•</Text>
+                    <Text style={styles.modalStatsText}>{challengeModalFriend.xp || 0} XP</Text>
+                    <Text style={styles.modalStatsDot}>•</Text>
+                    <Text style={[styles.modalStatsText, { color: '#A78BFA' }]}>Elo {challengeModalFriend.elo_rating || 1000}</Text>
+                  </View>
+
+                  <Text style={styles.modalPrompt}>
+                    {language === 'EN' 
+                      ? 'Ready to test your Kulitan mastery? Send an instant duel invitation!' 
+                      : 'Handa ka na bang subukin ang iyong galing sa Kulitan? Magpadala ng imbitasyon!'}
+                  </Text>
+
+                  <View style={styles.modalActions}>
+                    <TouchableOpacity 
+                      style={styles.modalCancelBtn}
+                      activeOpacity={0.7}
+                      onPress={() => setChallengeModalFriend(null)}
+                    >
+                      <Text style={styles.modalCancelBtnText}>Cancel</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={styles.modalConfirmBtn}
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        const target = challengeModalFriend;
+                        setChallengeModalFriend(null);
+                        executeChallenge(target);
+                      }}
+                    >
+                      <LinearGradient colors={['#EF4444', '#DC2626']} style={styles.modalConfirmGradient}>
+                        <Ionicons name="flash" size={16} color="#FFF" />
+                        <Text style={styles.modalConfirmBtnText}>Battle Now ⚔️</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                </LinearGradient>
+              </View>
+            </View>
+          </Modal>
+        )}
+
       </SafeAreaView>
     </LinearGradient>
   );
@@ -575,5 +631,147 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontFamily: 'Poppins_600SemiBold',
     fontSize: 14,
-  }
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContainer: {
+    width: '100%',
+    maxWidth: 380,
+    borderRadius: 28,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.35,
+    shadowRadius: 30,
+    elevation: 20,
+  },
+  modalCard: {
+    padding: 26,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 28,
+  },
+  modalBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
+    marginBottom: 16,
+  },
+  modalBadgeText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 12,
+    color: '#F59E0B',
+    letterSpacing: 1.5,
+  },
+  modalAvatarContainer: {
+    marginBottom: 14,
+  },
+  modalAvatar: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    borderWidth: 2.5,
+    borderColor: '#EF4444',
+  },
+  modalAvatarPlaceholder: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: '#334155',
+    borderWidth: 2.5,
+    borderColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalAvatarText: {
+    fontSize: 28,
+    fontFamily: 'Poppins_700Bold',
+    color: '#F8FAFC',
+  },
+  modalFriendName: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 22,
+    color: '#FFF',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  modalStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 14,
+  },
+  modalStatsText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 13,
+    color: '#94A3B8',
+  },
+  modalStatsDot: {
+    color: '#64748B',
+    fontSize: 12,
+  },
+  modalPrompt: {
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 14,
+    color: '#94A3B8',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 22,
+    paddingHorizontal: 8,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalCancelBtn: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  modalCancelBtnText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 15,
+    color: '#CBD5E1',
+  },
+  modalConfirmBtn: {
+    flex: 1.3,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  modalConfirmGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  modalConfirmBtnText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 15,
+    color: '#FFF',
+  },
 });
