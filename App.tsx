@@ -26,6 +26,7 @@ import TranslatorScreen from './screens/TranslatorScreen';
 import PhrasebookScreen from './screens/PhrasebookScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import LeaderboardScreen from './screens/LeaderboardScreen';
+import FriendsScreen from './screens/FriendsScreen';
 import MultiplayerLobbyScreen from './screens/MultiplayerLobbyScreen';
 import QuizBattleScreen from './screens/QuizBattleScreen';
 import OfflineQuizScreen from './screens/OfflineQuizScreen';
@@ -58,6 +59,7 @@ function AppNavigator() {
             <Stack.Screen name="Translator" component={TranslatorScreen} />
             <Stack.Screen name="Phrasebook" component={PhrasebookScreen} />
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
+            <Stack.Screen name="Friends" component={FriendsScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="MultiplayerLobby" component={MultiplayerLobbyScreen} />
             <Stack.Screen name="QuizBattle" component={QuizBattleScreen} />

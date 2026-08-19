@@ -15,6 +15,7 @@ type ProfileData = {
   streakCount: number;
   lastLogin?: string; // ISO string YYYY-MM-DD
   srsData?: Record<string, { interval: number, easeFactor: number, nextReview: number }>;
+  eloRating: number;
 };
 
 type ProfileContextType = {
@@ -34,6 +35,7 @@ const defaultProfile: ProfileData = {
   readHubIndex: 0,
   readHubCategory: 'All',
   streakCount: 0,
+  eloRating: 1000,
 };
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -104,6 +106,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           streakCount: data.streak_count || 0,
           lastLogin: data.last_login,
           srsData: data.srs_data || {},
+          eloRating: data.elo_rating || 1000,
         });
 
         // Calculate Streaks
@@ -160,6 +163,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           streak_count: 1,
           last_login: new Date().toISOString().split('T')[0],
           srs_data: {},
+          elo_rating: 1000,
         };
         const { error: insertError } = await supabase.from('profiles').insert([initialProfileToInsert]);
         if (insertError) console.error("Insert Profile Error:", insertError);
@@ -175,6 +179,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           streakCount: initialProfileToInsert.streak_count,
           lastLogin: initialProfileToInsert.last_login,
           srsData: initialProfileToInsert.srs_data,
+          eloRating: initialProfileToInsert.elo_rating,
         });
       }
 
@@ -196,6 +201,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
               streakCount: newData.streak_count || 0,
               lastLogin: newData.last_login,
               srsData: newData.srs_data || {},
+              eloRating: newData.elo_rating || 1000,
             });
           }
         })
@@ -257,6 +263,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       try {
         await supabase.from('profiles').upsert({
           id: user.id,
+          email: profileToSync.email,
           first_name: profileToSync.firstName,
           last_name: profileToSync.lastName,
           xp: profileToSync.xp,
@@ -266,6 +273,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           read_hub_index: profileToSync.readHubIndex,
           read_hub_category: profileToSync.readHubCategory,
           srs_data: profileToSync.srsData,
+          elo_rating: profileToSync.eloRating,
         });
       } catch (error) {
         console.error("Supabase Sync Error:", error);

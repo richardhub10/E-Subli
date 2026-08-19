@@ -275,15 +275,19 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     }
   }, [currentQuestionIndex, status, hasShownVsScreen, questions]);
 
-  // Handle XP Awarding when finished
+  // Handle XP and Elo Awarding when finished
   useEffect(() => {
     if (status === 'finished' && !hasAwardedXP) {
       setHasAwardedXP(true);
       if (myScore > opponentScore) {
-        updateProfile({ xp: (profile?.xp || 0) + 50 });
+        updateProfile({ 
+          xp: (profile?.xp || 0) + 50,
+          eloRating: (profile?.eloRating || 1000) + 25 
+        });
       } else if (myScore < opponentScore) {
         const newXp = Math.max(0, (profile?.xp || 0) - 20);
-        updateProfile({ xp: newXp });
+        const newElo = Math.max(0, (profile?.eloRating || 1000) - 25);
+        updateProfile({ xp: newXp, eloRating: newElo });
       }
     }
   }, [status, myScore, opponentScore, hasAwardedXP]);

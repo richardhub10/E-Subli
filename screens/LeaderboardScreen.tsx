@@ -86,7 +86,9 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
           <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('leaderboard')}</Text>
-        <View style={{ width: 44 }} />
+        <TouchableOpacity onPress={() => navigation.navigate('Friends')} style={styles.friendsButton}>
+          <Ionicons name="people" size={24} color="#0F172A" />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
@@ -125,6 +127,19 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  friendsButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#E0E7FF',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

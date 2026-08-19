@@ -59,13 +59,26 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
     setRoomId(null);
     
     try {
-      // 1. Look for a waiting room
-      const { data: waitingRooms, error: searchError } = await supabase
+      // 1. Look for a waiting room with similar Elo (+/- 200)
+      let { data: waitingRooms, error: searchError } = await supabase
         .from('quiz_rooms')
         .select('*')
         .eq('status', 'waiting')
-        .neq('host_id', user.id) // Don't join your own ghost room
+        .neq('host_id', user.id)
+        .gte('host_elo', (profile?.eloRating || 1000) - 200)
+        .lte('host_elo', (profile?.eloRating || 1000) + 200)
         .limit(1);
+
+      // If no close match, just find ANY waiting room
+      if (!waitingRooms || waitingRooms.length === 0) {
+        const fallbackSearch = await supabase
+          .from('quiz_rooms')
+          .select('*')
+          .eq('status', 'waiting')
+          .neq('host_id', user.id)
+          .limit(1);
+        waitingRooms = fallbackSearch.data;
+      }
 
       if (waitingRooms && waitingRooms.length > 0) {
         setStatusMessage(t('match_found'));
@@ -97,7 +110,14 @@ export default function MultiplayerLobbyScreen({ navigation }: MultiplayerLobbyS
         const { data: newRoom, error: createError } = await supabase
           .from('quiz_rooms')
           .insert([
-            { room_code: newCode, host_id: user.id, status: 'waiting', current_question_index: 0, questions: initialQuestions }
+            { 
+              room_code: newCode, 
+              host_id: user.id, 
+              status: 'waiting', 
+              current_question_index: 0, 
+              questions: initialQuestions,
+              host_elo: profile?.eloRating || 1000
+            }
           ])
           .select()
           .single();
