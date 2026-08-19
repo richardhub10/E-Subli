@@ -72,7 +72,14 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
 
   const speakTranslation = () => {
     if (translatedText) {
-      Speech.speak(translatedText, { language: 'fil-PH', rate: 0.8 });
+      // Kapampangan is not natively supported by most mobile TTS engines.
+      // We use 'fil-PH' as the base phonetics, but lower the pitch and slightly adjust the rate
+      // to give it a more distinct, regional intonation that differentiates it from standard Tagalog.
+      Speech.speak(translatedText, { 
+        language: 'fil-PH', 
+        rate: 0.85,
+        pitch: 0.85 
+      });
     }
   };
 

@@ -25,7 +25,8 @@ export default function Flashcard({ data }: FlashcardProps) {
               style={styles.speakerButton} 
               onPress={(e) => {
                 e.stopPropagation();
-                Speech.speak(data.latin, { language: 'fil-PH', rate: 0.8 });
+                // Lower pitch slightly for regional intonation
+                Speech.speak(data.latin, { language: 'fil-PH', rate: 0.85, pitch: 0.85 });
               }}
             >
               <Ionicons name="volume-high" size={28} color="#0EA5E9" />
