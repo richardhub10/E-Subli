@@ -136,10 +136,16 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
       
       // Send broadcast notification to the friend
       const senderName = profile?.firstName || user.email?.split('@')[0] || 'A user';
-      await supabase.channel(`user_${friendId}`).send({
-        type: 'broadcast',
-        event: 'friend_request',
-        payload: { senderName }
+      const friendChannel = supabase.channel(`user_${friendId}`);
+      friendChannel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await friendChannel.send({
+            type: 'broadcast',
+            event: 'friend_request',
+            payload: { senderName }
+          });
+          supabase.removeChannel(friendChannel);
+        }
       });
 
     } catch (error) {
@@ -185,13 +191,19 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                 .from('quiz_room_players')
                 .insert([{ room_id: newRoom.id, user_id: user.id, score: 0, player_name: myName }]);
 
-              // Send broadcast to friend
-              await supabase.channel(`user_${friend.id}`).send({
-                type: 'broadcast',
-                event: 'challenge',
-                payload: { 
-                  challengerName: profile?.firstName || user.email?.split('@')[0] || 'A user',
-                  roomId: newRoom.id
+              // Send broadcast to friend by temporarily subscribing
+              const friendChannel = supabase.channel(`user_${friend.id}`);
+              friendChannel.subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                  await friendChannel.send({
+                    type: 'broadcast',
+                    event: 'challenge',
+                    payload: { 
+                      challengerName: profile?.firstName || user.email?.split('@')[0] || 'A user',
+                      roomId: newRoom.id
+                    }
+                  });
+                  supabase.removeChannel(friendChannel);
                 }
               });
 
