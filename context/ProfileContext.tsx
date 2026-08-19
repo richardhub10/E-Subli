@@ -198,17 +198,13 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       await supabase.from('profiles').upsert({
         id: user.id,
         first_name: newProfile.firstName,
+        last_name: newProfile.lastName,
+        xp: newProfile.xp,
+        level: newProfile.level,
         flashcardsread: newProfile.flashcardsRead,
         writingpractices: newProfile.writingPractices,
         read_hub_index: newProfile.readHubIndex,
         read_hub_category: newProfile.readHubCategory,
-        ...newProfile,
-        firstName: undefined,
-        lastName: undefined,
-        flashcardsRead: undefined,
-        writingPractices: undefined,
-        readHubIndex: undefined,
-        readHubCategory: undefined,
       });
     } catch (error) {
       console.error("Supabase Sync Error:", error);
