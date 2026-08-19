@@ -382,11 +382,11 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     });
   };
 
-  const leaveRoom = async () => {
-    if (user) {
-      await supabase.from('quiz_room_players').delete().eq('room_id', roomId).eq('user_id', user.id);
-    }
+  const leaveRoom = () => {
     navigation.goBack();
+    if (user) {
+      supabase.from('quiz_room_players').delete().eq('room_id', roomId).eq('user_id', user.id).then();
+    }
   };
 
   if (isLoading) {

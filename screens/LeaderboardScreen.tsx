@@ -11,7 +11,7 @@ type LeaderboardScreenProps = {
 
 type LeaderboardEntry = {
   id: string;
-  email: string;
+  name: string;
   xp: number;
   level: number;
 };
@@ -31,12 +31,18 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
           
         if (error) throw error;
 
-        const users: LeaderboardEntry[] = data.map((doc: any) => ({
-          id: doc.id,
-          email: doc.email || 'Anonymous Scholar',
-          xp: doc.xp || 0,
-          level: doc.level || 1,
-        }));
+        const users: LeaderboardEntry[] = data.map((doc: any) => {
+          let name = 'Anonymous Scholar';
+          if (doc.first_name) {
+            name = doc.first_name + (doc.last_name ? ` ${doc.last_name}` : '');
+          }
+          return {
+            id: doc.id,
+            name: name,
+            xp: doc.xp || 0,
+            level: doc.level || 1,
+          };
+        });
 
         setLeaders(users);
       } catch (error) {
@@ -61,7 +67,7 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
           </Text>
         </View>
         <View style={styles.infoContainer}>
-          <Text style={styles.emailText}>{item.email.split('@')[0]}</Text>
+          <Text style={styles.emailText} numberOfLines={1}>{item.name}</Text>
           <Text style={styles.levelText}>Lvl {item.level}</Text>
         </View>
         <View style={styles.xpContainer}>
