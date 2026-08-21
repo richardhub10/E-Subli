@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Animated } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Animated, ScrollView, SafeAreaView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { supabase } from '../supabaseClient';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useLanguage } from '../context/LanguageContext';
+import { Language } from '../utils/translations';
 
 type RegisterScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -15,16 +18,21 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
 
   const handleRegister = async () => {
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || !password || !confirmPassword) {
+      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       Alert.alert('Error', 'Please fill in all fields.');
       return;
     }
 
     if (password !== confirmPassword) {
+      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       Alert.alert('Error', 'Passwords do not match.');
       return;
     }
@@ -32,105 +40,236 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
         options: {
           data: {
-            first_name: firstName,
-            last_name: lastName,
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
           }
         }
       });
       if (error) throw error;
       
+      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert('Registration Successful', 'You can now log in.');
       navigation.replace('Login');
     } catch (error: any) {
+      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert('Registration Failed', error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Animation for button
+  // Button Animation
   const scaleAnim = new Animated.Value(1);
-  const onPressIn = () => Animated.spring(scaleAnim, { toValue: 0.95, useNativeDriver: Platform.OS !== 'web' }).start();
+  const onPressIn = () => {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Animated.spring(scaleAnim, { toValue: 0.96, useNativeDriver: Platform.OS !== 'web' }).start();
+  };
   const onPressOut = () => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: Platform.OS !== 'web' }).start();
 
   return (
     <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.innerContainer}>
+      <SafeAreaView style={styles.safeArea}>
         
-        <View style={styles.headerContainer}>
-          <Text style={styles.subtitle}>{language === 'EN' ? 'Join' : language === 'PH' ? 'Sumali sa' : 'Makisali king'}</Text>
-          <Text style={styles.title}>E-Subli</Text>
-        </View>
-        
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder={t('first_name')}
-            placeholderTextColor="#888"
-            value={firstName}
-            onChangeText={setFirstName}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder={t('last_name')}
-            placeholderTextColor="#888"
-            value={lastName}
-            onChangeText={setLastName}
-          />
-          
-          <TextInput
-            style={styles.input}
-            placeholder={t('email')}
-            placeholderTextColor="#888"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-          
-          <TextInput
-            style={styles.input}
-            placeholder={t('password')}
-            placeholderTextColor="#888"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder={language === 'EN' ? 'Confirm Password' : language === 'PH' ? 'Kumpirmahin ang Password' : 'Kumpirman ing Password'}
-            placeholderTextColor="#888"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-          />
-        </View>
-
-        <Animated.View style={{ transform: [{ scale: scaleAnim }], width: '100%', marginTop: 10 }}>
+        {/* Top Navigation Row: Back Button & Language Pill */}
+        <View style={styles.topNavRow}>
           <TouchableOpacity 
-            activeOpacity={0.8}
-            onPress={handleRegister} 
-            onPressIn={onPressIn}
-            onPressOut={onPressOut}
-            disabled={loading}
+            style={styles.backButton} 
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
           >
-            <LinearGradient colors={['#E87954', '#D1582D']} style={styles.button}>
-              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{t('create_account')}</Text>}
-            </LinearGradient>
+            <Ionicons name="arrow-back" size={22} color="#0F172A" />
           </TouchableOpacity>
-        </Animated.View>
 
-        <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.linkButton}>
-          <Text style={styles.linkText}>{t('already_have_account')} <Text style={styles.linkTextBold}>{t('login')}</Text></Text>
-        </TouchableOpacity>
-        
-      </KeyboardAvoidingView>
+          <View style={styles.langPillContainer}>
+            {(['EN', 'PH', 'KPM'] as Language[]).map((lang) => (
+              <TouchableOpacity
+                key={lang}
+                onPress={() => setLanguage(lang)}
+                style={[styles.langPillBtn, language === lang && styles.langPillBtnActive]}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.langPillText, language === lang && styles.langPillTextActive]}>
+                  {lang}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+          style={{ flex: 1 }}
+        >
+          <ScrollView 
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            
+            {/* Header Brand */}
+            <View style={styles.headerContainer}>
+              <View style={styles.sealCircle}>
+                <Text style={styles.sealKulitan}>e{'\n'}S</Text>
+              </View>
+
+              <Text style={styles.logoTitle}>
+                <Text style={styles.logoE}>e</Text>SUBLI
+              </Text>
+              
+              <Text style={styles.subtitle}>
+                {language === 'EN' 
+                  ? 'Create your account to start learning' 
+                  : language === 'PH' 
+                  ? 'Lumikha ng account upang magsimula' 
+                  : 'Gawa kang account bang mag-umpisa'}
+              </Text>
+            </View>
+            
+            {/* Input Form */}
+            <View style={styles.formContainer}>
+              
+              {/* Name Row */}
+              <View style={styles.nameRow}>
+                <View style={[styles.inputWrapper, { flex: 1 }]}>
+                  <Text style={styles.inputLabel}>{t('first_name')}</Text>
+                  <View style={[styles.inputBox, focusedField === 'first' && styles.inputBoxFocused]}>
+                    <Ionicons name="person-outline" size={18} color={focusedField === 'first' ? '#D1582D' : '#94A3B8'} style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.textInputField}
+                      placeholder="Juan"
+                      placeholderTextColor="#94A3B8"
+                      value={firstName}
+                      onChangeText={setFirstName}
+                      onFocus={() => setFocusedField('first')}
+                      onBlur={() => setFocusedField(null)}
+                    />
+                  </View>
+                </View>
+
+                <View style={[styles.inputWrapper, { flex: 1 }]}>
+                  <Text style={styles.inputLabel}>{t('last_name')}</Text>
+                  <View style={[styles.inputBox, focusedField === 'last' && styles.inputBoxFocused]}>
+                    <TextInput
+                      style={styles.textInputField}
+                      placeholder="Dela Cruz"
+                      placeholderTextColor="#94A3B8"
+                      value={lastName}
+                      onChangeText={setLastName}
+                      onFocus={() => setFocusedField('last')}
+                      onBlur={() => setFocusedField(null)}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              {/* Email */}
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>{t('email')}</Text>
+                <View style={[styles.inputBox, focusedField === 'email' && styles.inputBoxFocused]}>
+                  <Ionicons name="mail-outline" size={18} color={focusedField === 'email' ? '#D1582D' : '#94A3B8'} style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.textInputField}
+                    placeholder="name@example.com"
+                    placeholderTextColor="#94A3B8"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    onFocus={() => setFocusedField('email')}
+                    onBlur={() => setFocusedField(null)}
+                  />
+                </View>
+              </View>
+
+              {/* Password */}
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>{t('password')}</Text>
+                <View style={[styles.inputBox, focusedField === 'password' && styles.inputBoxFocused]}>
+                  <Ionicons name="lock-closed-outline" size={18} color={focusedField === 'password' ? '#D1582D' : '#94A3B8'} style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.textInputField}
+                    placeholder="••••••••••••"
+                    placeholderTextColor="#94A3B8"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    onFocus={() => setFocusedField('password')}
+                    onBlur={() => setFocusedField(null)}
+                  />
+                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                    <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color="#94A3B8" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Confirm Password */}
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>
+                  {language === 'EN' ? 'Confirm Password' : 'Kumpirmahin ang Password'}
+                </Text>
+                <View style={[styles.inputBox, focusedField === 'confirm' && styles.inputBoxFocused]}>
+                  <Ionicons name="shield-checkmark-outline" size={18} color={focusedField === 'confirm' ? '#D1582D' : '#94A3B8'} style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.textInputField}
+                    placeholder="••••••••••••"
+                    placeholderTextColor="#94A3B8"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry={!showConfirmPassword}
+                    onFocus={() => setFocusedField('confirm')}
+                    onBlur={() => setFocusedField(null)}
+                  />
+                  <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                    <Ionicons name={showConfirmPassword ? "eye-off-outline" : "eye-outline"} size={20} color="#94A3B8" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+            </View>
+
+            {/* Create Account Button */}
+            <Animated.View style={{ transform: [{ scale: scaleAnim }], width: '100%', marginTop: 8 }}>
+              <TouchableOpacity 
+                activeOpacity={0.85}
+                onPress={handleRegister} 
+                onPressIn={onPressIn}
+                onPressOut={onPressOut}
+                disabled={loading}
+                style={styles.buttonShadow}
+              >
+                <LinearGradient colors={['#E87954', '#D1582D']} style={styles.button}>
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <View style={styles.buttonContentRow}>
+                      <Text style={styles.buttonText}>{t('create_account')}</Text>
+                      <Ionicons name="checkmark-circle" size={18} color="#FFF" />
+                    </View>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+            </Animated.View>
+
+            {/* Link back to Login */}
+            <TouchableOpacity 
+              onPress={() => navigation.navigate('Login')} 
+              style={styles.linkButton}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.linkText}>
+                {t('already_have_account')}{' '}
+                <Text style={styles.linkTextBold}>{t('login')}</Text>
+              </Text>
+            </TouchableOpacity>
+
+          </ScrollView>
+        </KeyboardAvoidingView>
+
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -139,72 +278,182 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  innerContainer: {
+  safeArea: {
     flex: 1,
-    padding: 24,
+  },
+  topNavRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 12 : 36,
+    paddingBottom: 10,
+  },
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  langPillContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 3,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  langPillBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  langPillBtnActive: {
+    backgroundColor: '#D1582D',
+  },
+  langPillText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11,
+    color: '#64748B',
+  },
+  langPillTextActive: {
+    color: '#FFFFFF',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 10,
+    paddingBottom: 30,
     justifyContent: 'center',
   },
   headerContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 24,
   },
-  subtitle: {
-    fontSize: 18,
-    fontFamily: 'Poppins_400Regular',
-    color: '#64748B',
-    marginBottom: -5,
+  sealCircle: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: '#050B14',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    borderWidth: 2,
+    borderColor: '#F59E0B',
   },
-  title: {
-    fontSize: 42,
+  sealKulitan: {
+    fontFamily: 'Kulitan',
+    fontSize: 20,
+    color: '#F59E0B',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  logoTitle: {
+    fontSize: 30,
     fontFamily: 'Poppins_700Bold',
     color: '#0F172A',
-    letterSpacing: -1,
+    letterSpacing: 2,
   },
-  inputContainer: {
-    marginBottom: 20,
+  logoE: {
+    color: '#D1582D',
+    fontStyle: 'italic',
   },
-  input: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    padding: 18,
-    marginBottom: 16,
-    borderRadius: 12,
-    fontSize: 16,
+  subtitle: {
+    fontSize: 13,
     fontFamily: 'Poppins_400Regular',
-    color: '#0F172A',
+    color: '#64748B',
+    textAlign: 'center',
+    marginTop: 2,
+    maxWidth: 280,
+  },
+  formContainer: {
+    marginBottom: 12,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  inputWrapper: {
+    marginBottom: 12,
+  },
+  inputLabel: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 12,
+    color: '#334155',
+    marginBottom: 4,
+  },
+  inputBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.04,
+    shadowRadius: 5,
     elevation: 2,
   },
-  button: {
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
+  inputBoxFocused: {
+    borderColor: '#D1582D',
+    backgroundColor: '#FFFDFB',
+  },
+  inputIcon: {
+    marginRight: 8,
+  },
+  textInputField: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: 'Poppins_500Medium',
+    color: '#0F172A',
+  },
+  buttonShadow: {
+    borderRadius: 18,
     shadowColor: '#D1582D',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  button: {
+    paddingVertical: 15,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonContentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 18,
-    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 15,
+    fontFamily: 'Poppins_700Bold',
+    letterSpacing: 0.5,
   },
   linkButton: {
-    marginTop: 24,
+    marginTop: 18,
     alignItems: 'center',
+    paddingVertical: 6,
   },
   linkText: {
     color: '#64748B',
-    fontSize: 15,
+    fontSize: 13,
     fontFamily: 'Poppins_400Regular',
   },
   linkTextBold: {
     color: '#D1582D',
-    fontFamily: 'Poppins_600SemiBold',
-  }
+    fontFamily: 'Poppins_700Bold',
+  },
 });
