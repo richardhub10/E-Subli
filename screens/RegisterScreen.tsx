@@ -3,10 +3,13 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityInd
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import * as WebBrowser from 'expo-web-browser';
 import { supabase } from '../supabaseClient';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useLanguage } from '../context/LanguageContext';
 import { Language } from '../utils/translations';
+
+WebBrowser.maybeCompleteAuthSession();
 
 type RegisterScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -22,6 +25,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const { t, language, setLanguage } = useLanguage();
 
   const handleRegister = async () => {
@@ -59,6 +63,44 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
       Alert.alert('Registration Failed', error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    setGoogleLoading(true);
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      const redirectUrl = Platform.OS === 'web' 
+        ? window.location.origin 
+        : 'esubli://auth/callback';
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: Platform.OS !== 'web',
+        },
+      });
+
+      if (error) throw error;
+
+      if (Platform.OS !== 'web' && data?.url) {
+        const res = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+        if (res.type === 'success' && res.url) {
+          const parsedUrl = new URL(res.url.replace('#', '?'));
+          const access_token = parsedUrl.searchParams.get('access_token');
+          const refresh_token = parsedUrl.searchParams.get('refresh_token');
+
+          if (access_token && refresh_token) {
+            await supabase.auth.setSession({ access_token, refresh_token });
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Google Sign-Up Error:', error);
+      Alert.alert('Google Sign-Up', error.message || 'Could not complete Google registration.');
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -129,6 +171,34 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
               </Text>
             </View>
             
+            {/* Google / Gmail Sign-Up Option Button */}
+            <TouchableOpacity
+              style={styles.googleButton}
+              activeOpacity={0.8}
+              onPress={handleGoogleAuth}
+              disabled={googleLoading}
+            >
+              {googleLoading ? (
+                <ActivityIndicator color="#D1582D" />
+              ) : (
+                <View style={styles.googleBtnContent}>
+                  <Ionicons name="logo-google" size={20} color="#EA4335" />
+                  <Text style={styles.googleBtnText}>
+                    {language === 'EN' ? 'Sign up with Google / Gmail' : language === 'PH' ? 'Mag-sign up gamit ang Google' : 'Mag-sign up gamit ing Google'}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Divider OR */}
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>
+                {language === 'EN' ? 'OR USE EMAIL' : language === 'PH' ? 'O GAMIT ANG EMAIL' : 'O GAMIT ING EMAIL'}
+              </Text>
+              <View style={styles.dividerLine} />
+            </View>
+
             {/* Input Form */}
             <View style={styles.formContainer}>
               
@@ -232,7 +302,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
             </View>
 
             {/* Create Account Button */}
-            <Animated.View style={{ transform: [{ scale: scaleAnim }], width: '100%', marginTop: 8 }}>
+            <Animated.View style={{ transform: [{ scale: scaleAnim }], width: '100%', marginTop: 6 }}>
               <TouchableOpacity 
                 activeOpacity={0.85}
                 onPress={handleRegister} 
@@ -335,7 +405,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   sealCircle: {
     width: 58,
@@ -373,15 +443,56 @@ const styles = StyleSheet.create({
     marginTop: 2,
     maxWidth: 280,
   },
+  googleButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: 18,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  googleBtnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  googleBtnText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 14,
+    color: '#334155',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+    gap: 10,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#CBD5E1',
+  },
+  dividerText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11,
+    color: '#94A3B8',
+    letterSpacing: 0.8,
+  },
   formContainer: {
-    marginBottom: 12,
+    marginBottom: 10,
   },
   nameRow: {
     flexDirection: 'row',
     gap: 10,
   },
   inputWrapper: {
-    marginBottom: 12,
+    marginBottom: 10,
   },
   inputLabel: {
     fontFamily: 'Poppins_600SemiBold',
@@ -443,7 +554,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   linkButton: {
-    marginTop: 18,
+    marginTop: 16,
     alignItems: 'center',
     paddingVertical: 6,
   },

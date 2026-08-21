@@ -3,10 +3,13 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityInd
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import * as WebBrowser from 'expo-web-browser';
 import { supabase } from '../supabaseClient';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useLanguage } from '../context/LanguageContext';
 import { Language } from '../utils/translations';
+
+WebBrowser.maybeCompleteAuthSession();
 
 type LoginScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -18,6 +21,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const { t, language, setLanguage } = useLanguage();
 
   const handleLogin = async () => {
@@ -47,6 +51,47 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    setGoogleLoading(true);
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      const redirectUrl = Platform.OS === 'web' 
+        ? window.location.origin 
+        : 'esubli://auth/callback';
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: Platform.OS !== 'web',
+        },
+      });
+
+      if (error) throw error;
+
+      if (Platform.OS !== 'web' && data?.url) {
+        const res = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+        if (res.type === 'success' && res.url) {
+          const parsedUrl = new URL(res.url.replace('#', '?'));
+          const access_token = parsedUrl.searchParams.get('access_token');
+          const refresh_token = parsedUrl.searchParams.get('refresh_token');
+
+          if (access_token && refresh_token) {
+            await supabase.auth.setSession({ access_token, refresh_token });
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Google Sign-In Error:', error);
+      Alert.alert(
+        'Google Sign-In',
+        error.message || 'Could not complete Google sign-in.'
+      );
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -209,7 +254,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             </View>
 
             {/* Login Action Button */}
-            <Animated.View style={{ transform: [{ scale: scaleAnim }], width: '100%', marginTop: 8 }}>
+            <Animated.View style={{ transform: [{ scale: scaleAnim }], width: '100%', marginTop: 4 }}>
               <TouchableOpacity 
                 activeOpacity={0.85}
                 onPress={handleLogin} 
@@ -230,6 +275,34 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
                 </LinearGradient>
               </TouchableOpacity>
             </Animated.View>
+
+            {/* Divider OR */}
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>
+                {language === 'EN' ? 'OR CONTINUE WITH' : language === 'PH' ? 'O MAGPATULOY GAMIT ANG' : 'O MITULUY GAMIT ING'}
+              </Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* Google / Gmail Sign-In Button */}
+            <TouchableOpacity
+              style={styles.googleButton}
+              activeOpacity={0.8}
+              onPress={handleGoogleAuth}
+              disabled={googleLoading}
+            >
+              {googleLoading ? (
+                <ActivityIndicator color="#D1582D" />
+              ) : (
+                <View style={styles.googleBtnContent}>
+                  <Ionicons name="logo-google" size={20} color="#EA4335" />
+                  <Text style={styles.googleBtnText}>
+                    {language === 'EN' ? 'Continue with Google' : language === 'PH' ? 'Magpatuloy gamit ang Google' : 'Mituluy gamit ing Google'}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
 
             {/* Register Link */}
             <TouchableOpacity 
@@ -317,7 +390,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 24,
   },
   sealCircle: {
     width: 64,
@@ -326,7 +399,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#050B14',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
     borderWidth: 2,
     borderColor: '#F59E0B',
     shadowColor: '#D1582D',
@@ -361,10 +434,10 @@ const styles = StyleSheet.create({
     maxWidth: 260,
   },
   formContainer: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   inputWrapper: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   inputLabel: {
     fontFamily: 'Poppins_600SemiBold',
@@ -439,8 +512,49 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_700Bold',
     letterSpacing: 0.5,
   },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 18,
+    gap: 10,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#CBD5E1',
+  },
+  dividerText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11,
+    color: '#94A3B8',
+    letterSpacing: 0.8,
+  },
+  googleButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: 18,
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  googleBtnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  googleBtnText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 14,
+    color: '#334155',
+  },
   linkButton: {
-    marginTop: 22,
+    marginTop: 20,
     alignItems: 'center',
     paddingVertical: 6,
   },
