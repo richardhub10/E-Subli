@@ -222,7 +222,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             borderRadius: expandAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }),
             overflow: 'hidden',
           }}>
-            <LinearGradient colors={expandingFeature.gradient} style={{...StyleSheet.absoluteFillObject, justifyContent:'center', alignItems:'center'}}>
+            <LinearGradient colors={expandingFeature.gradient} style={[StyleSheet.absoluteFill, { justifyContent: 'center', alignItems: 'center' }]}>
                 {expandingFeature.icon}
                 <Animated.Text style={{
                   color: 'white',

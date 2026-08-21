@@ -197,7 +197,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           lastLogin: initialProfileToInsert.last_login,
           srsData: initialProfileToInsert.srs_data,
           eloRating: initialProfileToInsert.elo_rating,
-          avatarUrl: initialProfileToInsert.avatar_url,
+          avatarUrl: defaultProfile.avatarUrl,
         });
       }
 
