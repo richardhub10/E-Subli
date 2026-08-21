@@ -8,6 +8,7 @@ import { decode } from 'base64-arraybuffer';
 import { useProfile } from '../context/ProfileContext';
 import { supabase } from '../supabaseClient';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { Language } from '../utils/translations';
 
 type ProfileScreenProps = {
@@ -17,6 +18,7 @@ type ProfileScreenProps = {
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const { profile, updateProfile } = useProfile();
   const { t, language, setLanguage } = useLanguage();
+  const { signOut } = useAuth();
   
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editFirstName, setEditFirstName] = useState(profile.firstName || '');
@@ -25,7 +27,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      await signOut();
     } catch (error) {
       console.error('Logout error:', error);
     }
