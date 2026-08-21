@@ -36,7 +36,11 @@ export default function WelcomeScreen({ navigation }: WelcomeScreenProps) {
       <View style={styles.welcomeContainer}>
         <Text style={styles.subtitle}>{language === 'EN' ? 'HERITAGE IN SCRIPT' : language === 'PH' ? 'PAMANA SA SULAT' : 'MANA KING SULAT'}</Text>
         <Text style={styles.welcomeText}>
-          {t('welcome')} {language === 'EN' ? "to Kapampangan, Tagalog,\nand English" : language === 'PH' ? "sa Kapampangan, Tagalog,\nat Ingles" : "king Kapampangan, Tagalog,\nampong Ingles"}
+          {language === 'EN' 
+            ? "Rediscover the ancient Kapampangan script with interactive lessons & battles." 
+            : language === 'PH' 
+            ? "Tuklasin muli ang sinaunang sulat Kapampangan sa pagsasanay at laban." 
+            : "Abalu mu pasibayu ing matwang sulat Kapampangan king pamagaral at labanan."}
         </Text>
       </View>
 
