@@ -72,6 +72,27 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
+      // Extract names & avatar intelligently from Google OAuth metadata
+      let extractedFirstName = user.user_metadata?.first_name || user.user_metadata?.given_name || '';
+      let extractedLastName = user.user_metadata?.last_name || user.user_metadata?.family_name || '';
+      const fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+      const googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || '';
+
+      if (!extractedFirstName && fullName) {
+        const parts = fullName.trim().split(' ');
+        if (parts.length === 1) {
+          extractedFirstName = parts[0];
+        } else {
+          extractedFirstName = parts.slice(0, -1).join(' ');
+          extractedLastName = parts[parts.length - 1];
+        }
+      }
+
+      if (!extractedFirstName && user.email) {
+        const emailName = user.email.split('@')[0];
+        extractedFirstName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
+      }
+
       // Fetch initial profile (maybeSingle prevents 406 Not Acceptable if it doesn't exist yet)
       const { data, error } = await supabase
         .from('profiles')
@@ -82,6 +103,19 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       if (data) {
         let currentRemoteXp = data.xp || 0;
         let currentRemoteLevel = data.level || 1;
+
+        // If the database has empty names or avatars, update them with Google data
+        const finalFirstName = data.first_name || extractedFirstName;
+        const finalLastName = data.last_name || extractedLastName;
+        const finalAvatar = data.avatar_url || googleAvatar;
+
+        if (!data.first_name && extractedFirstName) {
+          await supabase.from('profiles').update({
+            first_name: finalFirstName,
+            last_name: finalLastName,
+            avatar_url: finalAvatar || null,
+          }).eq('id', user.id);
+        }
 
         // Sync offline XP if it exists
         try {
@@ -115,15 +149,15 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           flashcardsRead: data.flashcardsread ?? data.flashcardsRead ?? 0,
           writingPractices: data.writingpractices ?? data.writingPractices ?? 0,
           email: data.email || user.email,
-          firstName: data.first_name || user.user_metadata?.first_name || '',
-          lastName: data.last_name || user.user_metadata?.last_name || '',
+          firstName: finalFirstName,
+          lastName: finalLastName,
           readHubIndex: data.read_hub_index || 0,
           readHubCategory: data.read_hub_category || 'All',
           streakCount: data.streak_count || 0,
           lastLogin: data.last_login,
           srsData: data.srs_data || {},
           eloRating: data.elo_rating || 1000,
-          avatarUrl: data.avatar_url,
+          avatarUrl: finalAvatar || undefined,
         });
 
         // Calculate Streaks
@@ -136,20 +170,18 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const lastLogin = lastLoginStr ? new Date(lastLoginStr) : null;
           
           if (lastLogin) {
-            // Check if last login was exactly yesterday
             const diffTime = Math.abs(today.getTime() - lastLogin.getTime());
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
             if (diffDays === 1) {
               newStreak += 1;
             } else {
-              newStreak = 1; // Broke the streak, reset to 1
+              newStreak = 1;
             }
           } else {
-            newStreak = 1; // First time logging in
+            newStreak = 1;
           }
           
-          // Update Supabase with new streak
           const { error: streakError } = await supabase
             .from('profiles')
             .update({ streak_count: newStreak, last_login: todayStr })
@@ -165,12 +197,13 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         }
 
       } else {
-        // Initialize new profile (only send columns that exist in SQL)
+        // Initialize new profile with extracted Google names
         const initialProfileToInsert = { 
           id: user.id, 
           email: user.email || '',
-          first_name: user.user_metadata?.first_name || '',
-          last_name: user.user_metadata?.last_name || '',
+          first_name: extractedFirstName,
+          last_name: extractedLastName,
+          avatar_url: googleAvatar || null,
           xp: defaultProfile.xp,
           level: defaultProfile.level,
           flashcardsread: defaultProfile.flashcardsRead,
@@ -185,7 +218,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         const { error: insertError } = await supabase.from('profiles').insert([initialProfileToInsert]);
         if (insertError) console.error("Insert Profile Error:", insertError);
         
-        // Map back to camelCase for frontend
         setProfile({
           ...defaultProfile,
           email: initialProfileToInsert.email,
@@ -197,7 +229,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           lastLogin: initialProfileToInsert.last_login,
           srsData: initialProfileToInsert.srs_data,
           eloRating: initialProfileToInsert.elo_rating,
-          avatarUrl: defaultProfile.avatarUrl,
+          avatarUrl: googleAvatar || defaultProfile.avatarUrl,
         });
       }
 
