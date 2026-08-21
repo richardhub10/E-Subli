@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, ActivityIndicator, Alert, FlatList, Image, Platform, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, ActivityIndicator, Alert, FlatList, Image, Platform, Modal, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -23,10 +23,23 @@ type FriendProfile = {
   avatar_url?: string;
 };
 
+type FriendRequestItem = {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  created_at: string;
+  sender_profile?: FriendProfile;
+};
+
 export default function FriendsScreen({ navigation }: FriendsScreenProps) {
   const [activeTab, setActiveTab] = useState<'List' | 'Add'>('List');
   const [friends, setFriends] = useState<FriendProfile[]>([]);
+  const [friendRequests, setFriendRequests] = useState<FriendRequestItem[]>([]);
+  const [isRequestsModalVisible, setIsRequestsModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+  const [processingRequestId, setProcessingRequestId] = useState<string | null>(null);
+
   const [searchName, setSearchName] = useState('');
   const [searchResults, setSearchResults] = useState<FriendProfile[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -37,10 +50,31 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
   const { t, language } = useLanguage();
 
   useEffect(() => {
-    if (activeTab === 'List') {
-      fetchFriends();
+    fetchFriends();
+    fetchFriendRequests();
+  }, []);
+
+  const getTimePassed = (dateString?: string): string => {
+    if (!dateString) return 'Recently';
+    const created = new Date(dateString).getTime();
+    if (isNaN(created)) return 'Recently';
+    const now = Date.now();
+    const diffMs = Math.max(0, now - created);
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays >= 1) {
+      return diffDays === 1 ? '1 day ago' : `${diffDays} days ago`;
     }
-  }, [activeTab]);
+    if (diffHours >= 1) {
+      return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
+    }
+    if (diffMinutes >= 1) {
+      return diffMinutes === 1 ? '1 minute ago' : `${diffMinutes} minutes ago`;
+    }
+    return 'Just now';
+  };
 
   const fetchFriends = async () => {
     if (!user) return;
@@ -79,6 +113,87 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
     }
   };
 
+  const fetchFriendRequests = async () => {
+    if (!user) return;
+    setLoadingRequests(true);
+    try {
+      const { data: requests, error } = await supabase
+        .from('friend_requests')
+        .select('id, sender_id, receiver_id, created_at')
+        .eq('receiver_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.log("Friend requests notice:", error.message);
+        setFriendRequests([]);
+        return;
+      }
+
+      if (requests && requests.length > 0) {
+        const senderIds = requests.map(r => r.sender_id);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, xp, level, elo_rating, avatar_url')
+          .in('id', senderIds);
+
+        const profilesMap = new Map((profiles || []).map(p => [p.id, p]));
+        const enriched: FriendRequestItem[] = requests.map(r => ({
+          ...r,
+          sender_profile: profilesMap.get(r.sender_id)
+        }));
+        setFriendRequests(enriched);
+      } else {
+        setFriendRequests([]);
+      }
+    } catch (err) {
+      console.error("Error fetching friend requests:", err);
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+
+  const acceptFriendRequest = async (request: FriendRequestItem) => {
+    if (!user) return;
+    setProcessingRequestId(request.id);
+    try {
+      // 1. Add reciprocal friendship
+      await supabase.from('friends').insert([
+        { user_id: user.id, friend_id: request.sender_id },
+        { user_id: request.sender_id, friend_id: user.id }
+      ]);
+
+      // 2. Remove the request
+      await supabase.from('friend_requests').delete().eq('id', request.id);
+
+      Alert.alert(
+        "Friend Added!",
+        language === 'EN' 
+          ? `${request.sender_profile?.first_name || 'Scholar'} is now your friend!`
+          : `Kaibigan mo na si ${request.sender_profile?.first_name || 'Scholar'}!`
+      );
+      
+      fetchFriends();
+      fetchFriendRequests();
+    } catch (err) {
+      console.error("Accept error:", err);
+      Alert.alert("Error", "Could not accept friend request.");
+    } finally {
+      setProcessingRequestId(null);
+    }
+  };
+
+  const declineFriendRequest = async (requestId: string) => {
+    setProcessingRequestId(requestId);
+    try {
+      await supabase.from('friend_requests').delete().eq('id', requestId);
+      setFriendRequests(prev => prev.filter(r => r.id !== requestId));
+    } catch (err) {
+      console.error("Decline error:", err);
+    } finally {
+      setProcessingRequestId(null);
+    }
+  };
+
   const searchFriend = async () => {
     if (!searchName.trim()) return;
     
@@ -94,7 +209,6 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        // Filter out the current user just in case
         const filteredData = data.filter(u => u.id !== user?.id);
         setSearchResults(filteredData);
       } else {
@@ -122,21 +236,41 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
         Alert.alert("Info", language === 'EN' ? "You are already friends!" : "Magkaibigan na kayo!");
         return;
       }
+
+      // Check if already requested
+      const { data: existingReq } = await supabase
+        .from('friend_requests')
+        .select('*')
+        .eq('sender_id', user.id)
+        .eq('receiver_id', friendId);
+
+      if (existingReq && existingReq.length > 0) {
+        Alert.alert("Info", language === 'EN' ? "Friend request already sent!" : "Naipadala na ang kahilingan!");
+        return;
+      }
       
+      // Send request with created_at timestamp
       const { error } = await supabase
-        .from('friends')
-        .insert([{ user_id: user.id, friend_id: friendId }]);
+        .from('friend_requests')
+        .insert([{ 
+          sender_id: user.id, 
+          receiver_id: friendId,
+          created_at: new Date().toISOString() 
+        }]);
         
-      if (error) throw error;
+      if (error) {
+        // Fallback: direct insert to friends if table doesn't exist
+        await supabase.from('friends').insert([
+          { user_id: user.id, friend_id: friendId },
+          { user_id: friendId, friend_id: user.id }
+        ]);
+      }
       
-      Alert.alert("Success!", language === 'EN' ? "Friend added successfully." : "Tagumpay na naidagdag ang kaibigan.");
+      Alert.alert("Success!", language === 'EN' ? "Friend request sent." : "Naipadala ang kahilingan ng pagkakaibigan.");
       setSearchName('');
       setSearchResults([]);
       
-      // Also add reverse friendship for simplicity (optional, but good for UX)
-      await supabase.from('friends').insert([{ user_id: friendId, friend_id: user.id }]);
-      
-      // Send broadcast notification to the friend
+      // Broadcast real-time ping
       const senderName = profile?.firstName || user.email?.split('@')[0] || 'A user';
       const friendChannel = supabase.channel(`user_${friendId}`);
       friendChannel.subscribe(async (status) => {
@@ -152,7 +286,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
 
     } catch (error) {
       console.error("Add friend error:", error);
-      Alert.alert("Error", "Could not add friend.");
+      Alert.alert("Error", "Could not send friend request.");
     }
   };
 
@@ -244,54 +378,91 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
         </View>
 
         {activeTab === 'List' ? (
-          loading ? (
-            <ActivityIndicator size="large" color="#3B82F6" style={{ marginTop: 50 }} />
-          ) : friends.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="people-outline" size={60} color="#94A3B8" />
-              <Text style={styles.emptyText}>{language === 'EN' ? "You don't have any friends yet." : "Wala ka pang kaibigan."}</Text>
-              <TouchableOpacity style={styles.addFriendBtn} onPress={() => setActiveTab('Add')}>
-                <Text style={styles.addFriendBtnText}>{language === 'EN' ? "Find Friends" : "Maghanap"}</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <FlatList
-              data={friends}
-              keyExtractor={item => item.id}
-              contentContainerStyle={styles.listContainer}
-              renderItem={({ item, index }) => (
-                <View style={styles.friendCard}>
-                  <View style={styles.rankBadge}>
-                    <Text style={styles.rankText}>{index + 1}</Text>
-                  </View>
-                  {item.avatar_url ? (
-                    <Image source={{ uri: item.avatar_url }} style={styles.friendAvatar} />
-                  ) : (
-                    <View style={styles.friendAvatarPlaceholder}>
-                      <Text style={styles.friendAvatarText}>{item.first_name ? item.first_name.charAt(0) : 'S'}</Text>
-                    </View>
-                  )}
-                  <View style={styles.friendInfo}>
-                    <Text style={styles.friendName}>{item.first_name || 'Scholar'} {item.last_name || ''}</Text>
-                    <Text style={styles.friendStats}>Lvl {item.level || 1} • {item.xp || 0} XP</Text>
-                    <Text style={styles.eloStats}>Elo: {item.elo_rating || 1000}</Text>
-                  </View>
-                  <TouchableOpacity 
-                    style={styles.challengeBtn} 
-                    activeOpacity={0.7}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    onPress={() => challengeFriend(item)}
-                  >
-                    <Ionicons name="game-controller" size={20} color="#FFF" />
-                  </TouchableOpacity>
+          <View style={{ flex: 1 }}>
+            {/* Friend Requests Action Banner */}
+            <TouchableOpacity 
+              style={styles.requestsBanner}
+              activeOpacity={0.8}
+              onPress={() => {
+                fetchFriendRequests();
+                setIsRequestsModalVisible(true);
+              }}
+            >
+              <View style={styles.requestsBannerLeft}>
+                <View style={styles.requestsIconCircle}>
+                  <Ionicons name="person-add" size={20} color="#D1582D" />
                 </View>
-              )}
-            />
-          )
+                <View>
+                  <Text style={styles.requestsBannerTitle}>
+                    {language === 'EN' ? 'Friend Requests' : 'Mga Kahilingan'}
+                  </Text>
+                  <Text style={styles.requestsBannerSub}>
+                    {friendRequests.length === 0 
+                      ? (language === 'EN' ? 'View incoming requests' : 'Tingnan ang mga kahilingan')
+                      : `${friendRequests.length} ${language === 'EN' ? 'pending request(s)' : 'nakabinbing kahilingan'}`}
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={styles.requestsBannerRight}>
+                {friendRequests.length > 0 && (
+                  <View style={styles.requestsBadge}>
+                    <Text style={styles.requestsBadgeText}>{friendRequests.length}</Text>
+                  </View>
+                )}
+                <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
+              </View>
+            </TouchableOpacity>
+
+            {loading ? (
+              <ActivityIndicator size="large" color="#D1582D" style={{ marginTop: 40 }} />
+            ) : friends.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="people-outline" size={60} color="#94A3B8" />
+                <Text style={styles.emptyText}>{language === 'EN' ? "You don't have any friends yet." : "Wala ka pang kaibigan."}</Text>
+                <TouchableOpacity style={styles.addFriendBtn} onPress={() => setActiveTab('Add')}>
+                  <Text style={styles.addFriendBtnText}>{language === 'EN' ? "Find Friends" : "Maghanap"}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <FlatList
+                data={friends}
+                keyExtractor={item => item.id}
+                contentContainerStyle={styles.listContainer}
+                renderItem={({ item, index }) => (
+                  <View style={styles.friendCard}>
+                    <View style={styles.rankBadge}>
+                      <Text style={styles.rankText}>{index + 1}</Text>
+                    </View>
+                    {item.avatar_url ? (
+                      <Image source={{ uri: item.avatar_url }} style={styles.friendAvatar} />
+                    ) : (
+                      <View style={styles.friendAvatarPlaceholder}>
+                        <Text style={styles.friendAvatarText}>{item.first_name ? item.first_name.charAt(0) : 'S'}</Text>
+                      </View>
+                    )}
+                    <View style={styles.friendInfo}>
+                      <Text style={styles.friendName}>{item.first_name || 'Scholar'} {item.last_name || ''}</Text>
+                      <Text style={styles.friendStats}>Lvl {item.level || 1} • {item.xp || 0} XP</Text>
+                      <Text style={styles.eloStats}>Elo: {item.elo_rating || 1000}</Text>
+                    </View>
+                    <TouchableOpacity 
+                      style={styles.challengeBtn} 
+                      activeOpacity={0.7}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      onPress={() => challengeFriend(item)}
+                    >
+                      <Ionicons name="game-controller" size={20} color="#FFF" />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
+            )}
+          </View>
         ) : (
           <View style={styles.addTabContainer}>
             <Text style={styles.searchPrompt}>
-              {language === 'EN' ? "Enter your friend's name to add them:" : "Ilagay ang pangalan ng iyong kaibigan upang idagdag:"}
+              {language === 'EN' ? "Enter your friend's name to send a request:" : "Ilagay ang pangalan upang magpadala ng kahilingan:"}
             </Text>
             <View style={styles.searchRow}>
               <TextInput
@@ -334,6 +505,120 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
           </View>
         )}
 
+        {/* Friend Requests Modal */}
+        <Modal 
+          visible={isRequestsModalVisible} 
+          transparent 
+          animationType="slide" 
+          onRequestClose={() => setIsRequestsModalVisible(false)}
+        >
+          <View style={styles.requestsModalOverlay}>
+            <View style={styles.requestsModalContainer}>
+              <View style={styles.requestsModalHeader}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Ionicons name="mail-unread" size={24} color="#D1582D" />
+                  <Text style={styles.requestsModalTitle}>
+                    {language === 'EN' ? 'Friend Requests' : 'Mga Kahilingan'}
+                  </Text>
+                </View>
+                <TouchableOpacity 
+                  style={styles.modalCloseBtn}
+                  onPress={() => setIsRequestsModalVisible(false)}
+                >
+                  <Ionicons name="close" size={24} color="#64748B" />
+                </TouchableOpacity>
+              </View>
+
+              {loadingRequests ? (
+                <View style={{ padding: 40, alignItems: 'center' }}>
+                  <ActivityIndicator size="large" color="#D1582D" />
+                </View>
+              ) : friendRequests.length === 0 ? (
+                <View style={styles.requestsEmptyState}>
+                  <Ionicons name="mail-open-outline" size={56} color="#CBD5E1" />
+                  <Text style={styles.requestsEmptyTitle}>
+                    {language === 'EN' ? 'No pending requests' : 'Walang nakabinbing kahilingan'}
+                  </Text>
+                  <Text style={styles.requestsEmptySub}>
+                    {language === 'EN' 
+                      ? 'When someone adds you, their friend request and time sent will appear here.'
+                      : 'Kapag may nagdagdag sa iyo, makikita rito ang kanilang kahilingan at oras.'}
+                  </Text>
+                </View>
+              ) : (
+                <FlatList
+                  data={friendRequests}
+                  keyExtractor={item => item.id}
+                  contentContainerStyle={{ padding: 16 }}
+                  renderItem={({ item }) => {
+                    const isProcessing = processingRequestId === item.id;
+                    const p = item.sender_profile;
+                    
+                    return (
+                      <View style={styles.requestCard}>
+                        {p?.avatar_url ? (
+                          <Image source={{ uri: p.avatar_url }} style={styles.requestAvatar} />
+                        ) : (
+                          <View style={styles.requestAvatarPlaceholder}>
+                            <Text style={styles.requestAvatarText}>
+                              {p?.first_name ? p.first_name.charAt(0).toUpperCase() : 'S'}
+                            </Text>
+                          </View>
+                        )}
+                        
+                        <View style={styles.requestInfo}>
+                          <Text style={styles.requestName} numberOfLines={1}>
+                            {p?.first_name || 'Scholar'} {p?.last_name || ''}
+                          </Text>
+                          <Text style={styles.requestStats}>
+                            Lvl {p?.level || 1} • {p?.xp || 0} XP
+                          </Text>
+                          
+                          {/* Time elapsed badge */}
+                          <View style={styles.timeBadge}>
+                            <Ionicons name="time-outline" size={13} color="#C2410C" />
+                            <Text style={styles.timeBadgeText}>
+                              Added {getTimePassed(item.created_at)}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Action buttons */}
+                        <View style={styles.requestActions}>
+                          <TouchableOpacity
+                            style={[styles.requestActionBtn, styles.acceptBtn]}
+                            disabled={isProcessing}
+                            onPress={() => acceptFriendRequest(item)}
+                          >
+                            {isProcessing ? (
+                              <ActivityIndicator size="small" color="#FFF" />
+                            ) : (
+                              <>
+                                <Ionicons name="checkmark" size={16} color="#FFF" />
+                                <Text style={styles.acceptBtnText}>
+                                  {language === 'EN' ? 'Accept' : 'Tanggapin'}
+                                </Text>
+                              </>
+                            )}
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={[styles.requestActionBtn, styles.declineBtn]}
+                            disabled={isProcessing}
+                            onPress={() => declineFriendRequest(item.id)}
+                          >
+                            <Ionicons name="close" size={16} color="#64748B" />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    );
+                  }}
+                />
+              )}
+            </View>
+          </View>
+        </Modal>
+
         {/* Custom In-App Challenge Modal */}
         {challengeModalFriend && (
           <Modal visible={true} transparent animationType="fade" onRequestClose={() => setChallengeModalFriend(null)}>
@@ -358,44 +643,37 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                   </View>
 
                   <Text style={styles.modalFriendName}>
-                    {challengeModalFriend.first_name || 'Scholar'} {challengeModalFriend.last_name || ''}
+                    {challengeModalFriend.first_name} {challengeModalFriend.last_name || ''}
                   </Text>
                   
                   <View style={styles.modalStatsRow}>
                     <Text style={styles.modalStatsText}>Lvl {challengeModalFriend.level || 1}</Text>
                     <Text style={styles.modalStatsDot}>•</Text>
-                    <Text style={styles.modalStatsText}>{challengeModalFriend.xp || 0} XP</Text>
-                    <Text style={styles.modalStatsDot}>•</Text>
-                    <Text style={[styles.modalStatsText, { color: '#A78BFA' }]}>Elo {challengeModalFriend.elo_rating || 1000}</Text>
+                    <Text style={styles.modalStatsText}>Elo {challengeModalFriend.elo_rating || 1000}</Text>
                   </View>
 
-                  <Text style={styles.modalPrompt}>
-                    {language === 'EN' 
-                      ? 'Ready to test your Kulitan mastery? Send an instant duel invitation!' 
-                      : 'Handa ka na bang subukin ang iyong galing sa Kulitan? Magpadala ng imbitasyon!'}
+                  <Text style={styles.modalSubtitle}>
+                    Ready to prove your mastery in Kulitan?
                   </Text>
 
-                  <View style={styles.modalActions}>
+                  <View style={styles.modalButtonRow}>
                     <TouchableOpacity 
                       style={styles.modalCancelBtn}
-                      activeOpacity={0.7}
                       onPress={() => setChallengeModalFriend(null)}
                     >
-                      <Text style={styles.modalCancelBtnText}>Cancel</Text>
+                      <Text style={styles.modalCancelText}>Cancel</Text>
                     </TouchableOpacity>
-                    
+
                     <TouchableOpacity 
                       style={styles.modalConfirmBtn}
-                      activeOpacity={0.8}
                       onPress={() => {
                         const target = challengeModalFriend;
                         setChallengeModalFriend(null);
                         executeChallenge(target);
                       }}
                     >
-                      <LinearGradient colors={['#EF4444', '#DC2626']} style={styles.modalConfirmGradient}>
-                        <Ionicons name="flash" size={16} color="#FFF" />
-                        <Text style={styles.modalConfirmBtnText}>Battle Now</Text>
+                      <LinearGradient colors={['#D1582D', '#9A3A17']} style={styles.modalConfirmGradient}>
+                        <Text style={styles.modalConfirmText}>Start Challenge</Text>
                       </LinearGradient>
                     </TouchableOpacity>
                   </View>
@@ -404,119 +682,179 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
             </View>
           </Modal>
         )}
-
       </SafeAreaView>
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
+  container: { flex: 1 },
+  safeArea: { flex: 1 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingTop: Platform.OS === 'ios' ? 20 : 40,
+    paddingBottom: 15,
   },
   backButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 3,
   },
   headerTitle: {
-    color: '#0F172A',
-    fontSize: 20,
     fontFamily: 'Poppins_700Bold',
+    fontSize: 22,
+    color: '#0F172A',
   },
   tabsContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderBottomWidth: 3,
-    borderBottomColor: 'transparent',
-  },
-  tabButtonActive: {
-    borderBottomColor: '#3B82F6',
-  },
-  tabText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 16,
-    color: '#64748B',
-  },
-  tabTextActive: {
-    color: '#3B82F6',
-  },
-  listContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-  },
-  friendCard: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    alignItems: 'center',
+    marginHorizontal: 20,
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    padding: 4,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
   },
-  rankBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#3B82F6',
+  tabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 16,
+  },
+  tabButtonActive: {
+    backgroundColor: '#D1582D',
+  },
+  tabText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 14,
+    color: '#64748B',
+  },
+  tabTextActive: {
+    color: '#FFF',
+  },
+  requestsBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 20,
+    marginBottom: 16,
+    padding: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  requestsBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  requestsIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFF7ED',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#FFEDD5',
+  },
+  requestsBannerTitle: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 15,
+    color: '#0F172A',
+  },
+  requestsBannerSub: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 12,
+    color: '#64748B',
+  },
+  requestsBannerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  requestsBadge: {
+    backgroundColor: '#D1582D',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  requestsBadgeText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 12,
+    color: '#FFF',
+  },
+  listContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  friendCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    padding: 14,
+    borderRadius: 20,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  rankBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
   },
   rankText: {
-    color: '#FFF',
     fontFamily: 'Poppins_700Bold',
-    fontSize: 14,
+    fontSize: 12,
+    color: '#64748B',
   },
   friendAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     marginRight: 12,
   },
   friendAvatarPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#E2E8F0',
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#FFEDD5',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   friendAvatarText: {
-    fontSize: 20,
     fontFamily: 'Poppins_700Bold',
-    color: '#64748B',
+    fontSize: 18,
+    color: '#D1582D',
   },
   friendInfo: {
     flex: 1,
@@ -528,190 +866,332 @@ const styles = StyleSheet.create({
   },
   friendStats: {
     fontFamily: 'Poppins_500Medium',
-    fontSize: 13,
+    fontSize: 12,
     color: '#64748B',
   },
   eloStats: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 12,
-    color: '#8B5CF6',
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11,
+    color: '#10B981',
   },
   challengeBtn: {
-    backgroundColor: '#EF4444',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#D1582D',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 3,
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 80,
+    paddingVertical: 60,
+    paddingHorizontal: 20,
   },
   emptyText: {
     fontFamily: 'Poppins_500Medium',
-    fontSize: 16,
+    fontSize: 15,
     color: '#64748B',
+    textAlign: 'center',
     marginTop: 16,
     marginBottom: 24,
   },
   addFriendBtn: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 24,
+    backgroundColor: '#D1582D',
+    paddingHorizontal: 28,
     paddingVertical: 12,
-    borderRadius: 24,
+    borderRadius: 20,
   },
   addFriendBtnText: {
-    color: '#FFF',
     fontFamily: 'Poppins_600SemiBold',
-    fontSize: 16,
+    fontSize: 15,
+    color: '#FFF',
   },
   addTabContainer: {
     paddingHorizontal: 20,
   },
   searchPrompt: {
     fontFamily: 'Poppins_500Medium',
-    fontSize: 15,
-    color: '#334155',
+    fontSize: 14,
+    color: '#64748B',
     marginBottom: 12,
   },
   searchRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 30,
+    gap: 10,
+    marginBottom: 20,
   },
   searchInput: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    height: 50,
-    borderRadius: 25,
-    paddingHorizontal: 20,
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     fontFamily: 'Poppins_500Medium',
-    fontSize: 16,
-    marginRight: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    fontSize: 15,
+    color: '#0F172A',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   searchBtn: {
-    backgroundColor: '#3B82F6',
     width: 50,
     height: 50,
-    borderRadius: 25,
+    borderRadius: 16,
+    backgroundColor: '#D1582D',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   resultCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: '#FFF',
+    padding: 14,
+    borderRadius: 20,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   addConfirmBtn: {
-    backgroundColor: '#10B981',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
+    backgroundColor: '#D1582D',
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 14,
   },
   addConfirmText: {
-    color: '#FFF',
     fontFamily: 'Poppins_600SemiBold',
-    fontSize: 14,
+    fontSize: 13,
+    color: '#FFF',
   },
+
+  // Friend Requests Modal Styles
+  requestsModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    justifyContent: 'flex-end',
+  },
+  requestsModalContainer: {
+    backgroundColor: '#FAF5EE',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    maxHeight: '80%',
+    minHeight: 380,
+  },
+  requestsModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+  },
+  requestsModalTitle: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 18,
+    color: '#0F172A',
+  },
+  modalCloseBtn: {
+    padding: 4,
+  },
+  requestsEmptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40,
+  },
+  requestsEmptyTitle: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 16,
+    color: '#475569',
+    marginTop: 16,
+    marginBottom: 6,
+  },
+  requestsEmptySub: {
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 13,
+    color: '#94A3B8',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  requestCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    padding: 14,
+    borderRadius: 20,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  requestAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+  },
+  requestAvatarPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFEDD5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  requestAvatarText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 18,
+    color: '#D1582D',
+  },
+  requestInfo: {
+    flex: 1,
+    marginRight: 8,
+  },
+  requestName: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 15,
+    color: '#0F172A',
+  },
+  requestStats: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 12,
+    color: '#64748B',
+  },
+  timeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FFF7ED',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  timeBadgeText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11,
+    color: '#C2410C',
+  },
+  requestActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  requestActionBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  acceptBtn: {
+    backgroundColor: '#10B981',
+  },
+  acceptBtnText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 12,
+    color: '#FFF',
+  },
+  declineBtn: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 10,
+  },
+
+  // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
   modalContainer: {
     width: '100%',
-    maxWidth: 380,
-    borderRadius: 28,
+    maxWidth: 340,
+    borderRadius: 24,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.35,
-    shadowRadius: 30,
-    elevation: 20,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
   modalCard: {
-    padding: 26,
+    padding: 24,
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 28,
   },
   modalBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.4)',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
     gap: 6,
     marginBottom: 16,
   },
   modalBadgeText: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#F59E0B',
-    letterSpacing: 1.5,
+    letterSpacing: 1,
   },
   modalAvatarContainer: {
-    marginBottom: 14,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: '#F59E0B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    backgroundColor: '#1E1B4B',
   },
   modalAvatar: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    borderWidth: 2.5,
-    borderColor: '#EF4444',
+    width: '100%',
+    height: '100%',
+    borderRadius: 40,
   },
   modalAvatarPlaceholder: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: '#334155',
-    borderWidth: 2.5,
-    borderColor: '#EF4444',
+    width: '100%',
+    height: '100%',
+    borderRadius: 40,
+    backgroundColor: '#312E81',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalAvatarText: {
-    fontSize: 28,
     fontFamily: 'Poppins_700Bold',
-    color: '#F8FAFC',
+    fontSize: 32,
+    color: '#FFF',
   },
   modalFriendName: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 22,
+    fontSize: 20,
     color: '#FFF',
-    textAlign: 'center',
     marginBottom: 4,
+    textAlign: 'center',
   },
   modalStatsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 14,
+    marginBottom: 12,
   },
   modalStatsText: {
     fontFamily: 'Poppins_600SemiBold',
@@ -720,58 +1200,45 @@ const styles = StyleSheet.create({
   },
   modalStatsDot: {
     color: '#64748B',
-    fontSize: 12,
   },
-  modalPrompt: {
+  modalSubtitle: {
     fontFamily: 'Poppins_400Regular',
-    fontSize: 14,
-    color: '#94A3B8',
+    fontSize: 13,
+    color: '#CBD5E1',
     textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 22,
-    paddingHorizontal: 8,
+    marginBottom: 24,
   },
-  modalActions: {
+  modalButtonRow: {
     flexDirection: 'row',
     gap: 12,
     width: '100%',
   },
   modalCancelBtn: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingVertical: 12,
     borderRadius: 16,
-    paddingVertical: 14,
-    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
   },
-  modalCancelBtnText: {
+  modalCancelText: {
     fontFamily: 'Poppins_600SemiBold',
-    fontSize: 15,
-    color: '#CBD5E1',
+    fontSize: 14,
+    color: '#94A3B8',
   },
   modalConfirmBtn: {
-    flex: 1.3,
+    flex: 1.4,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#EF4444',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 6,
   },
   modalConfirmGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    paddingVertical: 12,
     justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    gap: 8,
+    alignItems: 'center',
   },
-  modalConfirmBtnText: {
+  modalConfirmText: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 15,
+    fontSize: 14,
     color: '#FFF',
   },
 });
