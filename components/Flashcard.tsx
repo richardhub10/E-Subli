@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
 import { SyllableData } from '../data/kulitanData';
+import KulitanGlyph from './KulitanGlyph';
 
 type FlashcardProps = {
   data: SyllableData;
@@ -31,7 +32,9 @@ export default function Flashcard({ data }: FlashcardProps) {
             >
               <Ionicons name="volume-high" size={28} color="#0EA5E9" />
             </TouchableOpacity>
-            <Text style={styles.symbolText}>{data.kulitanSymbol}</Text>
+            <View style={{ marginBottom: 16 }}>
+              <KulitanGlyph symbol={data.latin} size={110} color="#0B2046" strokeWidth={5} />
+            </View>
             <Text style={styles.latinText}>{data.latin}</Text>
             <Text style={styles.instructionText}>Tap to reveal definition</Text>
           </View>

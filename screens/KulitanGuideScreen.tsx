@@ -4,6 +4,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { kulitanSyllables } from '../data/kulitanData';
 import { useLanguage } from '../context/LanguageContext';
+import KulitanGlyph from '../components/KulitanGlyph';
 
 type KulitanGuideScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -82,7 +83,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
               {baseCharacters.map((char) => (
                 <View key={char.id} style={styles.gridItem}>
                   <View style={styles.charBox}>
-                    <Text style={styles.kulitanChar}>{char.kulitanSymbol}</Text>
+                    <KulitanGlyph symbol={char.latin} size={42} color="#D1582D" strokeWidth={3.8} />
                   </View>
                   <Text style={styles.latinChar}>{char.latin.toUpperCase()}</Text>
                 </View>

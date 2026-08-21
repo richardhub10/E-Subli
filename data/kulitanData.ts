@@ -28,13 +28,13 @@ export const kulitanSyllables: SyllableData[] = [
   {
     "id": "4",
     "latin": "e",
-    "kulitanSymbol": "i",
+    "kulitanSymbol": "e",
     "definition": "Vowel E"
   },
   {
     "id": "5",
     "latin": "o",
-    "kulitanSymbol": "u",
+    "kulitanSymbol": "o",
     "definition": "Vowel O"
   },
   {

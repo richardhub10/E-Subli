@@ -138,15 +138,22 @@ export const DrawingCanvas = React.forwardRef<DrawingCanvasRef, DrawingCanvasPro
           {guidePath && canvasWidth > 0 && canvasHeight > 0 && (
             <G x={canvasWidth / 2} y={canvasHeight / 2}>
               <G x={guideOffsetX} y={guideOffsetY}>
-                <Path d={guidePath} fill="rgba(217, 115, 78, 0.2)" />
+                <Path 
+                  d={guidePath} 
+                  fill="none" 
+                  stroke="rgba(217, 115, 78, 0.35)" 
+                  strokeWidth={14} 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                />
                 
                 {/* Animated Outline Guide */}
                 {pathLength > 0 && strokes.length === 0 && !currentStroke && (
                   <AnimatedPath 
                     d={guidePath} 
                     fill="none" 
-                    stroke="rgba(16, 185, 129, 0.6)" 
-                    strokeWidth={3}
+                    stroke="#10B981" 
+                    strokeWidth={4}
                     strokeDasharray={`${pathLength} ${pathLength}`}
                     strokeDashoffset={strokeAnim}
                     strokeLinecap="round"

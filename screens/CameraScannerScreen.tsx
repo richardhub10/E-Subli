@@ -21,6 +21,7 @@ import { GoogleGenAI } from '@google/genai';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 import { kulitanSyllables } from '../data/kulitanData';
+import KulitanGlyph from '../components/KulitanGlyph';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -294,7 +295,7 @@ If the image is completely blank, unrelated, or illegible, respond with:
                   <View style={styles.charComparisonRow}>
                     <View style={styles.charBox}>
                       <Text style={styles.charLabel}>Recognized Kulitan</Text>
-                      <Text style={styles.kulitanDisplay}>{scanResult.kulitanSymbol}</Text>
+                      <KulitanGlyph symbol={scanResult.transliteration || scanResult.character} size={58} color="#D1582D" strokeWidth={4} />
                     </View>
 
                     <View style={styles.charDivider}>
