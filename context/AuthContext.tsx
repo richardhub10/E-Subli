@@ -4,8 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../supabaseClient';
 
-export const AUTO_LOGOUT_HOURS = 2; // 2 hours inactivity limit
-const INACTIVITY_TIMEOUT_MS = AUTO_LOGOUT_HOURS * 60 * 60 * 1000;
+export const AUTO_LOGOUT_DAYS = 2; // 2 days inactivity limit
+const INACTIVITY_TIMEOUT_MS = AUTO_LOGOUT_DAYS * 24 * 60 * 60 * 1000;
 const LAST_ACTIVE_KEY = '@esubli_last_active_time';
 
 interface AuthContextType {
@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (isAutoLogout) {
         Alert.alert(
           'Session Expired',
-          `You have been automatically logged out due to ${AUTO_LOGOUT_HOURS} hours of inactivity for your account security.`
+          `You have been automatically logged out due to ${AUTO_LOGOUT_DAYS} days of inactivity for your account security.`
         );
       }
     } catch (e) {
