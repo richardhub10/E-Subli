@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as Speech from 'expo-speech';
 import { SyllableData } from '../data/kulitanData';
 import KulitanGlyph from './KulitanGlyph';
 
@@ -15,35 +14,76 @@ export default function Flashcard({ data }: FlashcardProps) {
   return (
     <TouchableOpacity 
       style={styles.cardContainer} 
-      activeOpacity={0.8}
+      activeOpacity={0.9}
       onPress={() => setIsFlipped(!isFlipped)}
     >
       <View style={[styles.card, isFlipped ? styles.cardFlipped : styles.cardFront]}>
         {!isFlipped ? (
           // Front of the card
           <View style={styles.cardContent}>
-            <TouchableOpacity 
-              style={styles.speakerButton} 
-              onPress={(e) => {
-                e.stopPropagation();
-                // Lower pitch slightly for regional intonation
-                Speech.speak(data.latin, { language: 'fil-PH', rate: 0.85, pitch: 0.85 });
-              }}
-            >
-              <Ionicons name="volume-high" size={28} color="#0EA5E9" />
-            </TouchableOpacity>
-            <View style={{ marginBottom: 16 }}>
+            <View style={styles.glyphWrapper}>
               <KulitanGlyph symbol={data.latin} size={110} color="#0B2046" strokeWidth={5} />
             </View>
             <Text style={styles.latinText}>{data.latin}</Text>
-            <Text style={styles.instructionText}>Tap to reveal definition</Text>
+            {data.classification && (
+              <View style={styles.classificationPill}>
+                <Text style={styles.classificationPillText}>{data.classification}</Text>
+              </View>
+            )}
+            <Text style={styles.instructionText}>Tap to reveal full definition</Text>
           </View>
         ) : (
-          // Back of the card
-          <View style={styles.cardContent}>
-            <Text style={styles.latinText}>{data.latin}</Text>
-            <Text style={styles.definitionText}>{data.definition}</Text>
-          </View>
+          // Back of the card (Complete and Accurate Definition)
+          <ScrollView 
+            style={styles.backScroll} 
+            contentContainerStyle={styles.backCardContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Classification Header */}
+            <View style={styles.backHeaderBadge}>
+              <Ionicons name="bookmark" size={14} color="#D1582D" />
+              <Text style={styles.backHeaderBadgeText}>{data.classification || 'Kulitan Syllable'}</Text>
+            </View>
+
+            {/* Character & Pronunciation */}
+            <Text style={styles.backLatinTitle}>{data.latin.toUpperCase()}</Text>
+            {data.pronunciation && (
+              <Text style={styles.backPronunciation}>{data.pronunciation}</Text>
+            )}
+
+            {/* Detailed Definition */}
+            <View style={styles.infoSection}>
+              <Text style={styles.sectionHeader}>Meaning & Role</Text>
+              <Text style={styles.definitionText}>{data.definition}</Text>
+            </View>
+
+            {/* Stroke / Writing Rule */}
+            {data.writingRule && (
+              <View style={styles.infoSection}>
+                <View style={styles.sectionHeaderRow}>
+                  <Ionicons name="pencil" size={13} color="#64748B" />
+                  <Text style={styles.sectionHeader}>Writing Rule</Text>
+                </View>
+                <Text style={styles.writingRuleText}>{data.writingRule}</Text>
+              </View>
+            )}
+
+            {/* Kapampangan Example */}
+            {data.exampleWord && (
+              <View style={styles.exampleSection}>
+                <View style={styles.sectionHeaderRow}>
+                  <Ionicons name="book" size={13} color="#D1582D" />
+                  <Text style={[styles.sectionHeader, { color: '#D1582D' }]}>Example Word</Text>
+                </View>
+                <Text style={styles.exampleWordText}>
+                  <Text style={styles.exampleWordBold}>{data.exampleWord}</Text>
+                  {data.exampleMeaning ? ` — ${data.exampleMeaning}` : ''}
+                </Text>
+              </View>
+            )}
+
+            <Text style={styles.flipBackHint}>Tap card to flip back</Text>
+          </ScrollView>
         )}
       </View>
     </TouchableOpacity>
@@ -53,68 +93,160 @@ export default function Flashcard({ data }: FlashcardProps) {
 const styles = StyleSheet.create({
   cardContainer: {
     width: '90%',
-    height: 400,
+    height: 420,
     alignSelf: 'center',
     marginVertical: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5, // for Android
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 6,
   },
   card: {
     flex: 1,
-    borderRadius: 20,
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: 24,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: '#E2E8F0',
   },
   cardFront: {
-    backgroundColor: '#FAF5EE', // Light mode aesthetic
+    backgroundColor: '#FAF5EE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
   },
   cardFlipped: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
   },
   cardContent: {
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
   },
-  speakerButton: {
-    position: 'absolute',
-    top: -10,
-    right: 0,
-    padding: 10,
-    backgroundColor: '#F0F9FF',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#BAE6FD',
-  },
-  symbolText: {
-    fontFamily: 'Kulitan',
-    fontSize: 100, // Adjusted size to fit the font
-    color: '#0B2046', // Dark blue
-    marginBottom: 20,
+  glyphWrapper: {
+    marginBottom: 16,
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   latinText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#D9734E', // Coral/Orange
-    marginBottom: 10,
+    fontSize: 34,
+    fontFamily: 'Poppins_700Bold',
+    color: '#D1582D',
+    marginBottom: 8,
+  },
+  classificationPill: {
+    backgroundColor: 'rgba(209, 88, 45, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  classificationPillText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 12,
+    color: '#9A3A17',
   },
   instructionText: {
-    fontSize: 14,
-    color: '#888',
-    marginTop: 20,
+    fontSize: 13,
+    fontFamily: 'Poppins_400Regular',
+    color: '#94A3B8',
     fontStyle: 'italic',
   },
+  backScroll: {
+    flex: 1,
+  },
+  backCardContent: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  backHeaderBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF7ED',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
+    gap: 6,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#FFEDD5',
+  },
+  backHeaderBadgeText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11,
+    color: '#C2410C',
+    textTransform: 'uppercase',
+  },
+  backLatinTitle: {
+    fontSize: 28,
+    fontFamily: 'Poppins_700Bold',
+    color: '#0F172A',
+    marginBottom: 2,
+  },
+  backPronunciation: {
+    fontSize: 13,
+    fontFamily: 'Poppins_500Medium',
+    color: '#64748B',
+    marginBottom: 12,
+  },
+  infoSection: {
+    width: '100%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 4,
+  },
+  sectionHeader: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11,
+    color: '#64748B',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
   definitionText: {
-    fontSize: 18,
-    color: '#333',
-    textAlign: 'center',
-    marginTop: 20,
-    paddingHorizontal: 20,
-  }
+    fontSize: 13,
+    fontFamily: 'Poppins_400Regular',
+    color: '#334155',
+    lineHeight: 19,
+  },
+  writingRuleText: {
+    fontSize: 12,
+    fontFamily: 'Poppins_400Regular',
+    color: '#475569',
+    lineHeight: 18,
+  },
+  exampleSection: {
+    width: '100%',
+    backgroundColor: '#FFF7ED',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 12,
+    borderLeftWidth: 3.5,
+    borderLeftColor: '#D1582D',
+  },
+  exampleWordText: {
+    fontSize: 13,
+    fontFamily: 'Poppins_400Regular',
+    color: '#7C2D12',
+  },
+  exampleWordBold: {
+    fontFamily: 'Poppins_700Bold',
+    color: '#9A3A17',
+  },
+  flipBackHint: {
+    fontSize: 12,
+    fontFamily: 'Poppins_400Regular',
+    color: '#94A3B8',
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
 });

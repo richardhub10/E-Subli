@@ -1,8 +1,13 @@
 export type SyllableData = {
   id: string;
   latin: string;
-  kulitanSymbol: string; 
+  kulitanSymbol: string;
+  classification: string;
   definition: string;
+  pronunciation: string;
+  writingRule: string;
+  exampleWord?: string;
+  exampleMeaning?: string;
 };
 
 // Based EXACTLY on Baybayin Pamagkulit Font by Nordenx (Sulat Kapampangan)
@@ -11,558 +16,1023 @@ export const kulitanSyllables: SyllableData[] = [
     "id": "1",
     "latin": "a",
     "kulitanSymbol": "a",
-    "definition": "Vowel A"
+    "classification": "Patinig (Standalone Vowel)",
+    "pronunciation": "/a/ as in \"abak\" (morning)",
+    "definition": "Primary standalone vowel \"A\" in Sulat Kapampangan. Used at the beginning of words or syllables without an initial consonant.",
+    "writingRule": "Single downward curve starting top-left, looping into a bottom hook with an upward flourish.",
+    "exampleWord": "Abak",
+    "exampleMeaning": "Morning"
   },
   {
     "id": "2",
     "latin": "i",
     "kulitanSymbol": "e",
-    "definition": "Vowel I"
+    "classification": "Patinig (Standalone Vowel)",
+    "pronunciation": "/i/ as in \"ingat\" (careful)",
+    "definition": "Independent standalone vowel \"I\" / \"E\" in Sulat Kapampangan. Represents front high/mid vowels.",
+    "writingRule": "Drawn with a horizontal wavy double-arch crown and a right downward vertical stem.",
+    "exampleWord": "Ingat",
+    "exampleMeaning": "Care / Beware"
   },
   {
     "id": "3",
     "latin": "u",
     "kulitanSymbol": "o",
-    "definition": "Vowel U"
+    "classification": "Patinig (Standalone Vowel)",
+    "pronunciation": "/u/ as in \"ugat\" (root)",
+    "definition": "Independent standalone vowel \"U\" / \"O\" in Sulat Kapampangan. Represents back rounded vowels.",
+    "writingRule": "Three-crested flowing wave with upward-curving end tail.",
+    "exampleWord": "Ugat",
+    "exampleMeaning": "Root / Vein"
   },
   {
     "id": "4",
     "latin": "e",
     "kulitanSymbol": "E",
-    "definition": "Vowel E"
+    "classification": "Patinig (Standalone Vowel)",
+    "pronunciation": "/e/ as in \"ebun\" (egg)",
+    "definition": "Independent vowel \"E\" in modern Kapampangan orthography.",
+    "writingRule": "Vertical stem with a rightward curved flourish loop.",
+    "exampleWord": "Ebun",
+    "exampleMeaning": "Egg"
   },
   {
     "id": "5",
     "latin": "o",
     "kulitanSymbol": "O",
-    "definition": "Vowel O"
+    "classification": "Patinig (Standalone Vowel)",
+    "pronunciation": "/o/ as in \"obakit\" (why)",
+    "definition": "Independent vowel \"O\" in modern Kapampangan orthography.",
+    "writingRule": "Undulating double-loop horizontal wave flourish.",
+    "exampleWord": "Obakit",
+    "exampleMeaning": "Why"
   },
   {
     "id": "6",
     "latin": "ga",
     "kulitanSymbol": "g",
-    "definition": "Syllable Ga"
+    "classification": "Indung Sulat (Mother Consonant)",
+    "pronunciation": "/ga/ as in \"gamat\"",
+    "definition": "Root consonant \"Ga\" carrying the inherent vowel /a/. Acts as the Indung Sulat (head mother letter) in Kapampangan syllables.",
+    "writingRule": "Base stroke: Smooth inverted U-shaped arch (∩).",
+    "exampleWord": "Gamat",
+    "exampleMeaning": "Hand / Arm"
   },
   {
     "id": "7",
     "latin": "gi",
     "kulitanSymbol": "gi",
-    "definition": "Syllable Gi"
+    "classification": "Anak Sulat (Modified with -i Garlit)",
+    "pronunciation": "/gi/ as in \"ga + i\"",
+    "definition": "Consonant \"Ga\" modified to sound with /i/ or /e/ using a top Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Ga\", then place an acute tick mark above to the right.",
+    "exampleWord": "Gamat",
+    "exampleMeaning": "Form of Ga"
   },
   {
     "id": "8",
     "latin": "gu",
     "kulitanSymbol": "gu",
-    "definition": "Syllable Gu"
+    "classification": "Anak Sulat (Modified with -u Garlit)",
+    "pronunciation": "/gu/ as in \"ga + u\"",
+    "definition": "Consonant \"Ga\" modified to sound with /u/ or /o/ using a bottom Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Ga\", then place a descending comma tick below to the left.",
+    "exampleWord": "Gamat",
+    "exampleMeaning": "Form of Ga"
   },
   {
     "id": "9",
     "latin": "ge",
     "kulitanSymbol": "ge",
-    "definition": "Syllable Ge"
+    "classification": "Anak Sulat (Vowel /e/ Flourish)",
+    "pronunciation": "/ge/",
+    "definition": "Consonant \"Ga\" vocalized with /e/ using a right-side vowel wing ligature.",
+    "writingRule": "Draw the base character \"Ga\" with an attached rightward V-shaped vowel flourish.",
+    "exampleWord": "Gamat",
+    "exampleMeaning": "Form of Ga"
   },
   {
     "id": "10",
     "latin": "go",
     "kulitanSymbol": "go",
-    "definition": "Syllable Go"
+    "classification": "Anak Sulat (Vowel /o/ Flourish)",
+    "pronunciation": "/go/",
+    "definition": "Consonant \"Ga\" vocalized with /o/ using a right-side double-wave ligature.",
+    "writingRule": "Draw the base character \"Ga\" with an attached rightward undulating wave flourish.",
+    "exampleWord": "Gamat",
+    "exampleMeaning": "Form of Ga"
   },
   {
     "id": "11",
     "latin": "gí/î",
     "kulitanSymbol": "gie",
-    "definition": "Syllable gí or gî"
+    "classification": "Anak Sulat (Stressed /í/ Tone)",
+    "pronunciation": "/gí/ with acute/glottal stress",
+    "definition": "Consonant \"Ga\" vocalized with stressed /í/ or circumflex /î/ glottal stop.",
+    "writingRule": "Base character with both upper Garlit tick and rightward accent ligature.",
+    "exampleWord": "Gamat",
+    "exampleMeaning": "Stressed form of Ga"
   },
   {
     "id": "12",
     "latin": "gú/û",
     "kulitanSymbol": "guo",
-    "definition": "Syllable gú or gû"
+    "classification": "Anak Sulat (Stressed /ú/ Tone)",
+    "pronunciation": "/gú/ with acute/glottal stress",
+    "definition": "Consonant \"Ga\" vocalized with stressed /ú/ or circumflex /û/ glottal stop.",
+    "writingRule": "Base character with both lower Garlit tick and rightward accent ligature.",
+    "exampleWord": "Gamat",
+    "exampleMeaning": "Stressed form of Ga"
   },
   {
     "id": "13",
     "latin": "gang",
     "kulitanSymbol": "gN",
-    "definition": "Syllable gang"
+    "classification": "Busal / Ligature (Final -ng)",
+    "pronunciation": "/gaŋ/ as in \"gang\"",
+    "definition": "Consonant \"Ga\" ligated directly with trailing final nasal syllable -ng (Nga).",
+    "writingRule": "Draw the base character \"Ga\" connected directly to the trailing triple-wave \"Nga\" glyph.",
+    "exampleWord": "Gang",
+    "exampleMeaning": "Nasal ligature for Ga"
   },
   {
     "id": "14",
     "latin": "ka",
     "kulitanSymbol": "k",
-    "definition": "Syllable Ka"
+    "classification": "Indung Sulat (Mother Consonant)",
+    "pronunciation": "/ka/ as in \"kaluguran\"",
+    "definition": "Root consonant \"Ka\" carrying the inherent vowel /a/. Acts as the Indung Sulat (head mother letter) in Kapampangan syllables.",
+    "writingRule": "Base stroke: Two horizontal parallel bars (=).",
+    "exampleWord": "Kaluguran",
+    "exampleMeaning": "Love / Beloved"
   },
   {
     "id": "15",
     "latin": "ki",
     "kulitanSymbol": "ki",
-    "definition": "Syllable Ki"
+    "classification": "Anak Sulat (Modified with -i Garlit)",
+    "pronunciation": "/ki/ as in \"ka + i\"",
+    "definition": "Consonant \"Ka\" modified to sound with /i/ or /e/ using a top Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Ka\", then place an acute tick mark above to the right.",
+    "exampleWord": "Kaluguran",
+    "exampleMeaning": "Form of Ka"
   },
   {
     "id": "16",
     "latin": "ku",
     "kulitanSymbol": "ku",
-    "definition": "Syllable Ku"
+    "classification": "Anak Sulat (Modified with -u Garlit)",
+    "pronunciation": "/ku/ as in \"ka + u\"",
+    "definition": "Consonant \"Ka\" modified to sound with /u/ or /o/ using a bottom Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Ka\", then place a descending comma tick below to the left.",
+    "exampleWord": "Kaluguran",
+    "exampleMeaning": "Form of Ka"
   },
   {
     "id": "17",
     "latin": "ke",
     "kulitanSymbol": "ke",
-    "definition": "Syllable Ke"
+    "classification": "Anak Sulat (Vowel /e/ Flourish)",
+    "pronunciation": "/ke/",
+    "definition": "Consonant \"Ka\" vocalized with /e/ using a right-side vowel wing ligature.",
+    "writingRule": "Draw the base character \"Ka\" with an attached rightward V-shaped vowel flourish.",
+    "exampleWord": "Kaluguran",
+    "exampleMeaning": "Form of Ka"
   },
   {
     "id": "18",
     "latin": "ko",
     "kulitanSymbol": "ko",
-    "definition": "Syllable Ko"
+    "classification": "Anak Sulat (Vowel /o/ Flourish)",
+    "pronunciation": "/ko/",
+    "definition": "Consonant \"Ka\" vocalized with /o/ using a right-side double-wave ligature.",
+    "writingRule": "Draw the base character \"Ka\" with an attached rightward undulating wave flourish.",
+    "exampleWord": "Kaluguran",
+    "exampleMeaning": "Form of Ka"
   },
   {
     "id": "19",
     "latin": "kí/î",
     "kulitanSymbol": "kie",
-    "definition": "Syllable kí or kî"
+    "classification": "Anak Sulat (Stressed /í/ Tone)",
+    "pronunciation": "/kí/ with acute/glottal stress",
+    "definition": "Consonant \"Ka\" vocalized with stressed /í/ or circumflex /î/ glottal stop.",
+    "writingRule": "Base character with both upper Garlit tick and rightward accent ligature.",
+    "exampleWord": "Kaluguran",
+    "exampleMeaning": "Stressed form of Ka"
   },
   {
     "id": "20",
     "latin": "kú/û",
     "kulitanSymbol": "kuo",
-    "definition": "Syllable kú or kû"
+    "classification": "Anak Sulat (Stressed /ú/ Tone)",
+    "pronunciation": "/kú/ with acute/glottal stress",
+    "definition": "Consonant \"Ka\" vocalized with stressed /ú/ or circumflex /û/ glottal stop.",
+    "writingRule": "Base character with both lower Garlit tick and rightward accent ligature.",
+    "exampleWord": "Kaluguran",
+    "exampleMeaning": "Stressed form of Ka"
   },
   {
     "id": "21",
     "latin": "kank (kang)",
     "kulitanSymbol": "kN",
-    "definition": "Syllable kang"
+    "classification": "Busal / Ligature (Final -ng)",
+    "pronunciation": "/kaŋ/ as in \"kang\"",
+    "definition": "Consonant \"Ka\" ligated directly with trailing final nasal syllable -ng (Nga).",
+    "writingRule": "Draw the base character \"Ka\" connected directly to the trailing triple-wave \"Nga\" glyph.",
+    "exampleWord": "Kang",
+    "exampleMeaning": "To / For (marker)"
   },
   {
     "id": "22",
     "latin": "nga",
     "kulitanSymbol": "N",
-    "definition": "Syllable Nga"
+    "classification": "Indung Sulat (Mother Consonant)",
+    "pronunciation": "/ŋa/ as in \"ngeni\"",
+    "definition": "Root consonant \"Nga\" carrying the inherent vowel /a/. Acts as the Indung Sulat (head mother letter) in Kapampangan syllables.",
+    "writingRule": "Base stroke: Triple-crested flowing ligature wave with tail.",
+    "exampleWord": "Ngeni",
+    "exampleMeaning": "Now / Today"
   },
   {
     "id": "23",
     "latin": "ngi",
     "kulitanSymbol": "Ni",
-    "definition": "Syllable Ngi"
+    "classification": "Anak Sulat (Modified with -i Garlit)",
+    "pronunciation": "/ngi/ as in \"nga + i\"",
+    "definition": "Consonant \"Nga\" modified to sound with /i/ or /e/ using a top Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Nga\", then place an acute tick mark above to the right.",
+    "exampleWord": "Ngeni",
+    "exampleMeaning": "Form of Nga"
   },
   {
     "id": "24",
     "latin": "ngu",
     "kulitanSymbol": "Nu",
-    "definition": "Syllable Ngu"
+    "classification": "Anak Sulat (Modified with -u Garlit)",
+    "pronunciation": "/ngu/ as in \"nga + u\"",
+    "definition": "Consonant \"Nga\" modified to sound with /u/ or /o/ using a bottom Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Nga\", then place a descending comma tick below to the left.",
+    "exampleWord": "Ngeni",
+    "exampleMeaning": "Form of Nga"
   },
   {
     "id": "25",
     "latin": "nge",
     "kulitanSymbol": "Ne",
-    "definition": "Syllable Nge"
+    "classification": "Anak Sulat (Vowel /e/ Flourish)",
+    "pronunciation": "/nge/",
+    "definition": "Consonant \"Nga\" vocalized with /e/ using a right-side vowel wing ligature.",
+    "writingRule": "Draw the base character \"Nga\" with an attached rightward V-shaped vowel flourish.",
+    "exampleWord": "Ngeni",
+    "exampleMeaning": "Form of Nga"
   },
   {
     "id": "26",
     "latin": "ngo",
     "kulitanSymbol": "No",
-    "definition": "Syllable Ngo"
+    "classification": "Anak Sulat (Vowel /o/ Flourish)",
+    "pronunciation": "/ngo/",
+    "definition": "Consonant \"Nga\" vocalized with /o/ using a right-side double-wave ligature.",
+    "writingRule": "Draw the base character \"Nga\" with an attached rightward undulating wave flourish.",
+    "exampleWord": "Ngeni",
+    "exampleMeaning": "Form of Nga"
   },
   {
     "id": "27",
     "latin": "ngí/î",
     "kulitanSymbol": "Nie",
-    "definition": "Syllable ngí or ngî"
+    "classification": "Anak Sulat (Stressed /í/ Tone)",
+    "pronunciation": "/ngí/ with acute/glottal stress",
+    "definition": "Consonant \"Nga\" vocalized with stressed /í/ or circumflex /î/ glottal stop.",
+    "writingRule": "Base character with both upper Garlit tick and rightward accent ligature.",
+    "exampleWord": "Ngeni",
+    "exampleMeaning": "Stressed form of Nga"
   },
   {
     "id": "28",
     "latin": "ngú/û",
     "kulitanSymbol": "Nuo",
-    "definition": "Syllable ngú or ngû"
+    "classification": "Anak Sulat (Stressed /ú/ Tone)",
+    "pronunciation": "/ngú/ with acute/glottal stress",
+    "definition": "Consonant \"Nga\" vocalized with stressed /ú/ or circumflex /û/ glottal stop.",
+    "writingRule": "Base character with both lower Garlit tick and rightward accent ligature.",
+    "exampleWord": "Ngeni",
+    "exampleMeaning": "Stressed form of Nga"
   },
   {
     "id": "29",
     "latin": "ngang",
     "kulitanSymbol": "NN",
-    "definition": "Syllable ngang"
+    "classification": "Busal / Ligature (Final -ng)",
+    "pronunciation": "/ngaŋ/ as in \"ngang\"",
+    "definition": "Consonant \"Nga\" ligated directly with trailing final nasal syllable -ng (Nga).",
+    "writingRule": "Draw the base character \"Nga\" connected directly to the trailing triple-wave \"Nga\" glyph.",
+    "exampleWord": "NGang",
+    "exampleMeaning": "Nasal ligature for Nga"
   },
   {
     "id": "30",
     "latin": "ta",
     "kulitanSymbol": "t",
-    "definition": "Syllable Ta"
+    "classification": "Indung Sulat (Mother Consonant)",
+    "pronunciation": "/ta/ as in \"tau\"",
+    "definition": "Root consonant \"Ta\" carrying the inherent vowel /a/. Acts as the Indung Sulat (head mother letter) in Kapampangan syllables.",
+    "writingRule": "Base stroke: Angular L-shaped descending stroke with bottom baseline.",
+    "exampleWord": "Tau",
+    "exampleMeaning": "Person / Human"
   },
   {
     "id": "31",
     "latin": "ti",
     "kulitanSymbol": "ti",
-    "definition": "Syllable Ti"
+    "classification": "Anak Sulat (Modified with -i Garlit)",
+    "pronunciation": "/ti/ as in \"ta + i\"",
+    "definition": "Consonant \"Ta\" modified to sound with /i/ or /e/ using a top Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Ta\", then place an acute tick mark above to the right.",
+    "exampleWord": "Tau",
+    "exampleMeaning": "Form of Ta"
   },
   {
     "id": "32",
     "latin": "tu",
     "kulitanSymbol": "tu",
-    "definition": "Syllable Tu"
+    "classification": "Anak Sulat (Modified with -u Garlit)",
+    "pronunciation": "/tu/ as in \"ta + u\"",
+    "definition": "Consonant \"Ta\" modified to sound with /u/ or /o/ using a bottom Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Ta\", then place a descending comma tick below to the left.",
+    "exampleWord": "Tau",
+    "exampleMeaning": "Form of Ta"
   },
   {
     "id": "33",
     "latin": "te",
     "kulitanSymbol": "te",
-    "definition": "Syllable Te"
+    "classification": "Anak Sulat (Vowel /e/ Flourish)",
+    "pronunciation": "/te/",
+    "definition": "Consonant \"Ta\" vocalized with /e/ using a right-side vowel wing ligature.",
+    "writingRule": "Draw the base character \"Ta\" with an attached rightward V-shaped vowel flourish.",
+    "exampleWord": "Tau",
+    "exampleMeaning": "Form of Ta"
   },
   {
     "id": "34",
     "latin": "to",
     "kulitanSymbol": "to",
-    "definition": "Syllable To"
+    "classification": "Anak Sulat (Vowel /o/ Flourish)",
+    "pronunciation": "/to/",
+    "definition": "Consonant \"Ta\" vocalized with /o/ using a right-side double-wave ligature.",
+    "writingRule": "Draw the base character \"Ta\" with an attached rightward undulating wave flourish.",
+    "exampleWord": "Tau",
+    "exampleMeaning": "Form of Ta"
   },
   {
     "id": "35",
     "latin": "tí/î",
     "kulitanSymbol": "tie",
-    "definition": "Syllable tí or tî"
+    "classification": "Anak Sulat (Stressed /í/ Tone)",
+    "pronunciation": "/tí/ with acute/glottal stress",
+    "definition": "Consonant \"Ta\" vocalized with stressed /í/ or circumflex /î/ glottal stop.",
+    "writingRule": "Base character with both upper Garlit tick and rightward accent ligature.",
+    "exampleWord": "Tau",
+    "exampleMeaning": "Stressed form of Ta"
   },
   {
     "id": "36",
     "latin": "tú/û",
     "kulitanSymbol": "tuo",
-    "definition": "Syllable tú or tû"
+    "classification": "Anak Sulat (Stressed /ú/ Tone)",
+    "pronunciation": "/tú/ with acute/glottal stress",
+    "definition": "Consonant \"Ta\" vocalized with stressed /ú/ or circumflex /û/ glottal stop.",
+    "writingRule": "Base character with both lower Garlit tick and rightward accent ligature.",
+    "exampleWord": "Tau",
+    "exampleMeaning": "Stressed form of Ta"
   },
   {
     "id": "37",
     "latin": "tang",
     "kulitanSymbol": "tN",
-    "definition": "Syllable tang"
+    "classification": "Busal / Ligature (Final -ng)",
+    "pronunciation": "/taŋ/ as in \"tang\"",
+    "definition": "Consonant \"Ta\" ligated directly with trailing final nasal syllable -ng (Nga).",
+    "writingRule": "Draw the base character \"Ta\" connected directly to the trailing triple-wave \"Nga\" glyph.",
+    "exampleWord": "Tang",
+    "exampleMeaning": "Nasal ligature for Ta"
   },
   {
     "id": "38",
     "latin": "da",
     "kulitanSymbol": "d",
-    "definition": "Syllable Da"
+    "classification": "Indung Sulat (Mother Consonant)",
+    "pronunciation": "/da/ & /ra/ as in \"dakal\"",
+    "definition": "Root consonant \"Da\" carrying the inherent vowel /a/. Acts as the Indung Sulat (head mother letter) in Kapampangan syllables.",
+    "writingRule": "Base stroke: Stepped zigzag shape with curved loops.",
+    "exampleWord": "Dakal",
+    "exampleMeaning": "Many / Plenty"
   },
   {
     "id": "39",
     "latin": "di",
     "kulitanSymbol": "di",
-    "definition": "Syllable Di"
+    "classification": "Anak Sulat (Modified with -i Garlit)",
+    "pronunciation": "/di/ as in \"da + i\"",
+    "definition": "Consonant \"Da\" modified to sound with /i/ or /e/ using a top Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Da\", then place an acute tick mark above to the right.",
+    "exampleWord": "Dakal",
+    "exampleMeaning": "Form of Da"
   },
   {
     "id": "40",
     "latin": "du",
     "kulitanSymbol": "du",
-    "definition": "Syllable Du"
+    "classification": "Anak Sulat (Modified with -u Garlit)",
+    "pronunciation": "/du/ as in \"da + u\"",
+    "definition": "Consonant \"Da\" modified to sound with /u/ or /o/ using a bottom Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Da\", then place a descending comma tick below to the left.",
+    "exampleWord": "Dakal",
+    "exampleMeaning": "Form of Da"
   },
   {
     "id": "41",
     "latin": "de",
     "kulitanSymbol": "de",
-    "definition": "Syllable De"
+    "classification": "Anak Sulat (Vowel /e/ Flourish)",
+    "pronunciation": "/de/",
+    "definition": "Consonant \"Da\" vocalized with /e/ using a right-side vowel wing ligature.",
+    "writingRule": "Draw the base character \"Da\" with an attached rightward V-shaped vowel flourish.",
+    "exampleWord": "Dakal",
+    "exampleMeaning": "Form of Da"
   },
   {
     "id": "42",
     "latin": "do",
     "kulitanSymbol": "do",
-    "definition": "Syllable Do"
+    "classification": "Anak Sulat (Vowel /o/ Flourish)",
+    "pronunciation": "/do/",
+    "definition": "Consonant \"Da\" vocalized with /o/ using a right-side double-wave ligature.",
+    "writingRule": "Draw the base character \"Da\" with an attached rightward undulating wave flourish.",
+    "exampleWord": "Dakal",
+    "exampleMeaning": "Form of Da"
   },
   {
     "id": "43",
     "latin": "dí/î",
     "kulitanSymbol": "die",
-    "definition": "Syllable dí or dî"
+    "classification": "Anak Sulat (Stressed /í/ Tone)",
+    "pronunciation": "/dí/ with acute/glottal stress",
+    "definition": "Consonant \"Da\" vocalized with stressed /í/ or circumflex /î/ glottal stop.",
+    "writingRule": "Base character with both upper Garlit tick and rightward accent ligature.",
+    "exampleWord": "Dakal",
+    "exampleMeaning": "Stressed form of Da"
   },
   {
     "id": "44",
     "latin": "dú/û",
     "kulitanSymbol": "duo",
-    "definition": "Syllable dú or dû"
+    "classification": "Anak Sulat (Stressed /ú/ Tone)",
+    "pronunciation": "/dú/ with acute/glottal stress",
+    "definition": "Consonant \"Da\" vocalized with stressed /ú/ or circumflex /û/ glottal stop.",
+    "writingRule": "Base character with both lower Garlit tick and rightward accent ligature.",
+    "exampleWord": "Dakal",
+    "exampleMeaning": "Stressed form of Da"
   },
   {
     "id": "45",
     "latin": "dang",
     "kulitanSymbol": "dN",
-    "definition": "Syllable dang"
+    "classification": "Busal / Ligature (Final -ng)",
+    "pronunciation": "/daŋ/ as in \"dang\"",
+    "definition": "Consonant \"Da\" ligated directly with trailing final nasal syllable -ng (Nga).",
+    "writingRule": "Draw the base character \"Da\" connected directly to the trailing triple-wave \"Nga\" glyph.",
+    "exampleWord": "Dang",
+    "exampleMeaning": "Nasal ligature for Da"
   },
   {
     "id": "46",
     "latin": "na",
     "kulitanSymbol": "n",
-    "definition": "Syllable Na"
+    "classification": "Indung Sulat (Mother Consonant)",
+    "pronunciation": "/na/ as in \"nanu\"",
+    "definition": "Root consonant \"Na\" carrying the inherent vowel /a/. Acts as the Indung Sulat (head mother letter) in Kapampangan syllables.",
+    "writingRule": "Base stroke: Vertical upward arrow stem with bilateral wings (↑).",
+    "exampleWord": "Nanu",
+    "exampleMeaning": "What"
   },
   {
     "id": "47",
     "latin": "ni",
     "kulitanSymbol": "ni",
-    "definition": "Syllable Ni"
+    "classification": "Anak Sulat (Modified with -i Garlit)",
+    "pronunciation": "/ni/ as in \"na + i\"",
+    "definition": "Consonant \"Na\" modified to sound with /i/ or /e/ using a top Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Na\", then place an acute tick mark above to the right.",
+    "exampleWord": "Nanu",
+    "exampleMeaning": "Form of Na"
   },
   {
     "id": "48",
     "latin": "nu",
     "kulitanSymbol": "nu",
-    "definition": "Syllable Nu"
+    "classification": "Anak Sulat (Modified with -u Garlit)",
+    "pronunciation": "/nu/ as in \"na + u\"",
+    "definition": "Consonant \"Na\" modified to sound with /u/ or /o/ using a bottom Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Na\", then place a descending comma tick below to the left.",
+    "exampleWord": "Nanu",
+    "exampleMeaning": "Form of Na"
   },
   {
     "id": "49",
     "latin": "ne",
     "kulitanSymbol": "ne",
-    "definition": "Syllable Ne"
+    "classification": "Anak Sulat (Vowel /e/ Flourish)",
+    "pronunciation": "/ne/",
+    "definition": "Consonant \"Na\" vocalized with /e/ using a right-side vowel wing ligature.",
+    "writingRule": "Draw the base character \"Na\" with an attached rightward V-shaped vowel flourish.",
+    "exampleWord": "Nanu",
+    "exampleMeaning": "Form of Na"
   },
   {
     "id": "50",
     "latin": "no",
     "kulitanSymbol": "no",
-    "definition": "Syllable No"
+    "classification": "Anak Sulat (Vowel /o/ Flourish)",
+    "pronunciation": "/no/",
+    "definition": "Consonant \"Na\" vocalized with /o/ using a right-side double-wave ligature.",
+    "writingRule": "Draw the base character \"Na\" with an attached rightward undulating wave flourish.",
+    "exampleWord": "Nanu",
+    "exampleMeaning": "Form of Na"
   },
   {
     "id": "51",
     "latin": "ní/î",
     "kulitanSymbol": "nie",
-    "definition": "Syllable ní or nî"
+    "classification": "Anak Sulat (Stressed /í/ Tone)",
+    "pronunciation": "/ní/ with acute/glottal stress",
+    "definition": "Consonant \"Na\" vocalized with stressed /í/ or circumflex /î/ glottal stop.",
+    "writingRule": "Base character with both upper Garlit tick and rightward accent ligature.",
+    "exampleWord": "Nanu",
+    "exampleMeaning": "Stressed form of Na"
   },
   {
     "id": "52",
     "latin": "nú/û",
     "kulitanSymbol": "nuo",
-    "definition": "Syllable nú or nû"
+    "classification": "Anak Sulat (Stressed /ú/ Tone)",
+    "pronunciation": "/nú/ with acute/glottal stress",
+    "definition": "Consonant \"Na\" vocalized with stressed /ú/ or circumflex /û/ glottal stop.",
+    "writingRule": "Base character with both lower Garlit tick and rightward accent ligature.",
+    "exampleWord": "Nanu",
+    "exampleMeaning": "Stressed form of Na"
   },
   {
     "id": "53",
     "latin": "nang",
     "kulitanSymbol": "nN",
-    "definition": "Syllable nang"
+    "classification": "Busal / Ligature (Final -ng)",
+    "pronunciation": "/naŋ/ as in \"nang\"",
+    "definition": "Consonant \"Na\" ligated directly with trailing final nasal syllable -ng (Nga).",
+    "writingRule": "Draw the base character \"Na\" connected directly to the trailing triple-wave \"Nga\" glyph.",
+    "exampleWord": "Nang",
+    "exampleMeaning": "Nasal ligature for Na"
   },
   {
     "id": "54",
     "latin": "la",
     "kulitanSymbol": "l",
-    "definition": "Syllable La"
+    "classification": "Indung Sulat (Mother Consonant)",
+    "pronunciation": "/la/ as in \"lagyu\"",
+    "definition": "Root consonant \"La\" carrying the inherent vowel /a/. Acts as the Indung Sulat (head mother letter) in Kapampangan syllables.",
+    "writingRule": "Base stroke: Vertical stem with rounded top umbrella arch (T).",
+    "exampleWord": "Lagyu",
+    "exampleMeaning": "Name"
   },
   {
     "id": "55",
     "latin": "li",
     "kulitanSymbol": "li",
-    "definition": "Syllable Li"
+    "classification": "Anak Sulat (Modified with -i Garlit)",
+    "pronunciation": "/li/ as in \"la + i\"",
+    "definition": "Consonant \"La\" modified to sound with /i/ or /e/ using a top Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"La\", then place an acute tick mark above to the right.",
+    "exampleWord": "Lagyu",
+    "exampleMeaning": "Form of La"
   },
   {
     "id": "56",
     "latin": "lu",
     "kulitanSymbol": "lu",
-    "definition": "Syllable Lu"
+    "classification": "Anak Sulat (Modified with -u Garlit)",
+    "pronunciation": "/lu/ as in \"la + u\"",
+    "definition": "Consonant \"La\" modified to sound with /u/ or /o/ using a bottom Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"La\", then place a descending comma tick below to the left.",
+    "exampleWord": "Lagyu",
+    "exampleMeaning": "Form of La"
   },
   {
     "id": "57",
     "latin": "le",
     "kulitanSymbol": "le",
-    "definition": "Syllable Le"
+    "classification": "Anak Sulat (Vowel /e/ Flourish)",
+    "pronunciation": "/le/",
+    "definition": "Consonant \"La\" vocalized with /e/ using a right-side vowel wing ligature.",
+    "writingRule": "Draw the base character \"La\" with an attached rightward V-shaped vowel flourish.",
+    "exampleWord": "Lagyu",
+    "exampleMeaning": "Form of La"
   },
   {
     "id": "58",
     "latin": "lo",
     "kulitanSymbol": "lo",
-    "definition": "Syllable Lo"
+    "classification": "Anak Sulat (Vowel /o/ Flourish)",
+    "pronunciation": "/lo/",
+    "definition": "Consonant \"La\" vocalized with /o/ using a right-side double-wave ligature.",
+    "writingRule": "Draw the base character \"La\" with an attached rightward undulating wave flourish.",
+    "exampleWord": "Lagyu",
+    "exampleMeaning": "Form of La"
   },
   {
     "id": "59",
     "latin": "lí/î",
     "kulitanSymbol": "lie",
-    "definition": "Syllable lí or lî"
+    "classification": "Anak Sulat (Stressed /í/ Tone)",
+    "pronunciation": "/lí/ with acute/glottal stress",
+    "definition": "Consonant \"La\" vocalized with stressed /í/ or circumflex /î/ glottal stop.",
+    "writingRule": "Base character with both upper Garlit tick and rightward accent ligature.",
+    "exampleWord": "Lagyu",
+    "exampleMeaning": "Stressed form of La"
   },
   {
     "id": "60",
     "latin": "lú/û",
     "kulitanSymbol": "luo",
-    "definition": "Syllable lú or lû"
+    "classification": "Anak Sulat (Stressed /ú/ Tone)",
+    "pronunciation": "/lú/ with acute/glottal stress",
+    "definition": "Consonant \"La\" vocalized with stressed /ú/ or circumflex /û/ glottal stop.",
+    "writingRule": "Base character with both lower Garlit tick and rightward accent ligature.",
+    "exampleWord": "Lagyu",
+    "exampleMeaning": "Stressed form of La"
   },
   {
     "id": "61",
     "latin": "lang",
     "kulitanSymbol": "lN",
-    "definition": "Syllable lang"
+    "classification": "Busal / Ligature (Final -ng)",
+    "pronunciation": "/laŋ/ as in \"lang\"",
+    "definition": "Consonant \"La\" ligated directly with trailing final nasal syllable -ng (Nga).",
+    "writingRule": "Draw the base character \"La\" connected directly to the trailing triple-wave \"Nga\" glyph.",
+    "exampleWord": "Lang",
+    "exampleMeaning": "Nasal ligature for La"
   },
   {
     "id": "62",
     "latin": "sa",
     "kulitanSymbol": "s",
-    "definition": "Syllable Sa"
+    "classification": "Indung Sulat (Mother Consonant)",
+    "pronunciation": "/sa/ as in \"salamat\"",
+    "definition": "Root consonant \"Sa\" carrying the inherent vowel /a/. Acts as the Indung Sulat (head mother letter) in Kapampangan syllables.",
+    "writingRule": "Base stroke: Flowing open 3-figure curve.",
+    "exampleWord": "Salamat",
+    "exampleMeaning": "Thank you"
   },
   {
     "id": "63",
     "latin": "si",
     "kulitanSymbol": "si",
-    "definition": "Syllable Si"
+    "classification": "Anak Sulat (Modified with -i Garlit)",
+    "pronunciation": "/si/ as in \"sa + i\"",
+    "definition": "Consonant \"Sa\" modified to sound with /i/ or /e/ using a top Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Sa\", then place an acute tick mark above to the right.",
+    "exampleWord": "Salamat",
+    "exampleMeaning": "Form of Sa"
   },
   {
     "id": "64",
     "latin": "su",
     "kulitanSymbol": "su",
-    "definition": "Syllable Su"
+    "classification": "Anak Sulat (Modified with -u Garlit)",
+    "pronunciation": "/su/ as in \"sa + u\"",
+    "definition": "Consonant \"Sa\" modified to sound with /u/ or /o/ using a bottom Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Sa\", then place a descending comma tick below to the left.",
+    "exampleWord": "Salamat",
+    "exampleMeaning": "Form of Sa"
   },
   {
     "id": "65",
     "latin": "se",
     "kulitanSymbol": "se",
-    "definition": "Syllable Se"
+    "classification": "Anak Sulat (Vowel /e/ Flourish)",
+    "pronunciation": "/se/",
+    "definition": "Consonant \"Sa\" vocalized with /e/ using a right-side vowel wing ligature.",
+    "writingRule": "Draw the base character \"Sa\" with an attached rightward V-shaped vowel flourish.",
+    "exampleWord": "Salamat",
+    "exampleMeaning": "Form of Sa"
   },
   {
     "id": "66",
     "latin": "so",
     "kulitanSymbol": "so",
-    "definition": "Syllable So"
+    "classification": "Anak Sulat (Vowel /o/ Flourish)",
+    "pronunciation": "/so/",
+    "definition": "Consonant \"Sa\" vocalized with /o/ using a right-side double-wave ligature.",
+    "writingRule": "Draw the base character \"Sa\" with an attached rightward undulating wave flourish.",
+    "exampleWord": "Salamat",
+    "exampleMeaning": "Form of Sa"
   },
   {
     "id": "67",
     "latin": "sí/î",
     "kulitanSymbol": "sie",
-    "definition": "Syllable sí or sî"
+    "classification": "Anak Sulat (Stressed /í/ Tone)",
+    "pronunciation": "/sí/ with acute/glottal stress",
+    "definition": "Consonant \"Sa\" vocalized with stressed /í/ or circumflex /î/ glottal stop.",
+    "writingRule": "Base character with both upper Garlit tick and rightward accent ligature.",
+    "exampleWord": "Salamat",
+    "exampleMeaning": "Stressed form of Sa"
   },
   {
     "id": "68",
     "latin": "sú/û",
     "kulitanSymbol": "suo",
-    "definition": "Syllable sú or sû"
+    "classification": "Anak Sulat (Stressed /ú/ Tone)",
+    "pronunciation": "/sú/ with acute/glottal stress",
+    "definition": "Consonant \"Sa\" vocalized with stressed /ú/ or circumflex /û/ glottal stop.",
+    "writingRule": "Base character with both lower Garlit tick and rightward accent ligature.",
+    "exampleWord": "Salamat",
+    "exampleMeaning": "Stressed form of Sa"
   },
   {
     "id": "69",
     "latin": "sang",
     "kulitanSymbol": "sN",
-    "definition": "Syllable sang"
+    "classification": "Busal / Ligature (Final -ng)",
+    "pronunciation": "/saŋ/ as in \"sang\"",
+    "definition": "Consonant \"Sa\" ligated directly with trailing final nasal syllable -ng (Nga).",
+    "writingRule": "Draw the base character \"Sa\" connected directly to the trailing triple-wave \"Nga\" glyph.",
+    "exampleWord": "Sang",
+    "exampleMeaning": "Nasal ligature for Sa"
   },
   {
     "id": "70",
     "latin": "ma",
     "kulitanSymbol": "m",
-    "definition": "Syllable Ma"
+    "classification": "Indung Sulat (Mother Consonant)",
+    "pronunciation": "/ma/ as in \"mayap\"",
+    "definition": "Root consonant \"Ma\" carrying the inherent vowel /a/. Acts as the Indung Sulat (head mother letter) in Kapampangan syllables.",
+    "writingRule": "Base stroke: Triangular bow character with horizontal cross-loop.",
+    "exampleWord": "Mayap",
+    "exampleMeaning": "Good / Fine"
   },
   {
     "id": "71",
     "latin": "mi",
     "kulitanSymbol": "mi",
-    "definition": "Syllable Mi"
+    "classification": "Anak Sulat (Modified with -i Garlit)",
+    "pronunciation": "/mi/ as in \"ma + i\"",
+    "definition": "Consonant \"Ma\" modified to sound with /i/ or /e/ using a top Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Ma\", then place an acute tick mark above to the right.",
+    "exampleWord": "Mayap",
+    "exampleMeaning": "Form of Ma"
   },
   {
     "id": "72",
     "latin": "mu",
     "kulitanSymbol": "mu",
-    "definition": "Syllable Mu"
+    "classification": "Anak Sulat (Modified with -u Garlit)",
+    "pronunciation": "/mu/ as in \"ma + u\"",
+    "definition": "Consonant \"Ma\" modified to sound with /u/ or /o/ using a bottom Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Ma\", then place a descending comma tick below to the left.",
+    "exampleWord": "Mayap",
+    "exampleMeaning": "Form of Ma"
   },
   {
     "id": "73",
     "latin": "me",
     "kulitanSymbol": "me",
-    "definition": "Syllable Me"
+    "classification": "Anak Sulat (Vowel /e/ Flourish)",
+    "pronunciation": "/me/",
+    "definition": "Consonant \"Ma\" vocalized with /e/ using a right-side vowel wing ligature.",
+    "writingRule": "Draw the base character \"Ma\" with an attached rightward V-shaped vowel flourish.",
+    "exampleWord": "Mayap",
+    "exampleMeaning": "Form of Ma"
   },
   {
     "id": "74",
     "latin": "mo",
     "kulitanSymbol": "mo",
-    "definition": "Syllable Mo"
+    "classification": "Anak Sulat (Vowel /o/ Flourish)",
+    "pronunciation": "/mo/",
+    "definition": "Consonant \"Ma\" vocalized with /o/ using a right-side double-wave ligature.",
+    "writingRule": "Draw the base character \"Ma\" with an attached rightward undulating wave flourish.",
+    "exampleWord": "Mayap",
+    "exampleMeaning": "Form of Ma"
   },
   {
     "id": "75",
     "latin": "mí/î",
     "kulitanSymbol": "mie",
-    "definition": "Syllable mí or mî"
+    "classification": "Anak Sulat (Stressed /í/ Tone)",
+    "pronunciation": "/mí/ with acute/glottal stress",
+    "definition": "Consonant \"Ma\" vocalized with stressed /í/ or circumflex /î/ glottal stop.",
+    "writingRule": "Base character with both upper Garlit tick and rightward accent ligature.",
+    "exampleWord": "Mayap",
+    "exampleMeaning": "Stressed form of Ma"
   },
   {
     "id": "76",
     "latin": "mú/û",
     "kulitanSymbol": "muo",
-    "definition": "Syllable mú or mû"
+    "classification": "Anak Sulat (Stressed /ú/ Tone)",
+    "pronunciation": "/mú/ with acute/glottal stress",
+    "definition": "Consonant \"Ma\" vocalized with stressed /ú/ or circumflex /û/ glottal stop.",
+    "writingRule": "Base character with both lower Garlit tick and rightward accent ligature.",
+    "exampleWord": "Mayap",
+    "exampleMeaning": "Stressed form of Ma"
   },
   {
     "id": "77",
     "latin": "mang",
     "kulitanSymbol": "mN",
-    "definition": "Syllable mang"
+    "classification": "Busal / Ligature (Final -ng)",
+    "pronunciation": "/maŋ/ as in \"mang\"",
+    "definition": "Consonant \"Ma\" ligated directly with trailing final nasal syllable -ng (Nga).",
+    "writingRule": "Draw the base character \"Ma\" connected directly to the trailing triple-wave \"Nga\" glyph.",
+    "exampleWord": "Mang",
+    "exampleMeaning": "Nasal ligature for Ma"
   },
   {
     "id": "78",
     "latin": "pa",
     "kulitanSymbol": "p",
-    "definition": "Syllable Pa"
+    "classification": "Indung Sulat (Mother Consonant)",
+    "pronunciation": "/pa/ as in \"pasku\"",
+    "definition": "Root consonant \"Pa\" carrying the inherent vowel /a/. Acts as the Indung Sulat (head mother letter) in Kapampangan syllables.",
+    "writingRule": "Base stroke: Open upward angular hook stroke.",
+    "exampleWord": "Pasku",
+    "exampleMeaning": "Christmas / Feast"
   },
   {
     "id": "79",
     "latin": "pi",
     "kulitanSymbol": "pi",
-    "definition": "Syllable Pi"
+    "classification": "Anak Sulat (Modified with -i Garlit)",
+    "pronunciation": "/pi/ as in \"pa + i\"",
+    "definition": "Consonant \"Pa\" modified to sound with /i/ or /e/ using a top Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Pa\", then place an acute tick mark above to the right.",
+    "exampleWord": "Pasku",
+    "exampleMeaning": "Form of Pa"
   },
   {
     "id": "80",
     "latin": "pu",
     "kulitanSymbol": "pu",
-    "definition": "Syllable Pu"
+    "classification": "Anak Sulat (Modified with -u Garlit)",
+    "pronunciation": "/pu/ as in \"pa + u\"",
+    "definition": "Consonant \"Pa\" modified to sound with /u/ or /o/ using a bottom Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Pa\", then place a descending comma tick below to the left.",
+    "exampleWord": "Pasku",
+    "exampleMeaning": "Form of Pa"
   },
   {
     "id": "81",
     "latin": "pe",
     "kulitanSymbol": "pe",
-    "definition": "Syllable Pe"
+    "classification": "Anak Sulat (Vowel /e/ Flourish)",
+    "pronunciation": "/pe/",
+    "definition": "Consonant \"Pa\" vocalized with /e/ using a right-side vowel wing ligature.",
+    "writingRule": "Draw the base character \"Pa\" with an attached rightward V-shaped vowel flourish.",
+    "exampleWord": "Pasku",
+    "exampleMeaning": "Form of Pa"
   },
   {
     "id": "82",
     "latin": "po",
     "kulitanSymbol": "po",
-    "definition": "Syllable Po"
+    "classification": "Anak Sulat (Vowel /o/ Flourish)",
+    "pronunciation": "/po/",
+    "definition": "Consonant \"Pa\" vocalized with /o/ using a right-side double-wave ligature.",
+    "writingRule": "Draw the base character \"Pa\" with an attached rightward undulating wave flourish.",
+    "exampleWord": "Pasku",
+    "exampleMeaning": "Form of Pa"
   },
   {
     "id": "83",
     "latin": "pí/î",
     "kulitanSymbol": "pie",
-    "definition": "Syllable pí or pî"
+    "classification": "Anak Sulat (Stressed /í/ Tone)",
+    "pronunciation": "/pí/ with acute/glottal stress",
+    "definition": "Consonant \"Pa\" vocalized with stressed /í/ or circumflex /î/ glottal stop.",
+    "writingRule": "Base character with both upper Garlit tick and rightward accent ligature.",
+    "exampleWord": "Pasku",
+    "exampleMeaning": "Stressed form of Pa"
   },
   {
     "id": "84",
     "latin": "pú/û",
     "kulitanSymbol": "puo",
-    "definition": "Syllable pú or pû"
+    "classification": "Anak Sulat (Stressed /ú/ Tone)",
+    "pronunciation": "/pú/ with acute/glottal stress",
+    "definition": "Consonant \"Pa\" vocalized with stressed /ú/ or circumflex /û/ glottal stop.",
+    "writingRule": "Base character with both lower Garlit tick and rightward accent ligature.",
+    "exampleWord": "Pasku",
+    "exampleMeaning": "Stressed form of Pa"
   },
   {
     "id": "85",
     "latin": "pang",
     "kulitanSymbol": "pN",
-    "definition": "Syllable pang"
+    "classification": "Busal / Ligature (Final -ng)",
+    "pronunciation": "/paŋ/ as in \"pang\"",
+    "definition": "Consonant \"Pa\" ligated directly with trailing final nasal syllable -ng (Nga).",
+    "writingRule": "Draw the base character \"Pa\" connected directly to the trailing triple-wave \"Nga\" glyph.",
+    "exampleWord": "Pang",
+    "exampleMeaning": "Nasal ligature for Pa"
   },
   {
     "id": "86",
     "latin": "ba",
     "kulitanSymbol": "b",
-    "definition": "Syllable Ba"
+    "classification": "Indung Sulat (Mother Consonant)",
+    "pronunciation": "/ba/ as in \"balen\"",
+    "definition": "Root consonant \"Ba\" carrying the inherent vowel /a/. Acts as the Indung Sulat (head mother letter) in Kapampangan syllables.",
+    "writingRule": "Base stroke: Closed oval circle (O).",
+    "exampleWord": "Balen",
+    "exampleMeaning": "Town / Nation"
   },
   {
     "id": "87",
     "latin": "bi",
     "kulitanSymbol": "bi",
-    "definition": "Syllable Bi"
+    "classification": "Anak Sulat (Modified with -i Garlit)",
+    "pronunciation": "/bi/ as in \"ba + i\"",
+    "definition": "Consonant \"Ba\" modified to sound with /i/ or /e/ using a top Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Ba\", then place an acute tick mark above to the right.",
+    "exampleWord": "Balen",
+    "exampleMeaning": "Form of Ba"
   },
   {
     "id": "88",
     "latin": "bu",
     "kulitanSymbol": "bu",
-    "definition": "Syllable Bu"
+    "classification": "Anak Sulat (Modified with -u Garlit)",
+    "pronunciation": "/bu/ as in \"ba + u\"",
+    "definition": "Consonant \"Ba\" modified to sound with /u/ or /o/ using a bottom Garlit (Kudlit) mark.",
+    "writingRule": "Draw the base character \"Ba\", then place a descending comma tick below to the left.",
+    "exampleWord": "Balen",
+    "exampleMeaning": "Form of Ba"
   },
   {
     "id": "89",
     "latin": "be",
     "kulitanSymbol": "be",
-    "definition": "Syllable Be"
+    "classification": "Anak Sulat (Vowel /e/ Flourish)",
+    "pronunciation": "/be/",
+    "definition": "Consonant \"Ba\" vocalized with /e/ using a right-side vowel wing ligature.",
+    "writingRule": "Draw the base character \"Ba\" with an attached rightward V-shaped vowel flourish.",
+    "exampleWord": "Balen",
+    "exampleMeaning": "Form of Ba"
   },
   {
     "id": "90",
     "latin": "bo",
     "kulitanSymbol": "bo",
-    "definition": "Syllable Bo"
+    "classification": "Anak Sulat (Vowel /o/ Flourish)",
+    "pronunciation": "/bo/",
+    "definition": "Consonant \"Ba\" vocalized with /o/ using a right-side double-wave ligature.",
+    "writingRule": "Draw the base character \"Ba\" with an attached rightward undulating wave flourish.",
+    "exampleWord": "Balen",
+    "exampleMeaning": "Form of Ba"
   },
   {
     "id": "91",
     "latin": "bí/î",
     "kulitanSymbol": "bie",
-    "definition": "Syllable bí or bî"
+    "classification": "Anak Sulat (Stressed /í/ Tone)",
+    "pronunciation": "/bí/ with acute/glottal stress",
+    "definition": "Consonant \"Ba\" vocalized with stressed /í/ or circumflex /î/ glottal stop.",
+    "writingRule": "Base character with both upper Garlit tick and rightward accent ligature.",
+    "exampleWord": "Balen",
+    "exampleMeaning": "Stressed form of Ba"
   },
   {
     "id": "92",
     "latin": "bú/û",
     "kulitanSymbol": "buo",
-    "definition": "Syllable bú or bû"
+    "classification": "Anak Sulat (Stressed /ú/ Tone)",
+    "pronunciation": "/bú/ with acute/glottal stress",
+    "definition": "Consonant \"Ba\" vocalized with stressed /ú/ or circumflex /û/ glottal stop.",
+    "writingRule": "Base character with both lower Garlit tick and rightward accent ligature.",
+    "exampleWord": "Balen",
+    "exampleMeaning": "Stressed form of Ba"
   },
   {
     "id": "93",
     "latin": "bang",
     "kulitanSymbol": "bN",
-    "definition": "Syllable bang"
+    "classification": "Busal / Ligature (Final -ng)",
+    "pronunciation": "/baŋ/ as in \"bang\"",
+    "definition": "Consonant \"Ba\" ligated directly with trailing final nasal syllable -ng (Nga).",
+    "writingRule": "Draw the base character \"Ba\" connected directly to the trailing triple-wave \"Nga\" glyph.",
+    "exampleWord": "Bang",
+    "exampleMeaning": "Nasal ligature for Ba"
   }
 ];
