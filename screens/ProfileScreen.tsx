@@ -183,7 +183,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
               </View>
               <View>
                 <Text style={[styles.badgeValue, { color: rank.color }]}>{rank.name}</Text>
-                <Text style={styles.badgeLabel}>{profile.eloRating} Elo</Text>
+                <Text style={styles.badgeLabel}>{profile.eloRating} RP</Text>
               </View>
             </View>
           </View>
@@ -232,7 +232,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           <View style={styles.statBox}>
             <Ionicons name="game-controller" size={24} color="#EF4444" style={styles.statIcon} />
             <Text style={styles.statValue}>{profile.eloRating}</Text>
-            <Text style={styles.statLabel}>Match Elo</Text>
+            <Text style={styles.statLabel}>{language === 'EN' ? 'Rank Points' : 'Puntos ng Ranggo'}</Text>
           </View>
         </View>
 

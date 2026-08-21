@@ -444,7 +444,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                     <View style={styles.friendInfo}>
                       <Text style={styles.friendName}>{item.first_name || 'Scholar'} {item.last_name || ''}</Text>
                       <Text style={styles.friendStats}>Lvl {item.level || 1} • {item.xp || 0} XP</Text>
-                      <Text style={styles.eloStats}>Elo: {item.elo_rating || 1000}</Text>
+                      <Text style={styles.eloStats}>{item.elo_rating || 1000} RP</Text>
                     </View>
                     <TouchableOpacity 
                       style={styles.challengeBtn} 
@@ -649,7 +649,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                   <View style={styles.modalStatsRow}>
                     <Text style={styles.modalStatsText}>Lvl {challengeModalFriend.level || 1}</Text>
                     <Text style={styles.modalStatsDot}>•</Text>
-                    <Text style={styles.modalStatsText}>Elo {challengeModalFriend.elo_rating || 1000}</Text>
+                    <Text style={styles.modalStatsText}>{challengeModalFriend.elo_rating || 1000} RP</Text>
                   </View>
 
                   <Text style={styles.modalSubtitle}>

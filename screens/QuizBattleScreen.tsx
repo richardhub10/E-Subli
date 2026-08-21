@@ -555,7 +555,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
 
               <View style={styles.rewardItem}>
                 <Ionicons name="trophy" size={20} color="#38BDF8" />
-                <Text style={styles.rewardLabel}>Elo Rating</Text>
+                <Text style={styles.rewardLabel}>Rank Points</Text>
                 <Text style={[styles.rewardValue, { color: isWinner ? '#10B981' : '#EF4444' }]}>
                   {isWinner ? '+25' : '-20'}
                 </Text>
@@ -603,7 +603,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
               <Text style={styles.vsAvatarInitial}>{myName.charAt(0)}</Text>
             </View>
             <Text style={styles.vsPlayerText} numberOfLines={1}>{myName}</Text>
-            <Text style={styles.vsPlayerSub}>Lvl {profile?.level || 1} • {profile?.eloRating || 1000} Elo</Text>
+            <Text style={styles.vsPlayerSub}>Lvl {profile?.level || 1} • {profile?.eloRating || 1000} RP</Text>
           </View>
 
           <View style={styles.vsCenterClash}>
