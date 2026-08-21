@@ -16,7 +16,7 @@ const { width } = Dimensions.get('window');
 
 export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps) {
   const { addXP } = useProfile();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [currentQ, setCurrentQ] = useState<any>(null);
   const [score, setScore] = useState(0);
   const [status, setStatus] = useState<'playing' | 'finished'>('playing');
@@ -125,12 +125,20 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
   }, [currentQ, status]);
 
   const handleTimeOut = () => {
-    if (status !== 'playing') return;
+    if (status !== 'playing' || selectedOption !== null) return;
     
     if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     
-    // Endless mode: just give a new question
-    setCurrentQ(getRandomQuestions(1)[0]);
+    // Reveal correct answer on timeout
+    setSelectedOption('__TIMEOUT__');
+    setIsCorrectSelected(false);
+    
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerAnim.stopAnimation();
+
+    setTimeout(() => {
+      setCurrentQ(getRandomQuestions(1)[0]);
+    }, 2200);
   };
 
   const handleAnswer = (selectedOpt: string) => {
@@ -144,18 +152,22 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
     if (timerRef.current) clearTimeout(timerRef.current);
     timerAnim.stopAnimation();
 
-    setTimeout(() => {
-      if (isCorrect) {
-        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        const newScore = score + 10;
-        setScore(newScore);
-        
+    if (isCorrect) {
+      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      const newScore = score + 10;
+      setScore(newScore);
+      
+      setTimeout(() => {
         setCurrentQ(getRandomQuestions(1)[0]);
-      } else {
-        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }, 900);
+    } else {
+      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      
+      // Give 2.2 seconds so the user can read and learn the correct answer before advancing
+      setTimeout(() => {
         setCurrentQ(getRandomQuestions(1)[0]);
-      }
-    }, 800);
+      }, 2200);
+    }
   };
 
   const leaveRoom = () => {
@@ -242,8 +254,12 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
           <View style={styles.optionsGrid}>
             {currentQ.options.map((opt: string, index: number) => {
               const isSelected = selectedOption === opt;
-              const isCorrect = isSelected && isCorrectSelected === true;
-              const isWrong = isSelected && isCorrectSelected === false;
+              const isCorrectSelection = isSelected && isCorrectSelected === true;
+              const isWrongSelection = isSelected && isCorrectSelected === false;
+              const isRevealedCorrect = selectedOption !== null && isCorrectSelected === false && opt === currentQ.correct;
+              
+              const isGreen = isCorrectSelection || isRevealedCorrect;
+              const isRed = isWrongSelection;
               
               return (
                 <Animated.View 
@@ -259,22 +275,22 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
                   <TouchableOpacity
                     style={[
                       styles.optionButton,
-                      isCorrect && styles.optionCorrect,
-                      isWrong && styles.optionWrong
+                      isGreen && styles.optionCorrect,
+                      isRed && styles.optionWrong
                     ]}
                     onPress={() => handleAnswer(opt)}
                     activeOpacity={0.7}
                     disabled={selectedOption !== null}
                   >
-                    <View style={[styles.optionBadge, (isCorrect || isWrong) && styles.optionBadgeActive]}>
-                      <Text style={[styles.optionBadgeText, (isCorrect || isWrong) && { color: '#FFF' }]}>
-                        {['A', 'B', 'C', 'D'][index]}
+                    <View style={[styles.optionBadge, (isGreen || isRed) && styles.optionBadgeActive]}>
+                      <Text style={[styles.optionBadgeText, (isGreen || isRed) && { color: '#FFF' }]}>
+                        {isGreen ? '✓' : isRed ? '✗' : ['A', 'B', 'C', 'D'][index]}
                       </Text>
                     </View>
                     <Text 
                       style={[
                         styles.optionText,
-                        (isCorrect || isWrong) && { color: '#FFF' }
+                        (isGreen || isRed) && { color: '#FFF' }
                       ]}
                       numberOfLines={2}
                       adjustsFontSizeToFit
@@ -286,6 +302,36 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
               );
             })}
           </View>
+
+          {/* Real-time Feedback Banner */}
+          {selectedOption !== null && isCorrectSelected === false && (
+            <View style={styles.feedbackBannerWrong}>
+              <View style={styles.feedbackIconCircleWrong}>
+                <Ionicons name="close" size={18} color="#FFF" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.feedbackTitleWrong}>
+                  {selectedOption === '__TIMEOUT__' ? 'Time is up!' : 'Incorrect'}
+                </Text>
+                <Text style={styles.feedbackSubWrong}>
+                  {language === 'EN' ? 'Correct answer: ' : 'Tamang sagot: '}
+                  <Text style={styles.feedbackCorrectWord}>{currentQ.correct}</Text>
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {selectedOption !== null && isCorrectSelected === true && (
+            <View style={styles.feedbackBannerCorrect}>
+              <View style={styles.feedbackIconCircleCorrect}>
+                <Ionicons name="checkmark" size={18} color="#FFF" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.feedbackTitleCorrect}>Correct!</Text>
+                <Text style={styles.feedbackSubCorrect}>+10 XP</Text>
+              </View>
+            </View>
+          )}
         </ScrollView>
 
       </SafeAreaView>
@@ -324,6 +370,70 @@ const styles = StyleSheet.create({
   optionCorrect: { backgroundColor: '#10B981', borderColor: '#059669', shadowColor: '#10B981' },
   optionWrong: { backgroundColor: '#EF4444', borderColor: '#DC2626', shadowColor: '#EF4444' },
   optionText: { fontFamily: 'Poppins_600SemiBold', fontSize: 15, color: '#334155', textAlign: 'center', marginTop: 4 },
+  feedbackBannerWrong: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF2F2',
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: '#FECACA',
+    gap: 12,
+  },
+  feedbackIconCircleWrong: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  feedbackTitleWrong: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 14,
+    color: '#991B1B',
+  },
+  feedbackSubWrong: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 13,
+    color: '#7F1D1D',
+  },
+  feedbackCorrectWord: {
+    fontFamily: 'Poppins_700Bold',
+    color: '#065F46',
+  },
+  feedbackBannerCorrect: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ECFDF5',
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: '#A7F3D0',
+    gap: 12,
+  },
+  feedbackIconCircleCorrect: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#10B981',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  feedbackTitleCorrect: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 14,
+    color: '#065F46',
+  },
+  feedbackSubCorrect: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 13,
+    color: '#047857',
+  },
   resultTitle: { fontFamily: 'Poppins_700Bold', fontSize: 40, marginTop: 20, marginBottom: 10 },
   finishedContainer: { alignItems: 'center', padding: 20, backgroundColor: '#FFF', borderRadius: 20, elevation: 5 },
   finishedTitle: { fontFamily: 'Poppins_700Bold', fontSize: 24, color: '#FBBF24', marginVertical: 10 },
