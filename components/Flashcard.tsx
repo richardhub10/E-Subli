@@ -93,9 +93,9 @@ export default function Flashcard({ data }: FlashcardProps) {
 const styles = StyleSheet.create({
   cardContainer: {
     width: '90%',
-    height: 420,
+    height: 450,
     alignSelf: 'center',
-    marginVertical: 20,
+    marginVertical: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
@@ -157,7 +157,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   backCardContent: {
-    padding: 20,
+    padding: 18,
+    paddingBottom: 28,
     alignItems: 'center',
   },
   backHeaderBadge: {
