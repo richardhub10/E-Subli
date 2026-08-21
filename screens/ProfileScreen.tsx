@@ -8,6 +8,7 @@ import { decode } from 'base64-arraybuffer';
 import { useProfile } from '../context/ProfileContext';
 import { supabase } from '../supabaseClient';
 import { useLanguage } from '../context/LanguageContext';
+import { Language } from '../utils/translations';
 
 type ProfileScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -15,7 +16,7 @@ type ProfileScreenProps = {
 
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const { profile, updateProfile } = useProfile();
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editFirstName, setEditFirstName] = useState(profile.firstName || '');
@@ -233,6 +234,33 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             <Text style={styles.statValue}>{profile.eloRating}</Text>
             <Text style={styles.statLabel}>Match Elo</Text>
           </View>
+        </View>
+
+        {/* Language Selection Setting */}
+        <Text style={styles.sectionTitle}>{language === 'EN' ? 'Language Setting' : 'Wika / Salita'}</Text>
+        <View style={styles.langSettingCard}>
+          {[
+            { code: 'EN', name: 'English', subtitle: 'US English' },
+            { code: 'PH', name: 'Filipino', subtitle: 'Tagalog' },
+            { code: 'KPM', name: 'Kapampangan', subtitle: 'Amanung Sisuan' },
+          ].map((item) => (
+            <TouchableOpacity
+              key={item.code}
+              style={[styles.langOptionRow, language === item.code && styles.langOptionRowActive]}
+              onPress={() => setLanguage(item.code as Language)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.langOptionTextGroup}>
+                <Text style={[styles.langOptionName, language === item.code && styles.langOptionNameActive]}>
+                  {item.name}
+                </Text>
+                <Text style={styles.langOptionSubtitle}>{item.subtitle}</Text>
+              </View>
+              <View style={[styles.langRadioCircle, language === item.code && styles.langRadioCircleActive]}>
+                {language === item.code && <View style={styles.langRadioInner} />}
+              </View>
+            </TouchableOpacity>
+          ))}
         </View>
 
         {/* Footer Logout */}
@@ -540,8 +568,68 @@ const styles = StyleSheet.create({
   },
   logoutButtonText: {
     color: '#FFFFFF',
-    fontFamily: 'Poppins_700Bold',
     fontSize: 16,
+    fontFamily: 'Poppins_700Bold',
+    letterSpacing: 0.5,
+  },
+  langSettingCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 8,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  langOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 14,
+    marginBottom: 4,
+  },
+  langOptionRowActive: {
+    backgroundColor: 'rgba(209, 88, 45, 0.08)',
+  },
+  langOptionTextGroup: {
+    flex: 1,
+  },
+  langOptionName: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 15,
+    color: '#0F172A',
+  },
+  langOptionNameActive: {
+    color: '#D1582D',
+  },
+  langOptionSubtitle: {
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 12,
+    color: '#64748B',
+  },
+  langRadioCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: '#CBD5E1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  langRadioCircleActive: {
+    borderColor: '#D1582D',
+  },
+  langRadioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#D1582D',
   },
   
   // Modal Styles

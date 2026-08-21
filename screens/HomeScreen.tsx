@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
+import { Language } from '../utils/translations';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,7 +15,7 @@ type HomeScreenProps = {
 
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const { profile } = useProfile();
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
 
   const [expandingFeature, setExpandingFeature] = useState<any>(null);
   const expandAnim = useRef(new Animated.Value(0)).current;
@@ -102,22 +103,43 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
       {/* Header Profile Section */}
       <View style={styles.header}>
-        <View>
+        <View style={{ flex: 1, marginRight: 8 }}>
           <Text style={styles.welcomeText}>{t('welcome')},</Text>
-          <Text style={styles.emailText}>{profile.firstName || profile.email?.split('@')[0] || 'Scholar'}</Text>
+          <Text style={styles.emailText} numberOfLines={1}>
+            {profile.firstName || profile.email?.split('@')[0] || 'Scholar'}
+          </Text>
         </View>
-        <TouchableOpacity style={styles.profileAvatar} onPress={() => navigation.navigate('Profile')}>
-          {profile.avatarUrl ? (
-            <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
-          ) : (
-            <Text style={styles.avatarText}>
-              {profile.firstName?.charAt(0).toUpperCase() || profile.email?.charAt(0).toUpperCase() || 'U'}
-            </Text>
-          )}
-          <View style={styles.levelBadge}>
-            <Text style={styles.levelText}>{profile.level}</Text>
+
+        <View style={styles.headerRightGroup}>
+          {/* Language Switcher */}
+          <View style={styles.langPillContainer}>
+            {(['EN', 'PH', 'KPM'] as Language[]).map((lang) => (
+              <TouchableOpacity
+                key={lang}
+                onPress={() => setLanguage(lang)}
+                style={[styles.langPillBtn, language === lang && styles.langPillBtnActive]}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.langPillText, language === lang && styles.langPillTextActive]}>
+                  {lang}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
-        </TouchableOpacity>
+
+          <TouchableOpacity style={styles.profileAvatar} onPress={() => navigation.navigate('Profile')} activeOpacity={0.8}>
+            {profile.avatarUrl ? (
+              <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>
+                {profile.firstName?.charAt(0).toUpperCase() || profile.email?.charAt(0).toUpperCase() || 'U'}
+              </Text>
+            )}
+            <View style={styles.levelBadge}>
+              <Text style={styles.levelText}>{profile.level}</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.scrollContainer} contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
@@ -260,9 +282,43 @@ const styles = StyleSheet.create({
   },
   emailText: {
     color: '#0F172A',
-    fontSize: 28,
+    fontSize: 26,
     fontFamily: 'Poppins_700Bold',
     letterSpacing: -0.5,
+  },
+  headerRightGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  langPillContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    padding: 3,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  langPillBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 16,
+  },
+  langPillBtnActive: {
+    backgroundColor: '#D1582D',
+  },
+  langPillText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11,
+    color: '#64748B',
+  },
+  langPillTextActive: {
+    color: '#FFFFFF',
   },
   profileAvatar: {
     width: 56,
