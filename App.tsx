@@ -101,7 +101,8 @@ export default function App() {
   useEffect(() => {
     async function loadFonts() {
       await Font.loadAsync({
-        'Kulitan': require('./assets/fonts/KulitanHandwriting-SemiBold.otf'),
+        'Kulitan': require('./assets/fonts/Bay_K_Pamagkulit.ttf'),
+        'Bay_K_Pamagkulit': require('./assets/fonts/Bay_K_Pamagkulit.ttf'),
       });
       setCustomFontsLoaded(true);
     }

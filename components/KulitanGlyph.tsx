@@ -30,11 +30,7 @@ export default function KulitanGlyph({
       <Svg width={width} height={size} viewBox={viewBox}>
         <Path
           d={pathData}
-          fill="none"
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          fill={color}
         />
       </Svg>
     </View>

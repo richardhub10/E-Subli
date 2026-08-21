@@ -5,7 +5,7 @@ export type SyllableData = {
   definition: string;
 };
 
-// Based EXACTLY on the Omniglot chart provided by the user
+// Based EXACTLY on Baybayin Pamagkulit Font by Nordenx (Sulat Kapampangan)
 export const kulitanSyllables: SyllableData[] = [
   {
     "id": "1",
@@ -16,31 +16,31 @@ export const kulitanSyllables: SyllableData[] = [
   {
     "id": "2",
     "latin": "i",
-    "kulitanSymbol": "i",
+    "kulitanSymbol": "e",
     "definition": "Vowel I"
   },
   {
     "id": "3",
     "latin": "u",
-    "kulitanSymbol": "u",
+    "kulitanSymbol": "o",
     "definition": "Vowel U"
   },
   {
     "id": "4",
     "latin": "e",
-    "kulitanSymbol": "e",
+    "kulitanSymbol": "E",
     "definition": "Vowel E"
   },
   {
     "id": "5",
     "latin": "o",
-    "kulitanSymbol": "o",
+    "kulitanSymbol": "O",
     "definition": "Vowel O"
   },
   {
     "id": "6",
     "latin": "ga",
-    "kulitanSymbol": "ga",
+    "kulitanSymbol": "g",
     "definition": "Syllable Ga"
   },
   {
@@ -70,25 +70,25 @@ export const kulitanSyllables: SyllableData[] = [
   {
     "id": "11",
     "latin": "gí/î",
-    "kulitanSymbol": "gí",
+    "kulitanSymbol": "gie",
     "definition": "Syllable gí or gî"
   },
   {
     "id": "12",
     "latin": "gú/û",
-    "kulitanSymbol": "gú",
+    "kulitanSymbol": "guo",
     "definition": "Syllable gú or gû"
   },
   {
     "id": "13",
     "latin": "gang",
-    "kulitanSymbol": "gang",
+    "kulitanSymbol": "gN",
     "definition": "Syllable gang"
   },
   {
     "id": "14",
     "latin": "ka",
-    "kulitanSymbol": "ka",
+    "kulitanSymbol": "k",
     "definition": "Syllable Ka"
   },
   {
@@ -118,73 +118,73 @@ export const kulitanSyllables: SyllableData[] = [
   {
     "id": "19",
     "latin": "kí/î",
-    "kulitanSymbol": "kí",
+    "kulitanSymbol": "kie",
     "definition": "Syllable kí or kî"
   },
   {
     "id": "20",
     "latin": "kú/û",
-    "kulitanSymbol": "kú",
+    "kulitanSymbol": "kuo",
     "definition": "Syllable kú or kû"
   },
   {
     "id": "21",
     "latin": "kank (kang)",
-    "kulitanSymbol": "kang",
+    "kulitanSymbol": "kN",
     "definition": "Syllable kang"
   },
   {
     "id": "22",
     "latin": "nga",
-    "kulitanSymbol": "nga",
+    "kulitanSymbol": "N",
     "definition": "Syllable Nga"
   },
   {
     "id": "23",
     "latin": "ngi",
-    "kulitanSymbol": "ngi",
+    "kulitanSymbol": "Ni",
     "definition": "Syllable Ngi"
   },
   {
     "id": "24",
     "latin": "ngu",
-    "kulitanSymbol": "ngu",
+    "kulitanSymbol": "Nu",
     "definition": "Syllable Ngu"
   },
   {
     "id": "25",
     "latin": "nge",
-    "kulitanSymbol": "nge",
+    "kulitanSymbol": "Ne",
     "definition": "Syllable Nge"
   },
   {
     "id": "26",
     "latin": "ngo",
-    "kulitanSymbol": "ngo",
+    "kulitanSymbol": "No",
     "definition": "Syllable Ngo"
   },
   {
     "id": "27",
     "latin": "ngí/î",
-    "kulitanSymbol": "ngí",
+    "kulitanSymbol": "Nie",
     "definition": "Syllable ngí or ngî"
   },
   {
     "id": "28",
     "latin": "ngú/û",
-    "kulitanSymbol": "ngú",
+    "kulitanSymbol": "Nuo",
     "definition": "Syllable ngú or ngû"
   },
   {
     "id": "29",
     "latin": "ngang",
-    "kulitanSymbol": "ngang",
+    "kulitanSymbol": "NN",
     "definition": "Syllable ngang"
   },
   {
     "id": "30",
     "latin": "ta",
-    "kulitanSymbol": "ta",
+    "kulitanSymbol": "t",
     "definition": "Syllable Ta"
   },
   {
@@ -214,25 +214,25 @@ export const kulitanSyllables: SyllableData[] = [
   {
     "id": "35",
     "latin": "tí/î",
-    "kulitanSymbol": "tí",
+    "kulitanSymbol": "tie",
     "definition": "Syllable tí or tî"
   },
   {
     "id": "36",
     "latin": "tú/û",
-    "kulitanSymbol": "tú",
+    "kulitanSymbol": "tuo",
     "definition": "Syllable tú or tû"
   },
   {
     "id": "37",
     "latin": "tang",
-    "kulitanSymbol": "tang",
+    "kulitanSymbol": "tN",
     "definition": "Syllable tang"
   },
   {
     "id": "38",
     "latin": "da",
-    "kulitanSymbol": "da",
+    "kulitanSymbol": "d",
     "definition": "Syllable Da"
   },
   {
@@ -262,25 +262,25 @@ export const kulitanSyllables: SyllableData[] = [
   {
     "id": "43",
     "latin": "dí/î",
-    "kulitanSymbol": "dí",
+    "kulitanSymbol": "die",
     "definition": "Syllable dí or dî"
   },
   {
     "id": "44",
     "latin": "dú/û",
-    "kulitanSymbol": "dú",
+    "kulitanSymbol": "duo",
     "definition": "Syllable dú or dû"
   },
   {
     "id": "45",
     "latin": "dang",
-    "kulitanSymbol": "dang",
+    "kulitanSymbol": "dN",
     "definition": "Syllable dang"
   },
   {
     "id": "46",
     "latin": "na",
-    "kulitanSymbol": "na",
+    "kulitanSymbol": "n",
     "definition": "Syllable Na"
   },
   {
@@ -310,25 +310,25 @@ export const kulitanSyllables: SyllableData[] = [
   {
     "id": "51",
     "latin": "ní/î",
-    "kulitanSymbol": "ní",
+    "kulitanSymbol": "nie",
     "definition": "Syllable ní or nî"
   },
   {
     "id": "52",
     "latin": "nú/û",
-    "kulitanSymbol": "nú",
+    "kulitanSymbol": "nuo",
     "definition": "Syllable nú or nû"
   },
   {
     "id": "53",
     "latin": "nang",
-    "kulitanSymbol": "nang",
+    "kulitanSymbol": "nN",
     "definition": "Syllable nang"
   },
   {
     "id": "54",
     "latin": "la",
-    "kulitanSymbol": "la",
+    "kulitanSymbol": "l",
     "definition": "Syllable La"
   },
   {
@@ -358,25 +358,25 @@ export const kulitanSyllables: SyllableData[] = [
   {
     "id": "59",
     "latin": "lí/î",
-    "kulitanSymbol": "lí",
+    "kulitanSymbol": "lie",
     "definition": "Syllable lí or lî"
   },
   {
     "id": "60",
     "latin": "lú/û",
-    "kulitanSymbol": "lú",
+    "kulitanSymbol": "luo",
     "definition": "Syllable lú or lû"
   },
   {
     "id": "61",
     "latin": "lang",
-    "kulitanSymbol": "lang",
+    "kulitanSymbol": "lN",
     "definition": "Syllable lang"
   },
   {
     "id": "62",
     "latin": "sa",
-    "kulitanSymbol": "sa",
+    "kulitanSymbol": "s",
     "definition": "Syllable Sa"
   },
   {
@@ -406,25 +406,25 @@ export const kulitanSyllables: SyllableData[] = [
   {
     "id": "67",
     "latin": "sí/î",
-    "kulitanSymbol": "sí",
+    "kulitanSymbol": "sie",
     "definition": "Syllable sí or sî"
   },
   {
     "id": "68",
     "latin": "sú/û",
-    "kulitanSymbol": "sú",
+    "kulitanSymbol": "suo",
     "definition": "Syllable sú or sû"
   },
   {
     "id": "69",
     "latin": "sang",
-    "kulitanSymbol": "sang",
+    "kulitanSymbol": "sN",
     "definition": "Syllable sang"
   },
   {
     "id": "70",
     "latin": "ma",
-    "kulitanSymbol": "ma",
+    "kulitanSymbol": "m",
     "definition": "Syllable Ma"
   },
   {
@@ -454,25 +454,25 @@ export const kulitanSyllables: SyllableData[] = [
   {
     "id": "75",
     "latin": "mí/î",
-    "kulitanSymbol": "mí",
+    "kulitanSymbol": "mie",
     "definition": "Syllable mí or mî"
   },
   {
     "id": "76",
     "latin": "mú/û",
-    "kulitanSymbol": "mú",
+    "kulitanSymbol": "muo",
     "definition": "Syllable mú or mû"
   },
   {
     "id": "77",
     "latin": "mang",
-    "kulitanSymbol": "mang",
+    "kulitanSymbol": "mN",
     "definition": "Syllable mang"
   },
   {
     "id": "78",
     "latin": "pa",
-    "kulitanSymbol": "pa",
+    "kulitanSymbol": "p",
     "definition": "Syllable Pa"
   },
   {
@@ -502,25 +502,25 @@ export const kulitanSyllables: SyllableData[] = [
   {
     "id": "83",
     "latin": "pí/î",
-    "kulitanSymbol": "pí",
+    "kulitanSymbol": "pie",
     "definition": "Syllable pí or pî"
   },
   {
     "id": "84",
     "latin": "pú/û",
-    "kulitanSymbol": "pú",
+    "kulitanSymbol": "puo",
     "definition": "Syllable pú or pû"
   },
   {
     "id": "85",
     "latin": "pang",
-    "kulitanSymbol": "pang",
+    "kulitanSymbol": "pN",
     "definition": "Syllable pang"
   },
   {
     "id": "86",
     "latin": "ba",
-    "kulitanSymbol": "ba",
+    "kulitanSymbol": "b",
     "definition": "Syllable Ba"
   },
   {
@@ -550,19 +550,19 @@ export const kulitanSyllables: SyllableData[] = [
   {
     "id": "91",
     "latin": "bí/î",
-    "kulitanSymbol": "bí",
+    "kulitanSymbol": "bie",
     "definition": "Syllable bí or bî"
   },
   {
     "id": "92",
     "latin": "bú/û",
-    "kulitanSymbol": "bú",
+    "kulitanSymbol": "buo",
     "definition": "Syllable bú or bû"
   },
   {
     "id": "93",
     "latin": "bang",
-    "kulitanSymbol": "bang",
+    "kulitanSymbol": "bN",
     "definition": "Syllable bang"
   }
 ];
