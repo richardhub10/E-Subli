@@ -73,22 +73,30 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
           });
         });
 
-        if (userPoints.length < 10) {
-          calculatedScore = 10; // Dot or tiny scribble
+        // 1. Calculate total user stroke length
+        let userStrokeLength = 0;
+        validStrokes.forEach(stroke => {
+          for (let i = 1; i < stroke.points.length; i++) {
+            userStrokeLength += Math.hypot(
+              stroke.points[i].x - stroke.points[i - 1].x,
+              stroke.points[i].y - stroke.points[i - 1].y
+            );
+          }
+        });
+
+        // Anti-cheat Check 1: Empty or tiny tap/dot
+        if (userPoints.length < 15 || userStrokeLength < 70) {
+          calculatedScore = 0;
         } else {
           const referenceData = kulitanPoints[currentSyllable.latin];
           
           if (!referenceData || referenceData.points.length === 0) {
             calculatedScore = 80;
           } else {
-            // The reference points from kulitanPoints are ALREADY centered exactly at (0,0)!
-            // Because the visual SVG is also centered at (0,0) relative to the canvas center,
-            // they match perfectly. Do NOT add the offset again.
             const absoluteRefPoints = referenceData.points;
 
-            // 1. COVERAGE CHECK
-            // A point is covered if the pen passes within 24 pixels (half stroke width + margin).
-            // Tightening this strictly kills zigzag and partial trace exploits.
+            // 2. COVERAGE CHECK (Recall)
+            // A point is covered if the pen passes within 26 pixels (track tolerance)
             let coveredPoints = 0;
             absoluteRefPoints.forEach(rp => {
               let minDistance = Infinity;
@@ -96,33 +104,24 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
                 const dist = Math.hypot(rp.x - up.x, rp.y - up.y);
                 if (dist < minDistance) minDistance = dist;
               });
-              if (minDistance <= 24) {
+              if (minDistance <= 26) {
                 coveredPoints++;
               }
             });
             const coverage = coveredPoints / absoluteRefPoints.length;
 
-            // 2. STROKE LENGTH CHECK
-            // Correctly sum lengths per-stroke to avoid massive jumps between strokes.
-            let userStrokeLength = 0;
-            validStrokes.forEach(stroke => {
-              for (let i = 1; i < stroke.points.length; i++) {
-                // We use the raw stroke points, but scaled mathematically it's the same distance
-                userStrokeLength += Math.hypot(stroke.points[i].x - stroke.points[i - 1].x, stroke.points[i].y - stroke.points[i - 1].y);
-              }
-            });
-
+            // 3. STROKE LENGTH RATIO
             let refPerimeterLength = 0;
             for (let i = 1; i < absoluteRefPoints.length; i++) {
-              refPerimeterLength += Math.hypot(absoluteRefPoints[i].x - absoluteRefPoints[i - 1].x, absoluteRefPoints[i].y - absoluteRefPoints[i - 1].y);
+              refPerimeterLength += Math.hypot(
+                absoluteRefPoints[i].x - absoluteRefPoints[i - 1].x,
+                absoluteRefPoints[i].y - absoluteRefPoints[i - 1].y
+              );
             }
-
-            // The ideal trace down the skeleton is exactly 50% of the thick perimeter.
             const idealLength = refPerimeterLength * 0.5;
             const lengthRatio = idealLength > 0 ? userStrokeLength / idealLength : 1;
 
-            // 3. PRECISION CHECK (Out of bounds)
-            // If a user point is > 25px away from the reference outline, it is OUTSIDE the lines.
+            // 4. PRECISION CHECK (Anti-Cheat for Scribbling Outside Track)
             let outOfBoundsCount = 0;
             userPoints.forEach(up => {
               let minDistance = Infinity;
@@ -130,40 +129,33 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
                 const dist = Math.hypot(up.x - rp.x, up.y - rp.y);
                 if (dist < minDistance) minDistance = dist;
               });
-              if (minDistance > 25) {
+              if (minDistance > 28) {
                 outOfBoundsCount++;
               }
             });
             const outOfBoundsRatio = userPoints.length > 0 ? outOfBoundsCount / userPoints.length : 1;
 
-            // SCORING LOGIC
-            if (coverage < 0.82) {
-              // Failed coverage (missed parts, or drew zigzags leaving large outline gaps)
-              calculatedScore = Math.floor(coverage * 70); 
-            } else if (lengthRatio > 2.2) {
-              // Scribbled way too much ink (coloring in the shape)
+            // 5. ANTI-CHEAT & ACCURACY SCORING
+            if (coverage < 0.70) {
+              // Incomplete trace (missed significant portion of the character)
+              calculatedScore = Math.floor(coverage * 60);
+            } else if (outOfBoundsRatio > 0.28 || lengthRatio > 2.3) {
+              // Anti-cheat triggered: Scribbled wildly all over canvas or colored in the screen
+              calculatedScore = Math.max(15, Math.floor(40 - (outOfBoundsRatio * 25)));
+            } else if (lengthRatio < 0.45) {
+              // Trace too short / skipped strokes
               calculatedScore = 45;
-            } else if (lengthRatio < 0.4) {
-              // Barely drew anything (dots)
-              calculatedScore = 45;
-            } else if (outOfBoundsRatio > 0.15) {
-              // More than 15% of their ink is strictly outside the lines (sloppy)
-              calculatedScore = 55;
             } else {
-              // Valid Trace! Grade from 75 to 100 based on perfection.
-              let baseScore = coverage * 100; 
-              
-              // Penalty for drawing too much/little ink (wobbly lines)
-              let lengthPenalty = Math.abs(1.0 - lengthRatio) * 15;
-              
-              // Penalty for points slightly out of bounds
-              let outOfBoundsPenalty = outOfBoundsRatio * 100;
+              // Valid, authentic trace: rate precision and coverage
+              const coverageScore = coverage * 65;
+              const precisionScore = (1.0 - outOfBoundsRatio) * 35;
+              const lengthPenalty = Math.abs(1.0 - Math.min(1.5, lengthRatio)) * 12;
 
-              calculatedScore = Math.floor(baseScore - lengthPenalty - outOfBoundsPenalty);
+              calculatedScore = Math.round(coverageScore + precisionScore - lengthPenalty);
               
-              // Clamp score to reward a genuinely good trace
+              // Ensure genuine quality traces reach rewarding scores
               if (calculatedScore > 100) calculatedScore = 100;
-              if (calculatedScore < 75) calculatedScore = 75;
+              if (calculatedScore < 60) calculatedScore = 60;
             }
           }
         }
