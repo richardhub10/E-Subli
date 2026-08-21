@@ -395,7 +395,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                     >
                       <LinearGradient colors={['#EF4444', '#DC2626']} style={styles.modalConfirmGradient}>
                         <Ionicons name="flash" size={16} color="#FFF" />
-                        <Text style={styles.modalConfirmBtnText}>Battle Now ⚔️</Text>
+                        <Text style={styles.modalConfirmBtnText}>Battle Now</Text>
                       </LinearGradient>
                     </TouchableOpacity>
                   </View>

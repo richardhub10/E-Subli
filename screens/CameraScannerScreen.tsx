@@ -17,7 +17,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
-import * as Speech from 'expo-speech';
 import { GoogleGenAI } from '@google/genai';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -50,7 +49,6 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisStep, setAnalysisStep] = useState<string>('');
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
-  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const { addXP } = useProfile();
   const { language } = useLanguage();
@@ -231,18 +229,6 @@ If the image is completely blank, unrelated, or illegible, respond with:
     }, 800);
   };
 
-  const playPronunciation = (text: string) => {
-    if (!text) return;
-    setIsSpeaking(true);
-    Speech.speak(text, {
-      language: 'fil-PH',
-      rate: 0.85,
-      pitch: 0.95,
-      onDone: () => setIsSpeaking(false),
-      onError: () => setIsSpeaking(false),
-    });
-  };
-
   const retakePhoto = () => {
     setPhotoUri(null);
     setBase64Data(null);
@@ -321,25 +307,12 @@ If the image is completely blank, unrelated, or illegible, respond with:
                     </View>
                   </View>
 
-                  {/* Pronunciation & Classification */}
+                  {/* Classification */}
                   <View style={styles.detailsRow}>
                     <View style={styles.detailItem}>
-                      <Text style={styles.detailLabel}>Type</Text>
-                      <Text style={styles.detailValue} numberOfLines={1}>{scanResult.type}</Text>
+                      <Text style={styles.detailLabel}>Classification</Text>
+                      <Text style={styles.detailValue}>{scanResult.type}</Text>
                     </View>
-
-                    <TouchableOpacity 
-                      style={styles.pronounceBtn} 
-                      activeOpacity={0.7}
-                      onPress={() => playPronunciation(scanResult.character)}
-                    >
-                      <Ionicons 
-                        name={isSpeaking ? "volume-high" : "volume-medium"} 
-                        size={20} 
-                        color="#FFF" 
-                      />
-                      <Text style={styles.pronounceBtnText}>Listen</Text>
-                    </TouchableOpacity>
                   </View>
 
                   {/* AI Stroke Feedback */}
@@ -786,20 +759,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_600SemiBold',
     fontSize: 14,
     color: '#334155',
-  },
-  pronounceBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#0F172A',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
-    gap: 6,
-  },
-  pronounceBtnText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 13,
-    color: '#FFF',
   },
   feedbackCard: {
     backgroundColor: '#FFF7ED',

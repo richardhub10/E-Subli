@@ -243,7 +243,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           setInAppAlert({
             visible: true,
             type: 'challenge',
-            title: `${challenger} Challenged You! ⚔️`,
+            title: `${challenger} Challenged You!`,
             subtitle: 'Ready for a live Kulitan Quiz Battle? Tap Accept to jump straight into the duel arena!',
             senderName: challenger,
             roomId: payload.payload.roomId,
@@ -484,7 +484,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
                       >
                         <LinearGradient colors={['#EF4444', '#DC2626']} style={modalStyles.acceptGradient}>
                           <Ionicons name="flash" size={16} color="#FFF" />
-                          <Text style={modalStyles.acceptButtonText}>Accept ⚔️</Text>
+                          <Text style={modalStyles.acceptButtonText}>Accept</Text>
                         </LinearGradient>
                       </TouchableOpacity>
                     </>
