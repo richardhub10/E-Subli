@@ -38,6 +38,7 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
   const { t, language } = useLanguage();
   
   const [isEraser, setIsEraser] = useState(false);
+  const [isBlindMode, setIsBlindMode] = useState(false);
   const [selectedColor, setSelectedColor] = useState('#0F172A');
   const [selectedSize, setSelectedSize] = useState(8);
   
@@ -45,11 +46,17 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
   const [modalVisible, setModalVisible] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [score, setScore] = useState<number | null>(null);
+  const [earnedXp, setEarnedXp] = useState(0);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
   const handleClear = () => {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     canvasRef.current?.clear();
+  };
+
+  const handleUndo = () => {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    canvasRef.current?.undo();
   };
 
   const handleEraser = () => {
@@ -60,6 +67,12 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
   const handlePen = () => {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsEraser(false);
+  };
+
+  const toggleBlindMode = () => {
+    if (Platform.OS !== 'web') Haptics.selectionAsync();
+    setIsBlindMode(!isBlindMode);
+    canvasRef.current?.clear();
   };
 
   const handleSelectColor = (color: string) => {
@@ -186,13 +199,16 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
 
       setScore(calculatedScore);
 
+      let xp = 0;
       if (calculatedScore >= 70) {
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        addXP(25);
+        xp = isBlindMode ? 50 : 25; // 2x XP for blind memory mode!
+        addXP(xp);
         incrementWriting();
       } else {
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       }
+      setEarnedXp(xp);
     }, 900);
   };
 
@@ -211,6 +227,34 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
     canvasRef.current?.clear();
   };
 
+  const renderStars = (scr: number | null) => {
+    if (!scr || scr < 70) {
+      return (
+        <View style={styles.starsRow}>
+          <Ionicons name="star" size={28} color="#F59E0B" />
+          <Ionicons name="star-outline" size={28} color="#CBD5E1" />
+          <Ionicons name="star-outline" size={28} color="#CBD5E1" />
+        </View>
+      );
+    }
+    if (scr < 90) {
+      return (
+        <View style={styles.starsRow}>
+          <Ionicons name="star" size={28} color="#F59E0B" />
+          <Ionicons name="star" size={28} color="#F59E0B" />
+          <Ionicons name="star-outline" size={28} color="#CBD5E1" />
+        </View>
+      );
+    }
+    return (
+      <View style={styles.starsRow}>
+        <Ionicons name="star" size={28} color="#F59E0B" />
+        <Ionicons name="star" size={28} color="#F59E0B" />
+        <Ionicons name="star" size={28} color="#F59E0B" />
+      </View>
+    );
+  };
+
   return (
     <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
       {/* Header */}
@@ -220,10 +264,27 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
         </TouchableOpacity>
         
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerSub}>{language === 'EN' ? 'TRACING PRACTICE' : 'PAGSASANAY SA PAGSULAT'}</Text>
+          <Text style={styles.headerSub}>{language === 'EN' ? 'TRACING STUDIO' : 'PAGSASANAY SA PAGSULAT'}</Text>
           <Text style={styles.headerTitle}>{currentSyllable.latin.toUpperCase()}</Text>
         </View>
 
+        {/* Guided vs Blind Memory Mode Toggle Button */}
+        <TouchableOpacity 
+          style={[styles.blindModeBtn, isBlindMode && styles.blindModeBtnActive]}
+          onPress={toggleBlindMode}
+          activeOpacity={0.7}
+        >
+          <Ionicons 
+            name={isBlindMode ? "eye-off" : "eye"} 
+            size={16} 
+            color={isBlindMode ? "#FFF" : "#D1582D"} 
+          />
+          <Text style={[styles.blindModeText, isBlindMode && styles.blindModeTextActive]}>
+            {isBlindMode ? '2x XP' : 'Guide'}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Previous & Next Glyph Buttons */}
         <TouchableOpacity 
           style={styles.headerNavBtn} 
           onPress={() => {
@@ -234,7 +295,7 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
           }}
           disabled={currentIndex === 0}
         >
-          <Ionicons name="chevron-back" size={20} color={currentIndex === 0 ? "#CBD5E1" : "#0F172A"} />
+          <Ionicons name="chevron-back" size={18} color={currentIndex === 0 ? "#CBD5E1" : "#0F172A"} />
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -246,15 +307,21 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
             }
           }}
         >
-          <Ionicons name="chevron-forward" size={20} color="#0F172A" />
+          <Ionicons name="chevron-forward" size={18} color="#0F172A" />
         </TouchableOpacity>
       </View>
 
-      {/* Tip Banner */}
+      {/* Tip Banner / Blind Mode Notification */}
       <View style={styles.guideContainer}>
-        <Ionicons name="information-circle" size={15} color="#D1582D" />
-        <Text style={styles.guideText}>
-          {language === 'EN' ? 'Trace strokes from top to bottom, right to left.' : 'Sundan ang mga guhit mula itaas pababa, kanan pakaliwa.'}
+        <Ionicons 
+          name={isBlindMode ? "flash" : "information-circle"} 
+          size={14} 
+          color={isBlindMode ? "#F59E0B" : "#D1582D"} 
+        />
+        <Text style={[styles.guideText, isBlindMode && { color: '#B45309', fontFamily: 'Poppins_700Bold' }]}>
+          {isBlindMode 
+            ? (language === 'EN' ? 'Blind Memory Mode: Draw from memory for Double (+50 XP)!' : 'Memory Mode: Gumuhit mula sa memorya para sa Double (+50 XP)!')
+            : (language === 'EN' ? 'Trace strokes from top to bottom, right to left.' : 'Sundan ang mga guhit mula itaas pababa, kanan pakaliwa.')}
         </Text>
       </View>
 
@@ -267,7 +334,7 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
           ref={canvasRef} 
           strokeColor={isEraser ? '#FFFFFF' : selectedColor} 
           strokeWidth={isEraser ? 24 : selectedSize}
-          guidePath={kulitanPoints[currentSyllable.latin]?.path}
+          guidePath={isBlindMode ? undefined : kulitanPoints[currentSyllable.latin]?.path}
           guideOffsetX={kulitanPoints[currentSyllable.latin]?.offsetX}
           guideOffsetY={kulitanPoints[currentSyllable.latin]?.offsetY}
           guideStartPoint={kulitanPoints[currentSyllable.latin]?.points?.[0]}
@@ -337,14 +404,14 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
         </View>
       </View>
 
-      {/* Bottom Actions Bar */}
+      {/* Bottom Actions Bar with Undo, Eraser, Clear, and Check */}
       <View style={styles.toolbar}>
         <TouchableOpacity 
           style={[styles.toolButton, !isEraser && styles.toolButtonActive]} 
           onPress={handlePen}
           activeOpacity={0.7}
         >
-          <Ionicons name="pencil" size={18} color={!isEraser ? "#FFFFFF" : "#64748B"} style={{ marginRight: 6 }} />
+          <Ionicons name="pencil" size={16} color={!isEraser ? "#FFFFFF" : "#64748B"} style={{ marginRight: 5 }} />
           <Text style={[styles.toolButtonText, !isEraser && styles.toolButtonTextActive]}>
             {language === 'EN' ? 'Pen' : 'Panulat'}
           </Text>
@@ -355,26 +422,32 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
           onPress={handleEraser}
           activeOpacity={0.7}
         >
-          <Ionicons name="bandage-outline" size={18} color={isEraser ? "#FFFFFF" : "#64748B"} style={{ marginRight: 6 }} />
+          <Ionicons name="bandage-outline" size={16} color={isEraser ? "#FFFFFF" : "#64748B"} style={{ marginRight: 5 }} />
           <Text style={[styles.toolButtonText, isEraser && styles.toolButtonTextActive]}>
             {language === 'EN' ? 'Eraser' : 'Pambura'}
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.toolButtonClear} onPress={handleClear} activeOpacity={0.7}>
+        {/* Undo Last Stroke Button */}
+        <TouchableOpacity style={styles.toolIconBtn} onPress={handleUndo} activeOpacity={0.7}>
+          <Ionicons name="arrow-undo" size={18} color="#0F172A" />
+        </TouchableOpacity>
+
+        {/* Clear Canvas Button */}
+        <TouchableOpacity style={styles.toolIconBtn} onPress={handleClear} activeOpacity={0.7}>
           <Ionicons name="trash-outline" size={18} color="#D1582D" />
         </TouchableOpacity>
 
         {/* Check & Rate Tracing Button */}
         <TouchableOpacity style={styles.toolButtonCheck} onPress={handleCheck} activeOpacity={0.85}>
           <LinearGradient colors={['#E87954', '#D1582D']} style={styles.checkBtnGradient}>
-            <Ionicons name="checkmark-circle" size={18} color="#FFF" style={{ marginRight: 6 }} />
+            <Ionicons name="checkmark-circle" size={18} color="#FFF" style={{ marginRight: 5 }} />
             <Text style={styles.toolButtonTextCheck}>{language === 'EN' ? 'Check' : 'Suriin'}</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
 
-      {/* Accuracy Result Modal */}
+      {/* Accuracy & 3-Star Result Modal */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -390,6 +463,9 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
               </View>
             ) : (
               <>
+                {/* 3-Star Rating Header */}
+                {renderStars(score)}
+
                 <View style={[
                   styles.scoreBadge,
                   score && score >= 70 ? styles.scoreBadgeHigh : styles.scoreBadgeLow
@@ -398,12 +474,18 @@ export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) 
                 </View>
 
                 <Text style={styles.modalTitle}>
-                  {score && score >= 70 ? (language === 'EN' ? 'Masterful Trace! 🌟' : 'Napakagaling! 🌟') : (language === 'EN' ? 'Keep Practicing! 💪' : 'Ipagpatuloy ang Pagsasanay! 💪')}
+                  {score && score >= 90 
+                    ? (language === 'EN' ? 'Master Scribe! 🏆' : 'Dalubhasang Manunulat! 🏆')
+                    : score && score >= 70
+                    ? (language === 'EN' ? 'Great Accuracy! 🌟' : 'Magandang Pagsulat! 🌟')
+                    : (language === 'EN' ? 'Keep Practicing! 💪' : 'Ipagpatuloy ang Pagsasanay! 💪')}
                 </Text>
 
                 <Text style={styles.modalSubtitle}>
                   {score && score >= 70 
-                    ? (language === 'EN' ? '+25 XP Earned! Your stroke flow closely matches ancient Kulitan form.' : '+25 XP Nakuha! Mahusay at tumpak ang iyong pagsulat.')
+                    ? (language === 'EN' 
+                        ? `+${earnedXp} XP Earned! ${isBlindMode ? '🔥 2x Blind Memory Bonus Applied!' : 'Your stroke form closely matches ancient Kulitan.'}`
+                        : `+${earnedXp} XP Nakuha! ${isBlindMode ? '🔥 2x Memory Bonus!' : 'Tumpak at mahusay ang iyong pagsulat.'}`)
                     : (language === 'EN' ? 'Try staying within the guided track lines from top to bottom.' : 'Subukang manatili sa loob ng gabay mula itaas pababa.')}
                 </Text>
                 
@@ -437,9 +519,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingTop: Platform.OS === 'ios' ? 56 : 36,
-    paddingHorizontal: 20,
-    paddingBottom: 10,
-    gap: 10,
+    paddingHorizontal: 18,
+    paddingBottom: 8,
+    gap: 8,
   },
   headerTitleContainer: {
     flex: 1,
@@ -447,19 +529,19 @@ const styles = StyleSheet.create({
   },
   headerSub: {
     fontFamily: 'Poppins_600SemiBold',
-    fontSize: 10,
+    fontSize: 9,
     color: '#D1582D',
     letterSpacing: 1,
   },
   headerTitle: {
     color: '#0F172A',
-    fontSize: 18,
+    fontSize: 17,
     fontFamily: 'Poppins_700Bold',
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -469,10 +551,33 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  blindModeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF7ED',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+    gap: 4,
+  },
+  blindModeBtnActive: {
+    backgroundColor: '#D97706',
+    borderColor: '#B45309',
+  },
+  blindModeText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 10,
+    color: '#D97706',
+  },
+  blindModeTextActive: {
+    color: '#FFFFFF',
+  },
   headerNavBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -484,7 +589,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
-    paddingBottom: 8,
+    paddingBottom: 6,
     gap: 6,
   },
   guideText: {
@@ -509,10 +614,10 @@ const styles = StyleSheet.create({
   customizerCard: {
     backgroundColor: '#FFFFFF',
     marginHorizontal: 18,
-    marginTop: 10,
+    marginTop: 8,
     borderRadius: 18,
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -520,7 +625,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    gap: 8,
+    gap: 6,
   },
   colorPaletteRow: {
     flexDirection: 'row',
@@ -534,9 +639,9 @@ const styles = StyleSheet.create({
   },
   paletteLabel: {
     fontFamily: 'Poppins_600SemiBold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#64748B',
-    width: 44,
+    width: 40,
   },
   colorSwatches: {
     flexDirection: 'row',
@@ -544,9 +649,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   colorSwatch: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
@@ -568,11 +673,11 @@ const styles = StyleSheet.create({
   sizePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 12,
     backgroundColor: '#F1F5F9',
-    gap: 6,
+    gap: 5,
   },
   sizePillActive: {
     backgroundColor: '#0F172A',
@@ -582,7 +687,7 @@ const styles = StyleSheet.create({
   },
   sizePillText: {
     fontFamily: 'Poppins_600SemiBold',
-    fontSize: 11,
+    fontSize: 10,
     color: '#64748B',
   },
   sizePillTextActive: {
@@ -593,17 +698,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 18,
-    paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
-    gap: 8,
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 14,
+    gap: 6,
   },
   toolButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
@@ -613,25 +718,25 @@ const styles = StyleSheet.create({
   },
   toolButtonText: {
     fontFamily: 'Poppins_600SemiBold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#64748B',
   },
   toolButtonTextActive: {
     color: '#FFFFFF',
   },
-  toolButtonClear: {
-    width: 40,
-    height: 40,
-    borderRadius: 16,
-    backgroundColor: '#FFF1EE',
+  toolIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#FED7AA',
+    borderColor: '#E2E8F0',
   },
   toolButtonCheck: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: 14,
     overflow: 'hidden',
     shadowColor: '#D1582D',
     shadowOffset: { width: 0, height: 3 },
@@ -643,8 +748,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 11,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
   },
   toolButtonTextCheck: {
     color: '#FFFFFF',
@@ -671,13 +776,18 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 10,
   },
+  starsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
   scoreBadge: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   scoreBadgeHigh: {
     backgroundColor: '#ECFDF5',
@@ -690,7 +800,7 @@ const styles = StyleSheet.create({
     borderColor: '#F43F5E',
   },
   scoreText: {
-    fontSize: 26,
+    fontSize: 24,
     fontFamily: 'Poppins_700Bold',
     color: '#0F172A',
   },
@@ -698,16 +808,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Poppins_700Bold',
     color: '#0F172A',
-    marginBottom: 6,
+    marginBottom: 4,
     textAlign: 'center',
   },
   modalSubtitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: 'Poppins_400Regular',
     color: '#64748B',
     textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 18,
+    marginBottom: 18,
+    lineHeight: 17,
   },
   modalText: {
     fontSize: 14,
@@ -721,7 +831,7 @@ const styles = StyleSheet.create({
   modalButtonNext: {
     flexDirection: 'row',
     backgroundColor: '#10B981',
-    paddingVertical: 14,
+    paddingVertical: 13,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
@@ -729,7 +839,7 @@ const styles = StyleSheet.create({
   modalButtonRetry: {
     flexDirection: 'row',
     backgroundColor: '#D1582D',
-    paddingVertical: 14,
+    paddingVertical: 13,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',

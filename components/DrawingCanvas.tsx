@@ -20,9 +20,10 @@ type DrawingCanvasProps = {
   guideStartPoint?: Point;
 };
 
-// Forward ref so the parent can call "clear"
+// Forward ref so the parent can call "clear" or "undo"
 export type DrawingCanvasRef = {
   clear: () => void;
+  undo: () => void;
   getStrokes: () => Stroke[];
 };
 
@@ -80,11 +81,14 @@ export const DrawingCanvas = React.forwardRef<DrawingCanvasRef, DrawingCanvasPro
       }
     }, [guidePath]);
     
-    // Support clearing the canvas from parent
+    // Support clearing and undoing strokes
     React.useImperativeHandle(ref, () => ({
       clear: () => {
         setStrokes([]);
         setCurrentStroke(null);
+      },
+      undo: () => {
+        setStrokes(prev => (prev.length > 0 ? prev.slice(0, -1) : prev));
       },
       getStrokes: () => strokes
     }));
