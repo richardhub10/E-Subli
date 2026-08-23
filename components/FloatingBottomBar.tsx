@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Dimensions, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Dimensions, Modal, Pressable, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -185,113 +185,119 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
               </TouchableOpacity>
             </View>
 
-            {/* OPTION 1: READ HUB */}
-            <TouchableOpacity 
-              style={styles.choiceCard} 
-              onPress={() => selectLearnRoute('ReadHub')}
-              activeOpacity={0.9}
+            <ScrollView 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.modalScrollBody}
+              bounces={false}
             >
-              <LinearGradient 
-                colors={['#E05326', '#B83814', '#942B0D']} 
-                start={{ x: 0, y: 0 }} 
-                end={{ x: 1, y: 1 }} 
-                style={styles.choiceGradient}
+              {/* OPTION 1: READ HUB */}
+              <TouchableOpacity 
+                style={styles.choiceCard} 
+                onPress={() => selectLearnRoute('ReadHub')}
+                activeOpacity={0.9}
               >
-                <View style={styles.choiceLeft}>
-                  <View style={styles.choiceBadgeRow}>
-                    <View style={styles.choiceBadgePill}>
-                      <Text style={styles.choiceBadgeText}>FOUNDATION</Text>
+                <LinearGradient 
+                  colors={['#E05326', '#B83814', '#942B0D']} 
+                  start={{ x: 0, y: 0 }} 
+                  end={{ x: 1, y: 1 }} 
+                  style={styles.choiceGradient}
+                >
+                  <View style={styles.choiceLeft}>
+                    <View style={styles.choiceBadgeRow}>
+                      <View style={styles.choiceBadgePill}>
+                        <Text style={styles.choiceBadgeText}>FOUNDATION</Text>
+                      </View>
+                      <View style={styles.choiceSubTag}>
+                        <Ionicons name="sparkles" size={10} color="#FEF08A" />
+                        <Text style={styles.choiceSubTagText}>FLASHCARDS</Text>
+                      </View>
                     </View>
-                    <View style={styles.choiceSubTag}>
-                      <Ionicons name="sparkles" size={10} color="#FEF08A" />
-                      <Text style={styles.choiceSubTagText}>SPACED REPETITION</Text>
-                    </View>
-                  </View>
 
-                  <Text style={styles.choiceTitle}>Read Hub</Text>
-                  <Text style={styles.choiceDesc}>
-                    {language === 'EN' 
-                      ? 'Master 24 root glyphs with 3D spaced repetition flashcards' 
-                      : 'Kabisaduhin ang pagbasa ng mga titik at pantig'}
-                  </Text>
-
-                  <View style={styles.choiceActionChip}>
-                    <Ionicons name="play-circle" size={13} color="#FFF" />
-                    <Text style={styles.choiceActionText}>
-                      {language === 'EN' ? 'Start Reading →' : 'Simulan →'}
+                    <Text style={styles.choiceTitle}>Read Hub</Text>
+                    <Text style={styles.choiceDesc}>
+                      {language === 'EN' 
+                        ? 'Master 24 root glyphs with spaced repetition flashcards' 
+                        : 'Kabisaduhin ang pagbasa ng mga titik at pantig'}
                     </Text>
+
+                    <View style={styles.choiceActionChip}>
+                      <Ionicons name="play-circle" size={13} color="#FFF" />
+                      <Text style={styles.choiceActionText}>
+                        {language === 'EN' ? 'Start Reading →' : 'Simulan →'}
+                      </Text>
+                    </View>
                   </View>
-                </View>
 
-                <View style={styles.choiceIconRing}>
-                  <Ionicons name="book" size={32} color="#FFFFFF" />
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
+                  <View style={styles.choiceIconRing}>
+                    <Ionicons name="book" size={30} color="#FFFFFF" />
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
 
-            {/* OPTION 2: WRITE & TRACE */}
-            <TouchableOpacity 
-              style={styles.choiceCard} 
-              onPress={() => selectLearnRoute('WriteTrace')}
-              activeOpacity={0.9}
-            >
-              <LinearGradient 
-                colors={['#1E293B', '#111827', '#0A0E17']} 
-                start={{ x: 0, y: 0 }} 
-                end={{ x: 1, y: 1 }} 
-                style={styles.choiceGradient}
+              {/* OPTION 2: WRITE & TRACE */}
+              <TouchableOpacity 
+                style={styles.choiceCard} 
+                onPress={() => selectLearnRoute('WriteTrace')}
+                activeOpacity={0.9}
               >
-                <View style={styles.choiceLeft}>
-                  <View style={styles.choiceBadgeRow}>
-                    <View style={[styles.choiceBadgePill, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
-                      <Text style={[styles.choiceBadgeText, { color: '#FBBF24' }]}>STUDIO CANVAS</Text>
+                <LinearGradient 
+                  colors={['#1E293B', '#111827', '#0A0E17']} 
+                  start={{ x: 0, y: 0 }} 
+                  end={{ x: 1, y: 1 }} 
+                  style={styles.choiceGradient}
+                >
+                  <View style={styles.choiceLeft}>
+                    <View style={styles.choiceBadgeRow}>
+                      <View style={[styles.choiceBadgePill, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
+                        <Text style={[styles.choiceBadgeText, { color: '#FBBF24' }]}>STUDIO CANVAS</Text>
+                      </View>
+                      <View style={[styles.choiceSubTag, { backgroundColor: 'rgba(255, 255, 255, 0.12)' }]}>
+                        <Ionicons name="ribbon" size={10} color="#FBBF24" />
+                        <Text style={[styles.choiceSubTagText, { color: '#FDE68A' }]}>3-STAR GRADER</Text>
+                      </View>
                     </View>
-                    <View style={[styles.choiceSubTag, { backgroundColor: 'rgba(255, 255, 255, 0.12)' }]}>
-                      <Ionicons name="ribbon" size={10} color="#FBBF24" />
-                      <Text style={[styles.choiceSubTagText, { color: '#FDE68A' }]}>3-STAR EVALUATOR</Text>
-                    </View>
-                  </View>
 
-                  <Text style={styles.choiceTitle}>Write & Trace</Text>
-                  <Text style={styles.choiceDesc}>
-                    {language === 'EN' 
-                      ? 'Interactive calligraphy canvas with stroke evaluation & blind mode' 
-                      : 'Sanayin ang pagsulat sa gabay ng panulat'}
-                  </Text>
-
-                  <View style={styles.choiceActionChip}>
-                    <Ionicons name="pencil" size={13} color="#FFF" />
-                    <Text style={styles.choiceActionText}>
-                      {language === 'EN' ? 'Practice Stroke →' : 'Gumuhit →'}
+                    <Text style={styles.choiceTitle}>Write & Trace</Text>
+                    <Text style={styles.choiceDesc}>
+                      {language === 'EN' 
+                        ? 'Interactive calligraphy canvas with stroke evaluation' 
+                        : 'Sanayin ang pagsulat sa gabay ng panulat'}
                     </Text>
+
+                    <View style={styles.choiceActionChip}>
+                      <Ionicons name="pencil" size={13} color="#FFF" />
+                      <Text style={styles.choiceActionText}>
+                        {language === 'EN' ? 'Practice Stroke →' : 'Gumuhit →'}
+                      </Text>
+                    </View>
                   </View>
-                </View>
 
-                <View style={[styles.choiceIconRing, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
-                  <MaterialCommunityIcons name="draw-pen" size={32} color="#FBBF24" />
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
+                  <View style={[styles.choiceIconRing, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
+                    <MaterialCommunityIcons name="draw-pen" size={30} color="#FBBF24" />
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
 
-            {/* Quick Link: Historical Guide */}
-            <TouchableOpacity 
-              style={styles.guideQuickTile} 
-              onPress={() => selectLearnRoute('KulitanGuide')}
-              activeOpacity={0.8}
-            >
-              <View style={styles.guideQuickIconBox}>
-                <Ionicons name="school" size={18} color="#D1582D" />
-              </View>
-              <View style={styles.guideQuickTextBox}>
-                <Text style={styles.guideQuickTitle}>
-                  {language === 'EN' ? 'Kulitan Writing Guide & History' : 'Gabay sa Kasaysayan at Pagsulat'}
-                </Text>
-                <Text style={styles.guideQuickSub}>
-                  {language === 'EN' ? 'Indû, Anak, and Kudlit modifiers' : 'Panuntunan ng pagsulat'}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
-            </TouchableOpacity>
+              {/* Quick Link: Historical Guide */}
+              <TouchableOpacity 
+                style={styles.guideQuickTile} 
+                onPress={() => selectLearnRoute('KulitanGuide')}
+                activeOpacity={0.8}
+              >
+                <View style={styles.guideQuickIconBox}>
+                  <Ionicons name="school" size={18} color="#D1582D" />
+                </View>
+                <View style={styles.guideQuickTextBox}>
+                  <Text style={styles.guideQuickTitle}>
+                    {language === 'EN' ? 'Kulitan Writing Guide & History' : 'Gabay sa Kasaysayan at Pagsulat'}
+                  </Text>
+                  <Text style={styles.guideQuickSub}>
+                    {language === 'EN' ? 'Indû, Anak, and Kudlit modifiers' : 'Panuntunan ng pagsulat'}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
+              </TouchableOpacity>
+            </ScrollView>
 
           </Pressable>
         </Pressable>
@@ -401,7 +407,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 32,
     paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: Platform.OS === 'ios' ? 44 : 28,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 24,
+    maxHeight: '85%',
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.9)',
     shadowColor: '#000',
@@ -409,6 +416,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 16,
     elevation: 12,
+  },
+  modalScrollBody: {
+    paddingBottom: 16,
   },
   dragHandle: {
     width: 38,
