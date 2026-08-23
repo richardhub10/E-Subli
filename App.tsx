@@ -65,6 +65,7 @@ function AppNavigator() {
             <Stack.Screen name="CameraScanner" component={CameraScannerScreen} />
             <Stack.Screen name="Translator" component={TranslatorScreen} />
             <Stack.Screen name="Phrasebook" component={PhrasebookScreen} />
+            <Stack.Screen name="KulitanGuide" component={KulitanGuideScreen} />
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
             <Stack.Screen name="Friends" component={FriendsScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />

@@ -436,7 +436,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           {/* Kulitan Guide */}
           <TouchableOpacity 
             style={styles.toolGlassCard}
-            onPress={() => navigation.navigate('KulitanGuide')}
+            onPress={() => handleFeaturePress('KulitanGuide', language === 'EN' ? 'Kulitan Guide & History' : 'Gabay sa Kulitan', <Ionicons name="school" size={64} color="#FFF" />, ['#D1582D', '#B83814'])}
             activeOpacity={0.85}
           >
             <View style={[styles.toolIconSquare, { backgroundColor: '#FFF1EE' }]}>
