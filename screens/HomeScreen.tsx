@@ -6,6 +6,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useQuest } from '../context/QuestContext';
 import { Language } from '../utils/translations';
 import { kulitanSyllables } from '../data/kulitanData';
 import FloatingBottomBar from '../components/FloatingBottomBar';
@@ -19,8 +20,10 @@ type HomeScreenProps = {
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const { profile } = useProfile();
   const { t, language, setLanguage } = useLanguage();
+  const { currentQuest, questProgress, isCompleted: isQuestDone, isClaiming, claimQuestReward } = useQuest();
 
   const [expandingFeature, setExpandingFeature] = useState<any>(null);
+  const [claimedToast, setClaimedToast] = useState<{ message: string; visible: boolean }>({ message: '', visible: false });
   const expandAnim = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -50,10 +53,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     }
   }, [language]);
 
-  // Dynamic Daily Quest calculation (Target: 5 reviews)
-  const questProgress = Math.min(5, (profile.flashcardsRead || 0) % 5 || ((profile.xp > 0) ? 3 : 0));
-  const questPercent = (questProgress / 5) * 100;
-  const isQuestDone = questProgress >= 5;
+  const questPercent = Math.min(100, (questProgress / currentQuest.target) * 100);
 
   useEffect(() => {
     Animated.timing(progressAnim, {
@@ -250,41 +250,88 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               </Animated.View>
             </View>
 
-            {/* Interactive Daily Mission Progress Tracker */}
-            <TouchableOpacity 
-              style={styles.dailyQuestRow}
-              onPress={() => navigation.navigate('ReadHub')}
-              activeOpacity={0.88}
-            >
-              <View style={styles.questIconBox}>
-                <Ionicons name={isQuestDone ? "checkmark-circle" : "flag"} size={17} color={isQuestDone ? "#059669" : "#D1582D"} />
-              </View>
-              
-              <View style={styles.questTextBox}>
-                <View style={styles.questHeaderLine}>
-                  <Text style={styles.questTitle}>
-                    {language === 'EN' ? 'Daily Quest: Review 5 Syllables' : 'Arawang Misyon: Magbasa ng 5 Titik'}
-                  </Text>
-                  <View style={styles.questFractionBadgePill}>
-                    <Text style={styles.questFractionBadge}>{questProgress} / 5</Text>
-                  </View>
+            {/* Interactive Dynamic Scholar Quest Tracker */}
+            <View style={[styles.dailyQuestRow, isQuestDone && styles.dailyQuestRowComplete]}>
+              <TouchableOpacity 
+                style={styles.questMainTouch}
+                onPress={() => {
+                  if (!isQuestDone) {
+                    navigation.navigate(currentQuest.route);
+                  }
+                }}
+                activeOpacity={isQuestDone ? 1 : 0.85}
+              >
+                <View style={[styles.questIconBox, isQuestDone && { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+                  <Ionicons name={isQuestDone ? "checkmark-circle" : "flag"} size={17} color={isQuestDone ? "#059669" : "#D1582D"} />
                 </View>
                 
-                {/* Mini Quest Progress Bar */}
-                <View style={styles.questProgressTrack}>
-                  <View style={[styles.questProgressFill, { width: `${questPercent}%`, backgroundColor: isQuestDone ? '#059669' : '#D1582D' }]} />
-                </View>
+                <View style={styles.questTextBox}>
+                  <View style={styles.questHeaderLine}>
+                    <Text style={styles.questTitle} numberOfLines={1}>
+                      {language === 'EN' ? currentQuest.titleEn : currentQuest.titlePh}
+                    </Text>
+                    <View style={[styles.questFractionBadgePill, isQuestDone && { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+                      <Text style={[styles.questFractionBadge, isQuestDone && { color: '#059669' }]}>
+                        {questProgress} / {currentQuest.target}
+                      </Text>
+                    </View>
+                  </View>
+                  
+                  {/* Mini Quest Progress Bar */}
+                  <View style={styles.questProgressTrack}>
+                    <View style={[styles.questProgressFill, { width: `${questPercent}%`, backgroundColor: isQuestDone ? '#059669' : '#D1582D' }]} />
+                  </View>
 
-                <View style={styles.questRewardRow}>
-                  <Ionicons name="gift" size={11} color="#D97706" />
-                  <Text style={styles.questRewardText}>
-                    {isQuestDone ? '🎉 Quest Complete! (+25 XP Earned)' : 'Reward: +25 Bonus XP'}
-                  </Text>
+                  <View style={styles.questRewardRow}>
+                    <Ionicons name="gift" size={11} color={isQuestDone ? "#059669" : "#D97706"} />
+                    <Text style={[styles.questRewardText, isQuestDone && { color: '#059669', fontFamily: 'Poppins_600SemiBold' }]}>
+                      {isQuestDone
+                        ? (language === 'EN' ? `Quest Complete! Ready to claim +${currentQuest.rewardXp} XP` : `Tapos na ang misyon! Kunin ang +${currentQuest.rewardXp} XP`)
+                        : (language === 'EN' ? `Reward: +${currentQuest.rewardXp} Bonus XP` : `Gantimpala: +${currentQuest.rewardXp} Dagdag XP`)}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-              
-              <Ionicons name="chevron-forward" size={14} color="#CBD5E1" />
-            </TouchableOpacity>
+              </TouchableOpacity>
+
+              {/* ACTION: CLAIM BUTTON IF COMPLETED, OR CHEVRON TO NAVIGATE */}
+              {isQuestDone ? (
+                <TouchableOpacity
+                  style={styles.claimQuestButton}
+                  onPress={async () => {
+                    if (isClaiming) return;
+                    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                    const result = await claimQuestReward();
+                    if (result?.success) {
+                      setClaimedToast({
+                        visible: true,
+                        message: language === 'EN'
+                          ? `🎉 +${result.xpEarned} XP Claimed! New Quest: ${result.nextQuest.titleEn}`
+                          : `🎉 +${result.xpEarned} XP Nakuha! Bagong Misyon: ${result.nextQuest.titlePh}`
+                      });
+                      setTimeout(() => setClaimedToast({ visible: false, message: '' }), 4000);
+                    }
+                  }}
+                  activeOpacity={0.82}
+                >
+                  <LinearGradient
+                    colors={['#059669', '#047857']}
+                    style={styles.claimQuestGradient}
+                  >
+                    <Ionicons name="gift" size={12} color="#FFFFFF" />
+                    <Text style={styles.claimQuestText}>
+                      {language === 'EN' ? 'CLAIM' : 'KUNIN'}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate(currentQuest.route)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
+                </TouchableOpacity>
+              )}
+            </View>
 
           </LinearGradient>
         </View>
@@ -502,6 +549,19 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         style={styles.bottomScrollFog} 
         pointerEvents="none" 
       />
+
+      {/* Dynamic Quest Claim Toast Notification */}
+      {claimedToast.visible && (
+        <View style={styles.questToastBanner}>
+          <LinearGradient
+            colors={['#065F46', '#047857']}
+            style={styles.questToastGradient}
+          >
+            <Ionicons name="sparkles" size={16} color="#FBBF24" />
+            <Text style={styles.questToastText}>{claimedToast.message}</Text>
+          </LinearGradient>
+        </View>
+      )}
 
       {/* Floating Curved Notch Bottom Navigation Bar */}
       <FloatingBottomBar activeTab="Home" navigation={navigation} />
@@ -904,6 +964,67 @@ const styles = StyleSheet.create({
   questProgressFill: {
     height: '100%',
     borderRadius: 3,
+  },
+  dailyQuestRowComplete: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#BBF7D0',
+  },
+  questMainTouch: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  claimQuestButton: {
+    borderRadius: 10,
+    overflow: 'hidden',
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  claimQuestGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 10,
+    gap: 4,
+  },
+  claimQuestText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 10.5,
+    color: '#FFFFFF',
+    letterSpacing: 0.4,
+  },
+  questToastBanner: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 54 : 32,
+    left: 20,
+    right: 20,
+    zIndex: 9999,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#065F46',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  questToastGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
+    gap: 8,
+  },
+  questToastText: {
+    flex: 1,
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11.5,
+    color: '#FFFFFF',
   },
   questRewardRow: {
     flexDirection: 'row',

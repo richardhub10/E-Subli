@@ -8,6 +8,7 @@ import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useQuest } from '../context/QuestContext';
 
 type TranslatorScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -33,6 +34,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
   const [isCopied, setIsCopied] = useState(false);
 
   const { addXP } = useProfile();
+  const { recordQuestAction } = useQuest();
   const { t, language } = useLanguage();
 
   const handleSwapLanguages = () => {
@@ -60,6 +62,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
       setTranslatedText(res.text);
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       addXP(5);
+      recordQuestAction('translator');
     } catch (err) {
       console.error("Translation Error:", err);
       Alert.alert("Translation Notice", "Could not complete translation. Please check your network connection.");

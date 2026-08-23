@@ -8,6 +8,7 @@ import Flashcard from '../components/Flashcard';
 import { kulitanSyllables } from '../data/kulitanData';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useQuest } from '../context/QuestContext';
 import FloatingBottomBar from '../components/FloatingBottomBar';
 
 type ReadHubScreenProps = {
@@ -21,6 +22,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
   const [resumeData, setResumeData] = useState<{ index: number; category: string } | null>(null);
   const [isPracticeMode, setIsPracticeMode] = useState(false);
   const { profile, updateProfile, addXP, updateSrsData } = useProfile();
+  const { recordQuestAction } = useQuest();
   const { t, language } = useLanguage();
 
   const filteredData = useMemo(() => {
@@ -57,6 +59,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
         xp: profile.xp + 5,
         flashcardsRead: (profile.flashcardsRead || 0) + 1
       }, 5);
+      recordQuestAction('flashcards');
     }
   };
 
@@ -90,6 +93,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
     
     addXP(10);
     updateProfile({ flashcardsRead: (profile.flashcardsRead || 0) + 1 });
+    recordQuestAction('flashcards');
     
     if (currentIndex < filteredData.length - 1) {
       setCurrentIndex(currentIndex + 1);

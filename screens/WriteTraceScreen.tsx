@@ -10,6 +10,7 @@ import { useProfile } from '../context/ProfileContext';
 import { kulitanSyllables } from '../data/kulitanData';
 import { kulitanPoints } from '../data/kulitanPoints';
 import { useLanguage } from '../context/LanguageContext';
+import { useQuest } from '../context/QuestContext';
 
 type WriteTraceScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -34,6 +35,7 @@ const PEN_SIZES = [
 export default function WriteTraceScreen({ navigation, route }: WriteTraceScreenProps) {
   const canvasRef = useRef<DrawingCanvasRef>(null);
   const { addXP, incrementWriting } = useProfile();
+  const { recordQuestAction } = useQuest();
   
   const getInitialIndex = () => {
     const target = route?.params?.selectedSyllable || route?.params?.initialSyllable;
@@ -235,6 +237,7 @@ export default function WriteTraceScreen({ navigation, route }: WriteTraceScreen
         xp = isBlindMode ? 50 : 25; // 2x XP for blind memory mode!
         addXP(xp);
         incrementWriting();
+        recordQuestAction('writing');
       } else {
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       }

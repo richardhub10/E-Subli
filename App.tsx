@@ -32,6 +32,7 @@ import MultiplayerLobbyScreen from './screens/MultiplayerLobbyScreen';
 import QuizBattleScreen from './screens/QuizBattleScreen';
 import OfflineQuizScreen from './screens/OfflineQuizScreen';
 import { ProfileProvider } from './context/ProfileContext';
+import { QuestProvider } from './context/QuestContext';
 
 const Stack = createStackNavigator();
 
@@ -53,28 +54,30 @@ function AppNavigator() {
       <NavigationContainer ref={navigationRef}>
         {user ? (
           <ProfileProvider>
-          <Stack.Navigator screenOptions={{ 
-            headerShown: false, 
-            cardStyle: { flex: 1 },
-            ...TransitionPresets.SlideFromRightIOS
-          }}>
-            {/* The routes are defined in the Auth listener above, but normally we'd structure it better. Let's just conditionally render here. */}
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="ReadHub" component={ReadHubScreen} />
-            <Stack.Screen name="WriteTrace" component={WriteTraceScreen} />
-            <Stack.Screen name="CameraScanner" component={CameraScannerScreen} />
-            <Stack.Screen name="Translator" component={TranslatorScreen} />
-            <Stack.Screen name="Phrasebook" component={PhrasebookScreen} />
-            <Stack.Screen name="KulitanGuide" component={KulitanGuideScreen} />
-            <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
-            <Stack.Screen name="Friends" component={FriendsScreen} />
-            <Stack.Screen name="Profile" component={ProfileScreen} />
-            <Stack.Screen name="MultiplayerLobby" component={MultiplayerLobbyScreen} />
-            <Stack.Screen name="QuizBattle" component={QuizBattleScreen} />
-            <Stack.Screen name="OfflineQuiz" component={OfflineQuizScreen} />
-          </Stack.Navigator>
-        </ProfileProvider>
-      ) : (
+            <QuestProvider>
+              <Stack.Navigator screenOptions={{ 
+                headerShown: false, 
+                cardStyle: { flex: 1 },
+                ...TransitionPresets.SlideFromRightIOS
+              }}>
+                {/* The routes are defined in the Auth listener above, but normally we'd structure it better. Let's just conditionally render here. */}
+                <Stack.Screen name="Home" component={HomeScreen} />
+                <Stack.Screen name="ReadHub" component={ReadHubScreen} />
+                <Stack.Screen name="WriteTrace" component={WriteTraceScreen} />
+                <Stack.Screen name="CameraScanner" component={CameraScannerScreen} />
+                <Stack.Screen name="Translator" component={TranslatorScreen} />
+                <Stack.Screen name="Phrasebook" component={PhrasebookScreen} />
+                <Stack.Screen name="KulitanGuide" component={KulitanGuideScreen} />
+                <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
+                <Stack.Screen name="Friends" component={FriendsScreen} />
+                <Stack.Screen name="Profile" component={ProfileScreen} />
+                <Stack.Screen name="MultiplayerLobby" component={MultiplayerLobbyScreen} />
+                <Stack.Screen name="QuizBattle" component={QuizBattleScreen} />
+                <Stack.Screen name="OfflineQuiz" component={OfflineQuizScreen} />
+              </Stack.Navigator>
+            </QuestProvider>
+          </ProfileProvider>
+        ) : (
         <Stack.Navigator initialRouteName="Welcome" screenOptions={{ 
           headerShown: false, 
           cardStyle: { flex: 1 },

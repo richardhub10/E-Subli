@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -6,6 +6,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { kulitanSyllables } from '../data/kulitanData';
 import { useLanguage } from '../context/LanguageContext';
+import { useQuest } from '../context/QuestContext';
 import KulitanGlyph from '../components/KulitanGlyph';
 
 type KulitanGuideScreenProps = {
@@ -22,6 +23,11 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
   const [gridFilter, setGridFilter] = useState<GridFilterType>('all');
 
   const { language } = useLanguage();
+  const { recordQuestAction } = useQuest();
+
+  useEffect(() => {
+    recordQuestAction('guide');
+  }, []);
 
   const getFilteredSyllables = () => {
     switch (gridFilter) {

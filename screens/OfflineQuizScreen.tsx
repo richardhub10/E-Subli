@@ -7,6 +7,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { getRandomQuestions, QuestionCategory, QuizQuestion } from '../utils/quizQuestions';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useQuest } from '../context/QuestContext';
 
 type OfflineQuizScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -16,6 +17,7 @@ const { width } = Dimensions.get('window');
 
 export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps) {
   const { addXP } = useProfile();
+  const { recordQuestAction } = useQuest();
   const { t, language } = useLanguage();
 
   // Category Filter State
@@ -222,6 +224,7 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
 
     if (sessionXP > 0) {
       addXP(sessionXP);
+      recordQuestAction('quiz');
     }
     setIsRecapModalVisible(true);
   };

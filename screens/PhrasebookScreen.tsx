@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView, Platform, TextInput } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { useLanguage } from '../context/LanguageContext';
+import { useQuest } from '../context/QuestContext';
 import { phrasebookData, PhraseCategory, Phrase } from '../data/phrasebookData';
 
 type PhrasebookScreenProps = {
@@ -29,6 +30,11 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { t, language } = useLanguage();
+  const { recordQuestAction } = useQuest();
+
+  useEffect(() => {
+    recordQuestAction('phrasebook');
+  }, [activeCategory]);
 
   const filteredData = useMemo(() => {
     return phrasebookData.filter(item => {
