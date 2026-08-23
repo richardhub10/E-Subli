@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView, Platfor
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import * as Speech from 'expo-speech';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { useLanguage } from '../context/LanguageContext';
@@ -28,7 +27,6 @@ const CATEGORIES: { id: PhraseCategory; en: string; ph: string; kpm: string; ico
 export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) {
   const [activeCategory, setActiveCategory] = useState<PhraseCategory>('Greetings');
   const [searchQuery, setSearchQuery] = useState('');
-  const [playingId, setPlayingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { t, language } = useLanguage();
 
@@ -47,20 +45,6 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
     });
   }, [activeCategory, searchQuery]);
 
-  const handleSpeak = (item: Phrase) => {
-    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setPlayingId(item.id);
-
-    Speech.stop();
-    Speech.speak(item.kapampangan, {
-      language: 'fil-PH', // Best natural sounding phonetic match for Kapampangan
-      pitch: 1.0,
-      rate: 0.85,
-      onDone: () => setPlayingId(null),
-      onError: () => setPlayingId(null),
-    });
-  };
-
   const handleCopy = async (item: Phrase) => {
     if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     await Clipboard.setStringAsync(`${item.kapampangan} — ${item.english} (${item.tagalog})`);
@@ -69,7 +53,6 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
   };
 
   const renderItem = ({ item }: { item: Phrase }) => {
-    const isPlaying = playingId === item.id;
     const isCopied = copiedId === item.id;
 
     return (
@@ -85,7 +68,7 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
           ))}
         </View>
 
-        {/* Middle: Kapampangan & Translation */}
+        {/* Middle: Kapampangan & Translations */}
         <View style={styles.textContainer}>
           <Text style={styles.kapampanganText}>{item.kapampangan}</Text>
           
@@ -99,20 +82,8 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
           </Text>
         </View>
 
-        {/* Right: Actions (Speech & Copy) */}
+        {/* Right: Copy Action */}
         <View style={styles.actionButtonsCol}>
-          <TouchableOpacity 
-            style={[styles.iconButton, isPlaying && styles.iconButtonActive]} 
-            onPress={() => handleSpeak(item)}
-            activeOpacity={0.7}
-          >
-            <Ionicons 
-              name={isPlaying ? "volume-high" : "volume-medium-outline"} 
-              size={18} 
-              color={isPlaying ? "#FFF" : "#D1582D"} 
-            />
-          </TouchableOpacity>
-
           <TouchableOpacity 
             style={[styles.iconButton, isCopied && styles.iconButtonCopied]} 
             onPress={() => handleCopy(item)}
@@ -120,8 +91,8 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
           >
             <Ionicons 
               name={isCopied ? "checkmark" : "copy-outline"} 
-              size={16} 
-              color={isCopied ? "#FFF" : "#64748B"} 
+              size={17} 
+              color={isCopied ? "#FFF" : "#D1582D"} 
             />
           </TouchableOpacity>
         </View>
@@ -403,19 +374,16 @@ const styles = StyleSheet.create({
   },
   actionButtonsCol: {
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'center',
     marginLeft: 10,
   },
   iconButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#FFF1EE',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  iconButtonActive: {
-    backgroundColor: '#D1582D',
   },
   iconButtonCopied: {
     backgroundColor: '#10B981',

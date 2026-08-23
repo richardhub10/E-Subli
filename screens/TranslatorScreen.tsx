@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { GoogleGenAI } from '@google/genai';
 import * as Clipboard from 'expo-clipboard';
-import * as Speech from 'expo-speech';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -67,19 +66,6 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
       if (Platform.OS === 'web') {
         window.alert('Copied to clipboard!');
       }
-    }
-  };
-
-  const speakTranslation = () => {
-    if (translatedText) {
-      // Kapampangan is not natively supported by most mobile TTS engines.
-      // We use 'fil-PH' as the base phonetics, but lower the pitch and slightly adjust the rate
-      // to give it a more distinct, regional intonation that differentiates it from standard Tagalog.
-      Speech.speak(translatedText, { 
-        language: 'fil-PH', 
-        rate: 0.85,
-        pitch: 0.85 
-      });
     }
   };
 
@@ -228,10 +214,6 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
               <TouchableOpacity style={styles.actionButton} onPress={copyToClipboard}>
                 <Ionicons name="copy-outline" size={20} color="#FFFFFF" />
                 <Text style={styles.actionButtonText}>{language === 'EN' ? 'Copy' : 'Kopyahin'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#0EA5E9' }]} onPress={speakTranslation}>
-                <Ionicons name="volume-high" size={20} color="#FFFFFF" />
-                <Text style={styles.actionButtonText}>{language === 'EN' ? 'Listen' : 'Pakinggan'}</Text>
               </TouchableOpacity>
             </View>
           </View>
