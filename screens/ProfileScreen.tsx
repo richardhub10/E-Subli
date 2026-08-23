@@ -30,39 +30,9 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogout = async () => {
-    if (Platform.OS === 'web') {
-      const confirmed = window.confirm(
-        language === 'EN' ? 'Are you sure you want to sign out of E-Subli?' : 'Sigurado ka bang nais mong mag-sign out?'
-      );
-      if (confirmed) {
-        try {
-          await signOut();
-        } catch (error) {
-          console.error('Logout error:', error);
-        }
-      }
-      return;
-    }
-
-    Alert.alert(
-      language === 'EN' ? 'Confirm Sign Out' : 'Kumpirmahin ang Pag-logout',
-      language === 'EN' ? 'Are you sure you want to sign out of E-Subli?' : 'Sigurado ka bang nais mong mag-sign out?',
-      [
-        { text: language === 'EN' ? 'Cancel' : 'Kanselahin', style: 'cancel' },
-        { 
-          text: language === 'EN' ? 'Sign Out' : 'Mag-sign Out', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await signOut();
-            } catch (error) {
-              console.error('Logout error:', error);
-            }
-          }
-        }
-      ]
-    );
+  const handleLogout = () => {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setShowLogoutModal(true);
   };
 
   const saveProfile = async () => {
@@ -404,6 +374,68 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                 <Text style={styles.saveButtonText}>{language === 'EN' ? 'Save Changes' : 'I-save'}</Text>
               )}
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* CUSTOM IN-APP SIGN OUT CONFIRMATION MODAL */}
+      <Modal
+        visible={showLogoutModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowLogoutModal(false)}
+      >
+        <View style={styles.logoutModalOverlay}>
+          <TouchableOpacity 
+            style={StyleSheet.absoluteFill} 
+            onPress={() => setShowLogoutModal(false)}
+            activeOpacity={1}
+          />
+          
+          <View style={styles.logoutModalCard}>
+            <View style={styles.logoutIconCircle}>
+              <Ionicons name="log-out" size={28} color="#DC2626" />
+            </View>
+            
+            <Text style={styles.logoutModalTitle}>
+              {language === 'EN' ? 'Sign Out of E-Subli?' : 'Mag-sign Out sa E-Subli?'}
+            </Text>
+            
+            <Text style={styles.logoutModalDesc}>
+              {language === 'EN' 
+                ? 'Are you sure you want to sign out? Your scholar XP, streaks, and progress are securely saved.'
+                : 'Sigurado ka bang nais mong mag-sign out? Ligtas na naka-save ang iyong antas at XP.'}
+            </Text>
+
+            <View style={styles.logoutModalActions}>
+              <TouchableOpacity 
+                style={styles.confirmLogoutBtn}
+                onPress={async () => {
+                  setShowLogoutModal(false);
+                  try {
+                    await signOut();
+                  } catch (error) {
+                    console.error('Logout error:', error);
+                  }
+                }}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="log-out-outline" size={18} color="#FFF" style={{ marginRight: 6 }} />
+                <Text style={styles.confirmLogoutText}>
+                  {language === 'EN' ? 'Sign Out' : 'Mag-sign Out'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.cancelLogoutBtn}
+                onPress={() => setShowLogoutModal(false)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.cancelLogoutText}>
+                  {language === 'EN' ? 'Cancel' : 'Kanselahin'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -798,5 +830,87 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontFamily: 'Poppins_700Bold',
     fontSize: 14,
+  },
+  logoutModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  logoutModalCard: {
+    backgroundColor: '#FFFBF6',
+    borderRadius: 24,
+    padding: 24,
+    width: '100%',
+    maxWidth: 340,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#EDE3D8',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  logoutIconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FEE2E2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
+    borderWidth: 1.5,
+    borderColor: '#FECDD3',
+  },
+  logoutModalTitle: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 18,
+    color: '#1E1B18',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  logoutModalDesc: {
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 12,
+    color: '#8C7E72',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 20,
+  },
+  logoutModalActions: {
+    width: '100%',
+    gap: 8,
+  },
+  confirmLogoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#DC2626',
+    paddingVertical: 13,
+    borderRadius: 14,
+    shadowColor: '#DC2626',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  confirmLogoutText: {
+    color: '#FFFFFF',
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 14,
+  },
+  cancelLogoutBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F1F5F9',
+    paddingVertical: 11,
+    borderRadius: 14,
+  },
+  cancelLogoutText: {
+    color: '#64748B',
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 13,
   },
 });
