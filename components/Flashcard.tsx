@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SyllableData } from '../data/kulitanData';
 import KulitanGlyph from './KulitanGlyph';
+
+const { height: screenHeight } = Dimensions.get('window');
+const CARD_HEIGHT = screenHeight < 700 ? 380 : Math.min(screenHeight * 0.55, 450);
 
 type FlashcardProps = {
   data: SyllableData;
@@ -92,10 +95,11 @@ export default function Flashcard({ data }: FlashcardProps) {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    width: '90%',
-    height: 450,
+    width: '92%',
+    maxWidth: 400,
+    height: CARD_HEIGHT,
     alignSelf: 'center',
-    marginVertical: 16,
+    marginVertical: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
