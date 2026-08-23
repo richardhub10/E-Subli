@@ -65,12 +65,20 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
 
     try {
       const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [
-          `You are an expert linguist specializing in authentic Kapampangan (Amanung Sisuan), Tagalog, and English. Translate the following text from ${sourceLanguage} to natural, fluent ${targetLanguage}. Output ONLY the translated ${targetLanguage} text with no commentary, no markdown, and no quotes. Text to translate: "${sourceText.trim()}"`
-        ],
-      });
+      const prompt = `You are an expert linguist specializing in authentic Kapampangan (Amanung Sisuan), Tagalog, and English. Translate the following text from ${sourceLanguage} to natural, fluent ${targetLanguage}. Output ONLY the translated ${targetLanguage} text with no commentary, no markdown, and no quotes. Text to translate: "${sourceText.trim()}"`;
+      
+      let response;
+      try {
+        response = await ai.models.generateContent({
+          model: 'gemini-2.0-flash',
+          contents: [prompt],
+        });
+      } catch {
+        response = await ai.models.generateContent({
+          model: 'gemini-1.5-flash',
+          contents: [prompt],
+        });
+      }
       
       const text = response.text?.trim() || '';
       setTranslatedText(text);
