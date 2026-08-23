@@ -73,9 +73,32 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     : dailySyllable.latin;
 
   return (
-    <LinearGradient colors={['#FAF6F0', '#F3EAE0', '#EAE0D3']} style={styles.container}>
+    <View style={styles.container}>
+      {/* 1. ATMOSPHERIC PARCHMENT GRADIENT BACKGROUND */}
+      <LinearGradient 
+        colors={['#FFFBF6', '#F8EFE4', '#EFE0CE', '#E8D5BF']} 
+        start={{ x: 0, y: 0 }} 
+        end={{ x: 0.8, y: 1 }} 
+        style={StyleSheet.absoluteFill} 
+      />
+
+      {/* 2. AMBIENT GLOW RADIAL ORBS */}
+      {/* Top-Right Solar Gold Bloom */}
+      <View style={styles.topRightGlowOrb} pointerEvents="none" />
+      {/* Mid-Left Terracotta Radiance Bloom */}
+      <View style={styles.midLeftGlowOrb} pointerEvents="none" />
+      {/* Bottom-Right Amber Warm Mist */}
+      <View style={styles.bottomRightGlowOrb} pointerEvents="none" />
+
+      {/* 3. SUBTLE WATERMARK KULITAN MANUSCRIPT GLYPHS */}
+      <View style={styles.watermarkContainer} pointerEvents="none">
+        <Text style={[styles.watermarkGlyph, { top: 40, left: -20, transform: [{ rotate: '-12deg' }] }]}>ka</Text>
+        <Text style={[styles.watermarkGlyph, { top: 220, right: -30, transform: [{ rotate: '15deg' }] }]}>ga</Text>
+        <Text style={[styles.watermarkGlyph, { top: 480, left: -10, transform: [{ rotate: '8deg' }] }]}>ta</Text>
+        <Text style={[styles.watermarkGlyph, { top: 720, right: -20, transform: [{ rotate: '-10deg' }] }]}>ma</Text>
+      </View>
       
-      {/* 1. TOP STATUS / GREETING BAR */}
+      {/* 4. TOP STATUS / GREETING BAR */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.greetingSub}>{t('welcome')},</Text>
@@ -138,10 +161,10 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         showsVerticalScrollIndicator={false}
       >
         
-        {/* 2. MASTER SCHOLAR PROGRESS CARD */}
+        {/* 5. MASTER SCHOLAR PROGRESS CARD */}
         <View style={styles.masterCard}>
           <LinearGradient 
-            colors={['#FFFFFF', '#FCF9F5']} 
+            colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 252, 248, 0.90)']} 
             style={styles.masterCardInner}
           >
             {/* Top Row: Rank & Elo */}
@@ -226,14 +249,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           </LinearGradient>
         </View>
 
-        {/* 3. SYLLABLE OF THE DAY SPOTLIGHT */}
+        {/* 6. SYLLABLE OF THE DAY SPOTLIGHT */}
         <TouchableOpacity 
           style={styles.spotlightCard}
           onPress={() => navigation.navigate('WriteTrace')}
           activeOpacity={0.9}
         >
           <LinearGradient 
-            colors={['#FFFFFF', '#FFFDF9']} 
+            colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 250, 243, 0.92)']} 
             style={styles.spotlightInner}
           >
             <View style={styles.spotlightLeft}>
@@ -274,7 +297,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* 4. SECTION 1: CORE LEARNING PATH */}
+        {/* 7. SECTION 1: CORE LEARNING PATH */}
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionHeading}>
             {language === 'EN' ? 'Learning Path' : 'Dalan ng Pagkatuto'}
@@ -352,7 +375,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           </LinearGradient>
         </AnimatedTouchable>
 
-        {/* 5. SECTION 2: BATTLE & PRACTICE ARENA */}
+        {/* 8. SECTION 2: BATTLE & PRACTICE ARENA */}
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionHeading}>
             {language === 'EN' ? 'Battle & Practice' : 'Labanan at Pagsasanay'}
@@ -417,7 +440,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           </AnimatedTouchable>
         </View>
 
-        {/* 6. SECTION 3: UTILITIES & TOOLS */}
+        {/* 9. SECTION 3: UTILITIES & TOOLS */}
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionHeading}>
             {language === 'EN' ? 'Scholar Utilities' : 'Mga Kagamitan'}
@@ -511,7 +534,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
       </ScrollView>
 
-      {/* Hero Transition Ripple Overlay */}
+      {/* Hero Expanding Transition Ripple Overlay */}
       {expandingFeature && (
         <Animated.View style={[StyleSheet.absoluteFill, { 
           zIndex: 999, 
@@ -519,7 +542,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           alignItems: 'center',
           backgroundColor: expandAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: ['rgba(250,246,240,0)', 'rgba(250,246,240,1)']
+            outputRange: ['rgba(255,251,246,0)', 'rgba(255,251,246,1)']
           })
         }]} pointerEvents="none">
           <Animated.View style={{
@@ -549,13 +572,56 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           </Animated.View>
         </Animated.View>
       )}
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFBF6',
+  },
+  topRightGlowOrb: {
+    position: 'absolute',
+    top: -60,
+    right: -60,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(245, 158, 11, 0.18)',
+  },
+  midLeftGlowOrb: {
+    position: 'absolute',
+    top: 260,
+    left: -80,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: 'rgba(209, 88, 45, 0.10)',
+  },
+  bottomRightGlowOrb: {
+    position: 'absolute',
+    bottom: -60,
+    right: -60,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: 'rgba(217, 119, 6, 0.12)',
+  },
+  watermarkContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: 'hidden',
+  },
+  watermarkGlyph: {
+    position: 'absolute',
+    fontFamily: 'Kulitan',
+    fontSize: 160,
+    color: '#D1582D',
+    opacity: 0.045,
   },
   header: {
     flexDirection: 'row',
@@ -564,13 +630,14 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 56 : 38,
     paddingHorizontal: 20,
     paddingBottom: 14,
+    zIndex: 2,
   },
   headerLeft: {
     flex: 1,
     paddingRight: 8,
   },
   greetingSub: {
-    color: '#8C7E72',
+    color: '#9E8E81',
     fontSize: 12,
     fontFamily: 'Poppins_500Medium',
   },
@@ -600,15 +667,15 @@ const styles = StyleSheet.create({
   },
   langGlassPill: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backgroundColor: 'rgba(255, 255, 255, 0.90)',
     padding: 3,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E8DED3',
-    shadowColor: '#000',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.9)',
+    shadowColor: '#D1582D',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
     elevation: 2,
   },
   langBtn: {
@@ -678,6 +745,7 @@ const styles = StyleSheet.create({
   },
   scrollArea: {
     flex: 1,
+    zIndex: 2,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -686,17 +754,17 @@ const styles = StyleSheet.create({
   masterCard: {
     borderRadius: 24,
     marginBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 4,
   },
   masterCardInner: {
     borderRadius: 24,
     padding: 16,
     borderWidth: 1.5,
-    borderColor: '#EDE3D8',
+    borderColor: 'rgba(255, 255, 255, 0.85)',
   },
   masterTopRow: {
     flexDirection: 'row',
@@ -1042,17 +1110,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   toolGlassCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#EDE3D8',
-    shadowColor: '#000',
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    shadowColor: '#D1582D',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
+    shadowOpacity: 0.04,
     shadowRadius: 6,
     elevation: 2,
     gap: 12,
