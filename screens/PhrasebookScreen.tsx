@@ -57,33 +57,12 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
 
     return (
       <View style={styles.card}>
-        {/* Left: Kulitan Vertical Script Card */}
-        <View style={styles.kulitanContainer}>
-          {item.kulitan.split(' ').map((word, wordIdx) => (
-            <View key={wordIdx} style={styles.verticalWordColumn}>
-              {word.split('-').map((char, charIdx) => (
-                <Text key={charIdx} style={styles.kulitanText}>{char}</Text>
-              ))}
-            </View>
-          ))}
-        </View>
-
-        {/* Middle: Kapampangan & Translations */}
-        <View style={styles.textContainer}>
-          <Text style={styles.kapampanganText}>{item.kapampangan}</Text>
+        {/* Top Header Row: Kapampangan Title & Copy Button */}
+        <View style={styles.cardTopRow}>
+          <View style={styles.kapampanganTitleWrap}>
+            <Text style={styles.kapampanganText}>{item.kapampangan}</Text>
+          </View>
           
-          <Text style={styles.primaryTranslation}>
-            {language === 'PH' ? item.tagalog : item.english}
-          </Text>
-
-          {/* Secondary Subtitle Translation */}
-          <Text style={styles.secondaryTranslation}>
-            {language === 'PH' ? item.english : item.tagalog}
-          </Text>
-        </View>
-
-        {/* Right: Copy Action */}
-        <View style={styles.actionButtonsCol}>
           <TouchableOpacity 
             style={[styles.iconButton, isCopied && styles.iconButtonCopied]} 
             onPress={() => handleCopy(item)}
@@ -91,10 +70,48 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
           >
             <Ionicons 
               name={isCopied ? "checkmark" : "copy-outline"} 
-              size={17} 
+              size={16} 
               color={isCopied ? "#FFF" : "#D1582D"} 
             />
           </TouchableOpacity>
+        </View>
+
+        {/* Middle: Dedicated Kulitan Script Manuscript Box */}
+        <View style={styles.kulitanBox}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.kulitanScrollContent}
+          >
+            {item.kulitan.split(' ').map((word, wordIdx) => (
+              <View key={wordIdx} style={styles.verticalWordColumn}>
+                {word.split('-').map((char, charIdx) => (
+                  <Text key={charIdx} style={styles.kulitanText}>{char}</Text>
+                ))}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Bottom: Translations */}
+        <View style={styles.translationsContainer}>
+          <View style={styles.translationRow}>
+            <View style={styles.langFlagPill}>
+              <Text style={styles.langFlagText}>{language === 'PH' ? 'TAG' : 'ENG'}</Text>
+            </View>
+            <Text style={styles.primaryTranslation}>
+              {language === 'PH' ? item.tagalog : item.english}
+            </Text>
+          </View>
+
+          <View style={[styles.translationRow, { marginTop: 4 }]}>
+            <View style={[styles.langFlagPill, { backgroundColor: '#F1F5F9' }]}>
+              <Text style={[styles.langFlagText, { color: '#64748B' }]}>{language === 'PH' ? 'ENG' : 'TAG'}</Text>
+            </View>
+            <Text style={styles.secondaryTranslation}>
+              {language === 'PH' ? item.english : item.tagalog}
+            </Text>
+          </View>
         </View>
       </View>
     );
@@ -320,73 +337,104 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: '#EDE3D8',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 3,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
   },
-  kulitanContainer: {
+  cardTopRow: {
     flexDirection: 'row',
-    backgroundColor: '#FAF5EE',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 14,
-    marginRight: 14,
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  kapampanganTitleWrap: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  kapampanganText: {
+    color: '#1E1B18',
+    fontSize: 16,
+    fontFamily: 'Poppins_700Bold',
+    lineHeight: 22,
+  },
+  iconButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#FFF1EE',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E8DAC9',
+    borderColor: '#FED7AA',
+  },
+  iconButtonCopied: {
+    backgroundColor: '#10B981',
+    borderColor: '#059669',
+  },
+  kulitanBox: {
+    backgroundColor: '#FFF9F4',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1.2,
+    borderColor: '#EDE3D8',
+    marginBottom: 10,
+  },
+  kulitanScrollContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   verticalWordColumn: {
     flexDirection: 'column',
     alignItems: 'center',
-    marginHorizontal: 2,
   },
   kulitanText: {
     fontFamily: 'Kulitan',
-    fontSize: 22,
+    fontSize: 24,
     color: '#D1582D',
-    lineHeight: 22,
+    lineHeight: 24,
   },
-  textContainer: {
-    flex: 1,
+  translationsContainer: {
+    gap: 4,
   },
-  kapampanganText: {
-    color: '#0F172A',
-    fontSize: 15,
-    fontFamily: 'Poppins_700Bold',
-    marginBottom: 2,
+  translationRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
   },
-  primaryTranslation: {
-    color: '#D1582D',
-    fontSize: 13,
-    fontFamily: 'Poppins_600SemiBold',
-  },
-  secondaryTranslation: {
-    color: '#94A3B8',
-    fontSize: 11,
-    fontFamily: 'Poppins_400Regular',
+  langFlagPill: {
+    backgroundColor: '#FFEFE6',
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
     marginTop: 1,
   },
-  actionButtonsCol: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 10,
+  langFlagText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 8.5,
+    color: '#D1582D',
   },
-  iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#FFF1EE',
-    justifyContent: 'center',
-    alignItems: 'center',
+  primaryTranslation: {
+    flex: 1,
+    color: '#0F172A',
+    fontSize: 13,
+    fontFamily: 'Poppins_600SemiBold',
+    lineHeight: 18,
   },
-  iconButtonCopied: {
-    backgroundColor: '#10B981',
+  secondaryTranslation: {
+    flex: 1,
+    color: '#64748B',
+    fontSize: 12,
+    fontFamily: 'Poppins_400Regular',
+    lineHeight: 17,
   },
   emptyContainer: {
     alignItems: 'center',
