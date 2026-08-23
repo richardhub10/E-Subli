@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, ScrollView, Platform, Image, Dimensions } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -31,6 +31,29 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   const currentLevelXp = profile.xp % 100;
   const xpPercentage = Math.min(100, Math.max(0, currentLevelXp));
+
+  // Time-aware Cultural Greeting
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      if (language === 'KPM') return 'Mayap a abak';
+      if (language === 'PH') return 'Magandang umaga';
+      return 'Good morning';
+    } else if (hour >= 12 && hour < 18) {
+      if (language === 'KPM') return 'Mayap a gatpanapun';
+      if (language === 'PH') return 'Magandang hapon';
+      return 'Good afternoon';
+    } else {
+      if (language === 'KPM') return 'Mayap a bengi';
+      if (language === 'PH') return 'Magandang gabi';
+      return 'Good evening';
+    }
+  }, [language]);
+
+  // Dynamic Daily Quest calculation (Target: 5 reviews)
+  const questProgress = Math.min(5, (profile.flashcardsRead || 0) % 5 || ((profile.xp > 0) ? 3 : 0));
+  const questPercent = (questProgress / 5) * 100;
+  const isQuestDone = questProgress >= 5;
 
   useEffect(() => {
     Animated.timing(progressAnim, {
@@ -99,7 +122,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       {/* 4. TOP STATUS / GREETING BAR */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.greetingSub}>{t('welcome')},</Text>
+          <Text style={styles.greetingSub}>{greeting},</Text>
           <View style={styles.nameRow}>
             <Text style={styles.scholarName} numberOfLines={1}>
               {profile.firstName || profile.email?.split('@')[0] || 'Scholar'}
@@ -159,7 +182,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         showsVerticalScrollIndicator={false}
       >
         
-        {/* 5. MASTER SCHOLAR PROGRESS & STREAK CARD */}
+        {/* 5. MASTER SCHOLAR PROGRESS & DAILY MISSION CARD */}
         <View style={styles.masterCard}>
           <LinearGradient 
             colors={['rgba(255, 255, 255, 0.96)', 'rgba(255, 252, 248, 0.92)']} 
@@ -220,22 +243,35 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               </Animated.View>
             </View>
 
-            {/* Daily Quest Highlight Banner */}
+            {/* Interactive Daily Mission Progress Tracker */}
             <TouchableOpacity 
               style={styles.dailyQuestRow}
               onPress={() => navigation.navigate('ReadHub')}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
             >
               <View style={styles.questIconBox}>
-                <Ionicons name="flag" size={14} color="#D1582D" />
+                <Ionicons name={isQuestDone ? "checkmark-circle" : "flag"} size={16} color={isQuestDone ? "#059669" : "#D1582D"} />
               </View>
+              
               <View style={styles.questTextBox}>
-                <Text style={styles.questTitle}>
-                  {language === 'EN' ? 'Daily Quest: Review 5 Syllables' : 'Arawang Misyon: Magbasa ng 5 Titik'}
+                <View style={styles.questHeaderLine}>
+                  <Text style={styles.questTitle}>
+                    {language === 'EN' ? 'Daily Quest: Review 5 Syllables' : 'Arawang Misyon: Magbasa ng 5 Titik'}
+                  </Text>
+                  <Text style={styles.questFractionBadge}>{questProgress} / 5</Text>
+                </View>
+                
+                {/* Mini Quest Progress Bar */}
+                <View style={styles.questProgressTrack}>
+                  <View style={[styles.questProgressFill, { width: `${questPercent}%`, backgroundColor: isQuestDone ? '#059669' : '#D1582D' }]} />
+                </View>
+
+                <Text style={styles.questRewardText}>
+                  {isQuestDone ? '🎉 Quest Complete! (+25 XP Earned)' : '🎁 Reward: +25 Bonus XP'}
                 </Text>
-                <Text style={styles.questRewardText}>+25 Bonus XP Reward</Text>
               </View>
-              <Ionicons name="chevron-forward" size={14} color="#D1582D" />
+              
+              <Ionicons name="chevron-forward" size={14} color="#CBD5E1" />
             </TouchableOpacity>
 
           </LinearGradient>
@@ -316,18 +352,30 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             style={styles.heroCardGradient}
           >
             <View style={styles.heroCardLeft}>
-              <View style={styles.heroBadgePill}>
-                <Text style={styles.heroBadgeText}>FOUNDATION</Text>
+              <View style={styles.badgeRowGroup}>
+                <View style={styles.heroBadgePill}>
+                  <Text style={styles.heroBadgeText}>FOUNDATION</Text>
+                </View>
+                <View style={styles.heroMasteryTag}>
+                  <Ionicons name="star" size={10} color="#FEF08A" />
+                  <Text style={styles.heroMasteryText}>
+                    {Math.min(24, profile.flashcardsRead || 0)} / 24 Mastered
+                  </Text>
+                </View>
               </View>
+
               <Text style={styles.heroCardTitle}>{t('read_hub')}</Text>
               <Text style={styles.heroCardDesc}>
                 {language === 'EN' 
                   ? 'Master reading with spaced repetition flashcards' 
                   : 'Kabisaduhin ang pagbasa ng mga titik at pantig'}
               </Text>
+              
               <View style={styles.heroActionChip}>
                 <Ionicons name="play-circle" size={14} color="#FFF" />
-                <Text style={styles.heroActionText}>{language === 'EN' ? 'Start Reading' : 'Simulan'}</Text>
+                <Text style={styles.heroActionText}>
+                  {language === 'EN' ? 'Continue Lesson →' : 'Simulan →'}
+                </Text>
               </View>
             </View>
 
@@ -350,18 +398,30 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             style={styles.heroCardGradient}
           >
             <View style={styles.heroCardLeft}>
-              <View style={[styles.heroBadgePill, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
-                <Text style={[styles.heroBadgeText, { color: '#FBBF24' }]}>STUDIO CANVAS</Text>
+              <View style={styles.badgeRowGroup}>
+                <View style={[styles.heroBadgePill, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
+                  <Text style={[styles.heroBadgeText, { color: '#FBBF24' }]}>STUDIO CANVAS</Text>
+                </View>
+                <View style={[styles.heroMasteryTag, { backgroundColor: 'rgba(255, 255, 255, 0.12)' }]}>
+                  <Ionicons name="pencil" size={10} color="#FBBF24" />
+                  <Text style={[styles.heroMasteryText, { color: '#FDE68A' }]}>
+                    {Math.min(24, profile.writingPractices || 0)} / 24 Traced
+                  </Text>
+                </View>
               </View>
+
               <Text style={styles.heroCardTitle}>{t('write_trace')}</Text>
               <Text style={styles.heroCardDesc}>
                 {language === 'EN' 
                   ? 'Interactive calligraphy canvas with stroke evaluation' 
                   : 'Sanayin ang pagsulat sa gabay ng panulat'}
               </Text>
+              
               <View style={styles.heroActionChip}>
                 <Ionicons name="pencil" size={13} color="#FFF" />
-                <Text style={styles.heroActionText}>{language === 'EN' ? 'Practice Stroke' : 'Gumuhit'}</Text>
+                <Text style={styles.heroActionText}>
+                  {language === 'EN' ? 'Practice Next Stroke →' : 'Gumuhit →'}
+                </Text>
               </View>
             </View>
 
@@ -509,6 +569,13 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         </View>
 
       </ScrollView>
+
+      {/* 10. AMBIENT BOTTOM SCROLL FADE FOG */}
+      <LinearGradient 
+        colors={['rgba(255, 251, 246, 0)', 'rgba(255, 251, 246, 0.85)', '#FFFBF6']} 
+        style={styles.bottomScrollFog} 
+        pointerEvents="none" 
+      />
 
       {/* Floating Curved Notch Bottom Navigation Bar */}
       <FloatingBottomBar activeTab="Home" navigation={navigation} />
@@ -825,16 +892,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFF8F4',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: '#FED7AA',
     gap: 10,
   },
   questIconBox: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#FFEFE6',
     justifyContent: 'center',
     alignItems: 'center',
@@ -842,15 +909,37 @@ const styles = StyleSheet.create({
   questTextBox: {
     flex: 1,
   },
+  questHeaderLine: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
   questTitle: {
     fontFamily: 'Poppins_700Bold',
     fontSize: 11,
     color: '#1E1B18',
   },
+  questFractionBadge: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 10,
+    color: '#D1582D',
+  },
+  questProgressTrack: {
+    height: 4,
+    backgroundColor: '#EAE0D3',
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  questProgressFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
   questRewardText: {
     fontFamily: 'Poppins_500Medium',
     fontSize: 10,
-    color: '#D1582D',
+    color: '#8C7E72',
   },
   spotlightCard: {
     borderRadius: 22,
@@ -984,19 +1073,38 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingRight: 12,
   },
+  badgeRowGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
   heroBadgePill: {
     alignSelf: 'flex-start',
     backgroundColor: 'rgba(255, 255, 255, 0.22)',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
-    marginBottom: 6,
   },
   heroBadgeText: {
     color: '#FFFFFF',
     fontFamily: 'Poppins_700Bold',
     fontSize: 8,
     letterSpacing: 0.5,
+  },
+  heroMasteryTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    gap: 3,
+  },
+  heroMasteryText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 8,
+    color: '#FFFFFF',
   },
   heroCardTitle: {
     fontSize: 21,
@@ -1139,5 +1247,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_400Regular',
     fontSize: 11,
     color: '#8C7E72',
+  },
+  bottomScrollFog: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80,
+    zIndex: 900,
   },
 });
