@@ -1034,5 +1034,137 @@ export const kulitanSyllables: SyllableData[] = [
     "writingRule": "Base \"Ba\" connected directly to the trailing triple-wave \"Nga\" glyph.",
     "exampleWord": "Bangan",
     "exampleMeaning": "Granary / Storehouse"
+  },
+  {
+    "id": "94",
+    "latin": "ya",
+    "kulitanSymbol": "y",
+    "classification": "Indung Sulat (Mother Consonant)",
+    "pronunciation": "/ya/ as in \"yatu\" (world)",
+    "definition": "Root consonant \"Ya\" carrying the inherent vowel /a/.",
+    "writingRule": "Flowing vertical spine with a left-sweeping curved hook.",
+    "exampleWord": "Yatu",
+    "exampleMeaning": "World / Earth"
+  },
+  {
+    "id": "95",
+    "latin": "yi",
+    "kulitanSymbol": "yi",
+    "classification": "Anak Sulat (Modified with -i Garlit)",
+    "pronunciation": "/yi/ as in \"yelo\" (ice)",
+    "definition": "Consonant \"Ya\" modified to sound with /i/ using a top Garlit (Kudlit) mark.",
+    "writingRule": "Draw base \"Ya\" glyph, then place an acute tick mark above.",
+    "exampleWord": "Yelo",
+    "exampleMeaning": "Ice"
+  },
+  {
+    "id": "96",
+    "latin": "yu",
+    "kulitanSymbol": "yu",
+    "classification": "Anak Sulat (Modified with -u Garlit)",
+    "pronunciation": "/yu/ as in \"yuyu\" (swing)",
+    "definition": "Consonant \"Ya\" modified to sound with /u/ using a bottom Garlit (Kudlit) mark.",
+    "writingRule": "Draw base \"Ya\" glyph, then place a descending comma tick below.",
+    "exampleWord": "Yuyu",
+    "exampleMeaning": "Cradle / Swing"
+  },
+  {
+    "id": "97",
+    "latin": "ye",
+    "kulitanSymbol": "ye",
+    "classification": "Anak Sulat (Vowel /e/ Flourish)",
+    "pronunciation": "/ye/ as in \"yelo\"",
+    "definition": "Consonant \"Ya\" vocalized with /e/ using a right-side vowel wing ligature.",
+    "writingRule": "Draw base \"Ya\" with an attached rightward vowel flourish.",
+    "exampleWord": "Yelo",
+    "exampleMeaning": "Ice"
+  },
+  {
+    "id": "98",
+    "latin": "yo",
+    "kulitanSymbol": "yo",
+    "classification": "Anak Sulat (Vowel /o/ Flourish)",
+    "pronunciation": "/yo/ as in \"yoyo\" (toy)",
+    "definition": "Consonant \"Ya\" vocalized with /o/ using a right-side double-wave ligature.",
+    "writingRule": "Draw base \"Ya\" with an attached rightward undulating wave flourish.",
+    "exampleWord": "Yoyo",
+    "exampleMeaning": "Yo-yo"
+  },
+  {
+    "id": "99",
+    "latin": "yang",
+    "kulitanSymbol": "yN",
+    "classification": "Busal / Ligature (Final -ng)",
+    "pronunciation": "/yaŋ/ as in \"yang\"",
+    "definition": "Consonant \"Ya\" ligated directly with trailing final nasal syllable -ng (Nga).",
+    "writingRule": "Base \"Ya\" connected directly to the trailing \"Nga\" glyph.",
+    "exampleWord": "Masanting yang...",
+    "exampleMeaning": "He/She is handsome..."
+  },
+  {
+    "id": "100",
+    "latin": "wa",
+    "kulitanSymbol": "w",
+    "classification": "Indung Sulat (Mother Consonant)",
+    "pronunciation": "/wa/ as in \"wawa\" (river mouth)",
+    "definition": "Root consonant \"Wa\" carrying the inherent vowel /a/.",
+    "writingRule": "Distinctive double-hooked vertical serpentine wave.",
+    "exampleWord": "Wawa",
+    "exampleMeaning": "Rivermouth / Estuary"
+  },
+  {
+    "id": "101",
+    "latin": "wi",
+    "kulitanSymbol": "wi",
+    "classification": "Anak Sulat (Modified with -i Garlit)",
+    "pronunciation": "/wi/ as in \"wika\" (language)",
+    "definition": "Consonant \"Wa\" modified to sound with /i/ using a top Garlit (Kudlit) mark.",
+    "writingRule": "Draw base \"Wa\" glyph, then place an acute tick mark above.",
+    "exampleWord": "Wika",
+    "exampleMeaning": "Language / Speech"
+  },
+  {
+    "id": "102",
+    "latin": "wu",
+    "kulitanSymbol": "wu",
+    "classification": "Anak Sulat (Modified with -u Garlit)",
+    "pronunciation": "/wu/ as in \"wawa\"",
+    "definition": "Consonant \"Wa\" modified to sound with /u/ using a bottom Garlit (Kudlit) mark.",
+    "writingRule": "Draw base \"Wa\" glyph, then place a descending comma tick below.",
+    "exampleWord": "Wawa",
+    "exampleMeaning": "Rivermouth"
+  },
+  {
+    "id": "103",
+    "latin": "we",
+    "kulitanSymbol": "we",
+    "classification": "Anak Sulat (Vowel /e/ Flourish)",
+    "pronunciation": "/we/ as in \"welga\"",
+    "definition": "Consonant \"Wa\" vocalized with /e/ using a right-side vowel wing ligature.",
+    "writingRule": "Draw base \"Wa\" with an attached rightward vowel flourish.",
+    "exampleWord": "Welga",
+    "exampleMeaning": "Strike"
+  },
+  {
+    "id": "104",
+    "latin": "wo",
+    "kulitanSymbol": "wo",
+    "classification": "Anak Sulat (Vowel /o/ Flourish)",
+    "pronunciation": "/wo/ as in \"world\"",
+    "definition": "Consonant \"Wa\" vocalized with /o/ using a right-side double-wave ligature.",
+    "writingRule": "Draw base \"Wa\" with an attached rightward undulating wave flourish.",
+    "exampleWord": "Wowo",
+    "exampleMeaning": "Cradle Song"
+  },
+  {
+    "id": "105",
+    "latin": "wang",
+    "kulitanSymbol": "wN",
+    "classification": "Busal / Ligature (Final -ng)",
+    "pronunciation": "/waŋ/ as in \"awang\" (window)",
+    "definition": "Consonant \"Wa\" ligated directly with trailing final nasal syllable -ng (Nga).",
+    "writingRule": "Base \"Wa\" connected directly to the trailing \"Nga\" glyph.",
+    "exampleWord": "Awang",
+    "exampleMeaning": "Window"
   }
 ];

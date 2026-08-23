@@ -13,19 +13,42 @@ type KulitanGuideScreenProps = {
 };
 
 type TabType = 'history' | 'rules' | 'sandbox' | 'syllabary';
+type GridFilterType = 'all' | 'roots' | 'vowel_i' | 'vowel_u' | 'coda';
 
 export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('rules');
+  const [activeTab, setActiveTab] = useState<TabType>('syllabary');
   const [sandboxRoot, setSandboxRoot] = useState('ka');
   const [sandboxVowel, setSandboxVowel] = useState<'a' | 'i' | 'u'>('a');
+  const [gridFilter, setGridFilter] = useState<GridFilterType>('all');
 
   const { language } = useLanguage();
 
-  const baseCharacters = kulitanSyllables.filter(s => 
-    s.latin === 'a' || s.latin === 'i' || s.latin === 'u' || 
-    (s.latin.length === 2 && s.latin.endsWith('a')) || 
-    s.latin === 'nga'
-  );
+  const getFilteredSyllables = () => {
+    switch (gridFilter) {
+      case 'roots':
+        return kulitanSyllables.filter(s => 
+          s.latin === 'a' || s.latin === 'i' || s.latin === 'u' || s.latin === 'e' || s.latin === 'o' ||
+          (s.latin.length === 2 && s.latin.endsWith('a')) || 
+          s.latin === 'nga' || s.latin === 'ya' || s.latin === 'wa'
+        );
+      case 'vowel_i':
+        return kulitanSyllables.filter(s => 
+          s.latin.endsWith('i') || s.latin.endsWith('e') || s.latin.includes('/î') || s.latin.includes('/i')
+        );
+      case 'vowel_u':
+        return kulitanSyllables.filter(s => 
+          s.latin.endsWith('u') || s.latin.endsWith('o') || s.latin.includes('/û') || s.latin.includes('/u')
+        );
+      case 'coda':
+        return kulitanSyllables.filter(s => 
+          s.latin.includes('ang') || s.latin.includes('ank') || s.latin.endsWith('ng')
+        );
+      default:
+        return kulitanSyllables;
+    }
+  };
+
+  const displayedSyllables = getFilteredSyllables();
 
   const getModifiedSyllable = () => {
     if (sandboxRoot === 'a') return sandboxVowel === 'i' ? 'i' : sandboxVowel === 'u' ? 'u' : 'a';
@@ -405,15 +428,51 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
         {activeTab === 'syllabary' && (
           <View style={styles.tabContentGroup}>
             <View style={styles.card}>
-              <Text style={styles.gridSectionTitle}>
-                {language === 'EN' ? 'ROOT SYLLABLES (INDÛ SULAT)' : 'MGA UGAT NA TITIK'}
-              </Text>
-              <Text style={styles.gridSectionDesc}>
-                {language === 'EN' ? 'Tap any character to practice its calligraphy stroke in Studio:' : 'Pindutin ang titik upang sanayin sa Studio:'}
-              </Text>
+              <View style={styles.gridHeaderRow}>
+                <View>
+                  <Text style={styles.gridSectionTitle}>
+                    {language === 'EN' ? 'COMPLETE KULITAN SYLLABARY' : 'KUMPLETONG TALAAN NG MGA TITIK'}
+                  </Text>
+                  <Text style={styles.gridSectionDesc}>
+                    {language === 'EN' ? `Showing ${displayedSyllables.length} authentic characters:` : `Ipinapakita ang ${displayedSyllables.length} na mga titik:`}
+                  </Text>
+                </View>
+                <View style={styles.syllableCountPill}>
+                  <Text style={styles.syllableCountText}>{displayedSyllables.length}</Text>
+                </View>
+              </View>
 
+              {/* GRID FILTER CHIPS */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.gridFilterScroll}>
+                {[
+                  { id: 'all', label: language === 'EN' ? 'All Characters' : 'Lahat' },
+                  { id: 'roots', label: language === 'EN' ? '👑 Roots (Indû)' : '👑 Mga Ugat' },
+                  { id: 'vowel_i', label: language === 'EN' ? '▲ Upper (-I / -E)' : '▲ Itaas (-I/-E)' },
+                  { id: 'vowel_u', label: language === 'EN' ? '▼ Lower (-U / -O)' : '▼ Ibaba (-U/-O)' },
+                  { id: 'coda', label: language === 'EN' ? '💫 Nasal (-NG)' : '💫 May -NG' },
+                ].map((filt) => {
+                  const isActive = gridFilter === filt.id;
+                  return (
+                    <TouchableOpacity
+                      key={filt.id}
+                      style={[styles.gridFilterChip, isActive && styles.gridFilterChipActive]}
+                      onPress={() => {
+                        if (Platform.OS !== 'web') Haptics.selectionAsync();
+                        setGridFilter(filt.id as any);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.gridFilterChipText, isActive && styles.gridFilterChipTextActive]}>
+                        {filt.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+
+              {/* COMPLETE SYLLABARY GRID */}
               <View style={styles.glyphGrid}>
-                {baseCharacters.map((char) => (
+                {displayedSyllables.map((char) => (
                   <TouchableOpacity 
                     key={char.id} 
                     style={styles.glyphGridItem}
@@ -421,9 +480,11 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
                     activeOpacity={0.75}
                   >
                     <View style={styles.glyphBox}>
-                      <KulitanGlyph symbol={char.latin} size={36} color="#D1582D" strokeWidth={3.6} />
+                      <Text style={styles.glyphFontText}>{char.latin}</Text>
                     </View>
-                    <Text style={styles.glyphLatinText}>{char.latin.toUpperCase()}</Text>
+                    <Text style={styles.glyphLatinText} numberOfLines={1}>
+                      {char.latin.toUpperCase()}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -799,17 +860,59 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     color: '#FFFFFF',
   },
+  gridHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
   gridSectionTitle: {
     fontFamily: 'Poppins_700Bold',
     fontSize: 14,
     color: '#1E1B18',
-    marginBottom: 2,
   },
   gridSectionDesc: {
     fontFamily: 'Poppins_400Regular',
-    fontSize: 11.5,
+    fontSize: 11,
     color: '#8C7E72',
-    marginBottom: 14,
+  },
+  syllableCountPill: {
+    backgroundColor: '#FFF7ED',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+  },
+  syllableCountText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 11,
+    color: '#D1582D',
+  },
+  gridFilterScroll: {
+    gap: 6,
+    paddingBottom: 12,
+    marginTop: 4,
+  },
+  gridFilterChip: {
+    backgroundColor: '#FFF9F4',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#EDE3D8',
+  },
+  gridFilterChipActive: {
+    backgroundColor: '#D1582D',
+    borderColor: '#B83814',
+  },
+  gridFilterChipText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 10.5,
+    color: '#64748B',
+  },
+  gridFilterChipTextActive: {
+    color: '#FFFFFF',
   },
   glyphGrid: {
     flexDirection: 'row',
@@ -833,9 +936,15 @@ const styles = StyleSheet.create({
     borderColor: '#FED7AA',
     marginBottom: 4,
   },
+  glyphFontText: {
+    fontFamily: 'Kulitan',
+    fontSize: 32,
+    color: '#D1582D',
+  },
   glyphLatinText: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#1E1B18',
+    textAlign: 'center',
   },
 });
