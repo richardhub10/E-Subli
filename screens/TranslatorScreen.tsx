@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator,
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { GoogleGenAI } from '@google/genai';
+import { translateText } from '../services/geminiService';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { useProfile } from '../context/ProfileContext';
@@ -51,42 +51,18 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     
     const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) {
-      Alert.alert(
-        "API Key Missing",
-        "Add EXPO_PUBLIC_GEMINI_API_KEY to your environment variables to enable the AI translator.",
-        [{ text: "OK" }]
-      );
-      return;
-    }
 
     setIsTranslating(true);
     setTranslatedText('');
 
     try {
-      const ai = new GoogleGenAI({ apiKey });
-      const prompt = `You are an expert linguist specializing in authentic Kapampangan (Amanung Sisuan), Tagalog, and English. Translate the following text from ${sourceLanguage} to natural, fluent ${targetLanguage}. Output ONLY the translated ${targetLanguage} text with no commentary, no markdown, and no quotes. Text to translate: "${sourceText.trim()}"`;
-      
-      let response;
-      try {
-        response = await ai.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: [prompt],
-        });
-      } catch {
-        response = await ai.models.generateContent({
-          model: 'gemini-1.5-flash',
-          contents: [prompt],
-        });
-      }
-      
-      const text = response.text?.trim() || '';
-      setTranslatedText(text);
+      const res = await translateText(sourceText, sourceLanguage, targetLanguage, apiKey);
+      setTranslatedText(res.text);
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       addXP(5);
     } catch (err) {
-      console.error("Gemini API Error:", err);
-      Alert.alert("Translation Failed", "Could not translate the text. Please check your internet connection and try again.");
+      console.error("Translation Error:", err);
+      Alert.alert("Translation Notice", "Could not complete translation. Please check your network connection.");
     } finally {
       setIsTranslating(false);
     }
