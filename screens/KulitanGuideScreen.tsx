@@ -16,7 +16,7 @@ type TabType = 'history' | 'rules' | 'sandbox' | 'syllabary';
 type GridFilterType = 'all' | 'roots' | 'vowel_i' | 'vowel_u' | 'coda';
 
 export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('syllabary');
+  const [activeTab, setActiveTab] = useState<TabType>('rules');
   const [sandboxRoot, setSandboxRoot] = useState('ka');
   const [sandboxVowel, setSandboxVowel] = useState<'a' | 'i' | 'u'>('a');
   const [gridFilter, setGridFilter] = useState<GridFilterType>('all');
@@ -353,7 +353,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
               {/* PRACTICE CTA */}
               <TouchableOpacity
                 style={styles.sandboxCtaBtn}
-                onPress={() => navigation.navigate('WriteTrace')}
+                onPress={() => navigation.navigate('WriteTrace', { selectedSyllable: currentModified })}
                 activeOpacity={0.88}
               >
                 <MaterialCommunityIcons name="draw-pen" size={18} color="#FFFFFF" />
@@ -476,7 +476,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
                   <TouchableOpacity 
                     key={char.id} 
                     style={styles.glyphGridItem}
-                    onPress={() => navigation.navigate('WriteTrace')}
+                    onPress={() => navigation.navigate('WriteTrace', { selectedSyllable: char.latin })}
                     activeOpacity={0.75}
                   >
                     <View style={styles.glyphBox}>

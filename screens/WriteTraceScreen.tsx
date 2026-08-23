@@ -1,9 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator, Platform, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
 import { DrawingCanvas, DrawingCanvasRef } from '../components/DrawingCanvas';
 import { useProfile } from '../context/ProfileContext';
 import { kulitanSyllables } from '../data/kulitanData';
@@ -12,6 +13,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 type WriteTraceScreenProps = {
   navigation: StackNavigationProp<any, any>;
+  route?: RouteProp<any, any>;
 };
 
 const PEN_COLORS = [
@@ -29,12 +31,40 @@ const PEN_SIZES = [
   { id: 'thick', size: 14, label: 'Thick', dotSize: 14 },
 ];
 
-export default function WriteTraceScreen({ navigation }: WriteTraceScreenProps) {
+export default function WriteTraceScreen({ navigation, route }: WriteTraceScreenProps) {
   const canvasRef = useRef<DrawingCanvasRef>(null);
   const { addXP, incrementWriting } = useProfile();
   
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const currentSyllable = kulitanSyllables[currentIndex];
+  const getInitialIndex = () => {
+    const target = route?.params?.selectedSyllable || route?.params?.initialSyllable;
+    if (target) {
+      const cleanTarget = String(target).toLowerCase().trim();
+      const foundIdx = kulitanSyllables.findIndex(s => s.latin.toLowerCase() === cleanTarget || s.latin.toLowerCase().startsWith(cleanTarget));
+      if (foundIdx !== -1) return foundIdx;
+    }
+    if (route?.params?.syllableId) {
+      const foundIdx = kulitanSyllables.findIndex(s => s.id === route?.params?.syllableId);
+      if (foundIdx !== -1) return foundIdx;
+    }
+    return 0;
+  };
+
+  const [currentIndex, setCurrentIndex] = useState(getInitialIndex);
+
+  // Sync if route params change on new navigation
+  useEffect(() => {
+    const target = route?.params?.selectedSyllable || route?.params?.initialSyllable;
+    if (target) {
+      const cleanTarget = String(target).toLowerCase().trim();
+      const foundIdx = kulitanSyllables.findIndex(s => s.latin.toLowerCase() === cleanTarget || s.latin.toLowerCase().startsWith(cleanTarget));
+      if (foundIdx !== -1) {
+        setCurrentIndex(foundIdx);
+        canvasRef.current?.clear();
+      }
+    }
+  }, [route?.params?.selectedSyllable, route?.params?.initialSyllable, route?.params?.syllableId]);
+
+  const currentSyllable = kulitanSyllables[currentIndex] || kulitanSyllables[0];
   const { t, language } = useLanguage();
   
   const [isEraser, setIsEraser] = useState(false);
