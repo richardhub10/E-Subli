@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Dimensions, Modal, Pressable, ScrollView } from 'react-native';
+import React, { useRef, useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Dimensions, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -17,7 +17,21 @@ type FloatingBottomBarProps = {
 export default function FloatingBottomBar({ activeTab, navigation }: FloatingBottomBarProps) {
   const [showLearnModal, setShowLearnModal] = useState(false);
   const centerScaleAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
   const { language } = useLanguage();
+
+  useEffect(() => {
+    if (showLearnModal) {
+      Animated.spring(slideAnim, {
+        toValue: 1,
+        friction: 8,
+        tension: 65,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      slideAnim.setValue(0);
+    }
+  }, [showLearnModal]);
 
   const handleTabPress = (tab: TabName, routeName: string) => {
     if (tab === 'Learn') {
@@ -47,10 +61,183 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
     navigation.navigate(route);
   };
 
+  const closeLearnModal = () => {
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 180,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowLearnModal(false);
+    });
+  };
+
   const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
   return (
     <>
+      {/* IN-CONTAINER BACKDROP & LEARNING STUDIO DRAWER */}
+      {showLearnModal && (
+        <View style={styles.modalOverlay} pointerEvents="box-none">
+          <Pressable 
+            style={styles.backdropPressable} 
+            onPress={closeLearnModal}
+          />
+          
+          <Animated.View 
+            style={[
+              styles.modalCard,
+              {
+                opacity: slideAnim,
+                transform: [
+                  {
+                    translateY: slideAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [40, 0],
+                    }),
+                  },
+                  {
+                    scale: slideAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.95, 1],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalSubHeader}>
+                  {language === 'EN' ? 'LEARNING STUDIO' : 'ESTUDYO NG PAGKATUTO'}
+                </Text>
+                <Text style={styles.modalTitle}>
+                  {language === 'EN' ? 'Choose Study Path' : 'Pumili ng Sanayin'}
+                </Text>
+              </View>
+
+              <TouchableOpacity 
+                style={styles.closeBtn} 
+                onPress={closeLearnModal}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close" size={20} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            {/* OPTION 1: READ HUB */}
+            <TouchableOpacity 
+              style={styles.choiceCard} 
+              onPress={() => selectLearnRoute('ReadHub')}
+              activeOpacity={0.9}
+            >
+              <LinearGradient 
+                colors={['#E05326', '#B83814', '#942B0D']} 
+                start={{ x: 0, y: 0 }} 
+                end={{ x: 1, y: 1 }} 
+                style={styles.choiceGradient}
+              >
+                <View style={styles.choiceLeft}>
+                  <View style={styles.choiceBadgeRow}>
+                    <View style={styles.choiceBadgePill}>
+                      <Text style={styles.choiceBadgeText}>FOUNDATION</Text>
+                    </View>
+                    <View style={styles.choiceSubTag}>
+                      <Ionicons name="sparkles" size={10} color="#FEF08A" />
+                      <Text style={styles.choiceSubTagText}>FLASHCARDS</Text>
+                    </View>
+                  </View>
+
+                  <Text style={styles.choiceTitle}>Read Hub</Text>
+                  <Text style={styles.choiceDesc}>
+                    {language === 'EN' 
+                      ? 'Master 24 root glyphs with spaced repetition flashcards' 
+                      : 'Kabisaduhin ang pagbasa ng mga titik at pantig'}
+                  </Text>
+
+                  <View style={styles.choiceActionChip}>
+                    <Ionicons name="play-circle" size={13} color="#FFF" />
+                    <Text style={styles.choiceActionText}>
+                      {language === 'EN' ? 'Start Reading →' : 'Simulan →'}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.choiceIconRing}>
+                  <Ionicons name="book" size={28} color="#FFFFFF" />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* OPTION 2: WRITE & TRACE */}
+            <TouchableOpacity 
+              style={styles.choiceCard} 
+              onPress={() => selectLearnRoute('WriteTrace')}
+              activeOpacity={0.9}
+            >
+              <LinearGradient 
+                colors={['#1E293B', '#111827', '#0A0E17']} 
+                start={{ x: 0, y: 0 }} 
+                end={{ x: 1, y: 1 }} 
+                style={styles.choiceGradient}
+              >
+                <View style={styles.choiceLeft}>
+                  <View style={styles.choiceBadgeRow}>
+                    <View style={[styles.choiceBadgePill, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
+                      <Text style={[styles.choiceBadgeText, { color: '#FBBF24' }]}>STUDIO CANVAS</Text>
+                    </View>
+                    <View style={[styles.choiceSubTag, { backgroundColor: 'rgba(255, 255, 255, 0.12)' }]}>
+                      <Ionicons name="ribbon" size={10} color="#FBBF24" />
+                      <Text style={[styles.choiceSubTagText, { color: '#FDE68A' }]}>3-STAR GRADER</Text>
+                    </View>
+                  </View>
+
+                  <Text style={styles.choiceTitle}>Write & Trace</Text>
+                  <Text style={styles.choiceDesc}>
+                    {language === 'EN' 
+                      ? 'Interactive calligraphy canvas with stroke evaluation' 
+                      : 'Sanayin ang pagsulat sa gabay ng panulat'}
+                  </Text>
+
+                  <View style={styles.choiceActionChip}>
+                    <Ionicons name="pencil" size={13} color="#FFF" />
+                    <Text style={styles.choiceActionText}>
+                      {language === 'EN' ? 'Practice Stroke →' : 'Gumuhit →'}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={[styles.choiceIconRing, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
+                  <MaterialCommunityIcons name="draw-pen" size={28} color="#FBBF24" />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* Quick Link: Historical Guide */}
+            <TouchableOpacity 
+              style={styles.guideQuickTile} 
+              onPress={() => selectLearnRoute('KulitanGuide')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.guideQuickIconBox}>
+                <Ionicons name="school" size={16} color="#D1582D" />
+              </View>
+              <View style={styles.guideQuickTextBox}>
+                <Text style={styles.guideQuickTitle}>
+                  {language === 'EN' ? 'Kulitan Writing Guide & History' : 'Gabay sa Kasaysayan at Pagsulat'}
+                </Text>
+                <Text style={styles.guideQuickSub}>
+                  {language === 'EN' ? 'Indû, Anak, and Kudlit modifiers' : 'Panuntunan ng pagsulat'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={14} color="#CBD5E1" />
+            </TouchableOpacity>
+
+          </Animated.View>
+        </View>
+      )}
+
+      {/* FLOATING CURVED NOTCH DOCK */}
       <View style={styles.dockWrapper} pointerEvents="box-none">
         <View style={styles.dockBar}>
           
@@ -71,21 +258,21 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
             {activeTab === 'Home' && <View style={styles.activeDot} />}
           </TouchableOpacity>
 
-          {/* TAB 2: LEARN (Opens Learning Studio Modal) */}
+          {/* TAB 2: LEARN (Opens Learning Studio) */}
           <TouchableOpacity 
             style={styles.tabItem} 
             onPress={() => handleTabPress('Learn', '')}
             activeOpacity={0.7}
           >
             <Ionicons 
-              name={activeTab === 'Learn' ? "book" : "book-outline"} 
+              name={activeTab === 'Learn' || showLearnModal ? "book" : "book-outline"} 
               size={22} 
-              color={activeTab === 'Learn' ? "#D1582D" : "#8C7E72"} 
+              color={activeTab === 'Learn' || showLearnModal ? "#D1582D" : "#8C7E72"} 
             />
-            <Text style={[styles.tabLabel, activeTab === 'Learn' && styles.tabLabelActive]}>
+            <Text style={[styles.tabLabel, (activeTab === 'Learn' || showLearnModal) && styles.tabLabelActive]}>
               Learn
             </Text>
-            {activeTab === 'Learn' && <View style={styles.activeDot} />}
+            {(activeTab === 'Learn' || showLearnModal) && <View style={styles.activeDot} />}
           </TouchableOpacity>
 
           {/* TAB 3: CENTER ELEVATED AI CAMERA SCANNER FAB */}
@@ -148,160 +335,6 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
 
         </View>
       </View>
-
-      {/* LEARNING STUDIO MODAL POPUP */}
-      <Modal
-        visible={showLearnModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowLearnModal(false)}
-      >
-        <Pressable 
-          style={styles.modalOverlay} 
-          onPress={() => setShowLearnModal(false)}
-        >
-          <Pressable style={styles.modalSheet} onPress={(e) => e.stopPropagation()}>
-            
-            {/* Top Drag Handle */}
-            <View style={styles.dragHandle} />
-
-            {/* Modal Header */}
-            <View style={styles.modalHeader}>
-              <View>
-                <Text style={styles.modalSubHeader}>
-                  {language === 'EN' ? 'LEARNING STUDIO' : 'ESTUDYO NG PAGKATUTO'}
-                </Text>
-                <Text style={styles.modalTitle}>
-                  {language === 'EN' ? 'Choose Study Path' : 'Pumili ng Sanayin'}
-                </Text>
-              </View>
-
-              <TouchableOpacity 
-                style={styles.closeBtn} 
-                onPress={() => setShowLearnModal(false)}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="close" size={20} color="#64748B" />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView 
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.modalScrollBody}
-              bounces={false}
-            >
-              {/* OPTION 1: READ HUB */}
-              <TouchableOpacity 
-                style={styles.choiceCard} 
-                onPress={() => selectLearnRoute('ReadHub')}
-                activeOpacity={0.9}
-              >
-                <LinearGradient 
-                  colors={['#E05326', '#B83814', '#942B0D']} 
-                  start={{ x: 0, y: 0 }} 
-                  end={{ x: 1, y: 1 }} 
-                  style={styles.choiceGradient}
-                >
-                  <View style={styles.choiceLeft}>
-                    <View style={styles.choiceBadgeRow}>
-                      <View style={styles.choiceBadgePill}>
-                        <Text style={styles.choiceBadgeText}>FOUNDATION</Text>
-                      </View>
-                      <View style={styles.choiceSubTag}>
-                        <Ionicons name="sparkles" size={10} color="#FEF08A" />
-                        <Text style={styles.choiceSubTagText}>FLASHCARDS</Text>
-                      </View>
-                    </View>
-
-                    <Text style={styles.choiceTitle}>Read Hub</Text>
-                    <Text style={styles.choiceDesc}>
-                      {language === 'EN' 
-                        ? 'Master 24 root glyphs with spaced repetition flashcards' 
-                        : 'Kabisaduhin ang pagbasa ng mga titik at pantig'}
-                    </Text>
-
-                    <View style={styles.choiceActionChip}>
-                      <Ionicons name="play-circle" size={13} color="#FFF" />
-                      <Text style={styles.choiceActionText}>
-                        {language === 'EN' ? 'Start Reading →' : 'Simulan →'}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.choiceIconRing}>
-                    <Ionicons name="book" size={30} color="#FFFFFF" />
-                  </View>
-                </LinearGradient>
-              </TouchableOpacity>
-
-              {/* OPTION 2: WRITE & TRACE */}
-              <TouchableOpacity 
-                style={styles.choiceCard} 
-                onPress={() => selectLearnRoute('WriteTrace')}
-                activeOpacity={0.9}
-              >
-                <LinearGradient 
-                  colors={['#1E293B', '#111827', '#0A0E17']} 
-                  start={{ x: 0, y: 0 }} 
-                  end={{ x: 1, y: 1 }} 
-                  style={styles.choiceGradient}
-                >
-                  <View style={styles.choiceLeft}>
-                    <View style={styles.choiceBadgeRow}>
-                      <View style={[styles.choiceBadgePill, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
-                        <Text style={[styles.choiceBadgeText, { color: '#FBBF24' }]}>STUDIO CANVAS</Text>
-                      </View>
-                      <View style={[styles.choiceSubTag, { backgroundColor: 'rgba(255, 255, 255, 0.12)' }]}>
-                        <Ionicons name="ribbon" size={10} color="#FBBF24" />
-                        <Text style={[styles.choiceSubTagText, { color: '#FDE68A' }]}>3-STAR GRADER</Text>
-                      </View>
-                    </View>
-
-                    <Text style={styles.choiceTitle}>Write & Trace</Text>
-                    <Text style={styles.choiceDesc}>
-                      {language === 'EN' 
-                        ? 'Interactive calligraphy canvas with stroke evaluation' 
-                        : 'Sanayin ang pagsulat sa gabay ng panulat'}
-                    </Text>
-
-                    <View style={styles.choiceActionChip}>
-                      <Ionicons name="pencil" size={13} color="#FFF" />
-                      <Text style={styles.choiceActionText}>
-                        {language === 'EN' ? 'Practice Stroke →' : 'Gumuhit →'}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={[styles.choiceIconRing, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
-                    <MaterialCommunityIcons name="draw-pen" size={30} color="#FBBF24" />
-                  </View>
-                </LinearGradient>
-              </TouchableOpacity>
-
-              {/* Quick Link: Historical Guide */}
-              <TouchableOpacity 
-                style={styles.guideQuickTile} 
-                onPress={() => selectLearnRoute('KulitanGuide')}
-                activeOpacity={0.8}
-              >
-                <View style={styles.guideQuickIconBox}>
-                  <Ionicons name="school" size={18} color="#D1582D" />
-                </View>
-                <View style={styles.guideQuickTextBox}>
-                  <Text style={styles.guideQuickTitle}>
-                    {language === 'EN' ? 'Kulitan Writing Guide & History' : 'Gabay sa Kasaysayan at Pagsulat'}
-                  </Text>
-                  <Text style={styles.guideQuickSub}>
-                    {language === 'EN' ? 'Indû, Anak, and Kudlit modifiers' : 'Panuntunan ng pagsulat'}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
-              </TouchableOpacity>
-            </ScrollView>
-
-          </Pressable>
-        </Pressable>
-      </Modal>
     </>
   );
 }
@@ -397,42 +430,44 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 998,
     justifyContent: 'flex-end',
   },
-  modalSheet: {
+  backdropPressable: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+  },
+  modalCard: {
     backgroundColor: '#FFFBF6',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: Platform.OS === 'ios' ? 36 : 24,
-    maxHeight: '85%',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.9)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  modalScrollBody: {
-    paddingBottom: 16,
-  },
-  dragHandle: {
-    width: 38,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#CBD5E1',
+    borderRadius: 28,
+    marginHorizontal: 16,
+    marginBottom: Platform.OS === 'ios' ? 98 : 88,
+    padding: 16,
+    maxWidth: 420,
     alignSelf: 'center',
-    marginBottom: 14,
+    width: '92%',
+    borderWidth: 1.5,
+    borderColor: '#EDE3D8',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 16,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   modalSubHeader: {
     fontFamily: 'Poppins_700Bold',
@@ -442,101 +477,101 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 20,
+    fontSize: 17,
     color: '#1E1B18',
   },
   closeBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
   },
   choiceCard: {
-    borderRadius: 22,
-    marginBottom: 12,
+    borderRadius: 18,
+    marginBottom: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
   choiceGradient: {
-    borderRadius: 22,
-    padding: 16,
+    borderRadius: 18,
+    padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   choiceLeft: {
     flex: 1,
-    paddingRight: 10,
+    paddingRight: 8,
   },
   choiceBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   choiceBadgePill: {
     backgroundColor: 'rgba(255, 255, 255, 0.22)',
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 5,
   },
   choiceBadgeText: {
     color: '#FFFFFF',
     fontFamily: 'Poppins_700Bold',
-    fontSize: 8,
+    fontSize: 7.5,
     letterSpacing: 0.5,
   },
   choiceSubTag: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.18)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 5,
     gap: 3,
   },
   choiceSubTagText: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 8,
+    fontSize: 7.5,
     color: '#FFFFFF',
   },
   choiceTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'Poppins_700Bold',
     color: '#FFFFFF',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   choiceDesc: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontFamily: 'Poppins_400Regular',
     color: 'rgba(255, 255, 255, 0.88)',
-    lineHeight: 15,
-    marginBottom: 8,
+    lineHeight: 14,
+    marginBottom: 6,
   },
   choiceActionChip: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 7,
     gap: 4,
   },
   choiceActionText: {
     fontFamily: 'Poppins_600SemiBold',
-    fontSize: 10,
+    fontSize: 9.5,
     color: '#FFFFFF',
   },
   choiceIconRing: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(255, 255, 255, 0.18)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -545,20 +580,19 @@ const styles = StyleSheet.create({
   },
   guideQuickTile: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: '#EDE3D8',
-    marginTop: 2,
-    gap: 10,
+    gap: 8,
   },
   guideQuickIconBox: {
-    width: 34,
-    height: 34,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 10,
     backgroundColor: '#FFF1EE',
     justifyContent: 'center',
     alignItems: 'center',
@@ -568,12 +602,12 @@ const styles = StyleSheet.create({
   },
   guideQuickTitle: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#1E1B18',
   },
   guideQuickSub: {
     fontFamily: 'Poppins_400Regular',
-    fontSize: 10,
+    fontSize: 9.5,
     color: '#8C7E72',
   },
 });
