@@ -24,8 +24,8 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
     if (showLearnModal) {
       Animated.spring(slideAnim, {
         toValue: 1,
-        friction: 8,
-        tension: 65,
+        friction: 7,
+        tension: 70,
         useNativeDriver: true,
       }).start();
     } else {
@@ -36,9 +36,11 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
   const handleTabPress = (tab: TabName, routeName: string) => {
     if (tab === 'Learn') {
       if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      setShowLearnModal(true);
+      setShowLearnModal(prev => !prev);
       return;
     }
+
+    if (showLearnModal) setShowLearnModal(false);
 
     if (activeTab === tab) return;
     if (Platform.OS !== 'web') Haptics.selectionAsync();
@@ -46,6 +48,7 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
   };
 
   const handleScannerPress = () => {
+    if (showLearnModal) setShowLearnModal(false);
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Animated.sequence([
       Animated.timing(centerScaleAnim, { toValue: 0.88, duration: 100, useNativeDriver: true }),
@@ -64,18 +67,24 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
   const closeLearnModal = () => {
     Animated.timing(slideAnim, {
       toValue: 0,
-      duration: 180,
+      duration: 160,
       useNativeDriver: true,
     }).start(() => {
       setShowLearnModal(false);
     });
   };
 
+  // Dedicated Active Tab Highlights: When modal is open, ONLY Learn is lit up!
+  const isLearnActive = showLearnModal || activeTab === 'Learn';
+  const isHomeActive = !showLearnModal && activeTab === 'Home';
+  const isLeaderboardActive = !showLearnModal && activeTab === 'Leaderboard';
+  const isProfileActive = !showLearnModal && activeTab === 'Profile';
+
   const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
   return (
     <>
-      {/* IN-CONTAINER BACKDROP & LEARNING STUDIO DRAWER */}
+      {/* IN-CONTAINER BACKDROP & LUXURY LEARNING STUDIO POPOVER */}
       {showLearnModal && (
         <View style={styles.modalOverlay} pointerEvents="box-none">
           <Pressable 
@@ -92,13 +101,13 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
                   {
                     translateY: slideAnim.interpolate({
                       inputRange: [0, 1],
-                      outputRange: [40, 0],
+                      outputRange: [24, 0],
                     }),
                   },
                   {
                     scale: slideAnim.interpolate({
                       inputRange: [0, 1],
-                      outputRange: [0.95, 1],
+                      outputRange: [0.96, 1],
                     }),
                   },
                 ],
@@ -108,9 +117,12 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
             {/* Header */}
             <View style={styles.modalHeader}>
               <View>
-                <Text style={styles.modalSubHeader}>
-                  {language === 'EN' ? 'LEARNING STUDIO' : 'ESTUDYO NG PAGKATUTO'}
-                </Text>
+                <View style={styles.headerBadgePill}>
+                  <Ionicons name="sparkles" size={10} color="#D1582D" />
+                  <Text style={styles.modalSubHeader}>
+                    {language === 'EN' ? 'LEARNING STUDIO' : 'ESTUDYO NG PAGKATUTO'}
+                  </Text>
+                </View>
                 <Text style={styles.modalTitle}>
                   {language === 'EN' ? 'Choose Study Path' : 'Pumili ng Sanayin'}
                 </Text>
@@ -121,7 +133,7 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
                 onPress={closeLearnModal}
                 activeOpacity={0.7}
               >
-                <Ionicons name="close" size={20} color="#64748B" />
+                <Ionicons name="close" size={18} color="#64748B" />
               </TouchableOpacity>
             </View>
 
@@ -143,7 +155,7 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
                       <Text style={styles.choiceBadgeText}>FOUNDATION</Text>
                     </View>
                     <View style={styles.choiceSubTag}>
-                      <Ionicons name="sparkles" size={10} color="#FEF08A" />
+                      <Ionicons name="sparkles" size={9} color="#FEF08A" />
                       <Text style={styles.choiceSubTagText}>FLASHCARDS</Text>
                     </View>
                   </View>
@@ -164,7 +176,7 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
                 </View>
 
                 <View style={styles.choiceIconRing}>
-                  <Ionicons name="book" size={28} color="#FFFFFF" />
+                  <Ionicons name="book" size={26} color="#FFFFFF" />
                 </View>
               </LinearGradient>
             </TouchableOpacity>
@@ -187,7 +199,7 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
                       <Text style={[styles.choiceBadgeText, { color: '#FBBF24' }]}>STUDIO CANVAS</Text>
                     </View>
                     <View style={[styles.choiceSubTag, { backgroundColor: 'rgba(255, 255, 255, 0.12)' }]}>
-                      <Ionicons name="ribbon" size={10} color="#FBBF24" />
+                      <Ionicons name="ribbon" size={9} color="#FBBF24" />
                       <Text style={[styles.choiceSubTagText, { color: '#FDE68A' }]}>3-STAR GRADER</Text>
                     </View>
                   </View>
@@ -208,7 +220,7 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
                 </View>
 
                 <View style={[styles.choiceIconRing, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
-                  <MaterialCommunityIcons name="draw-pen" size={28} color="#FBBF24" />
+                  <MaterialCommunityIcons name="draw-pen" size={26} color="#FBBF24" />
                 </View>
               </LinearGradient>
             </TouchableOpacity>
@@ -233,6 +245,9 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
               <Ionicons name="chevron-forward" size={14} color="#CBD5E1" />
             </TouchableOpacity>
 
+            {/* Bottom Pointer Indicator (Pointing directly to the Learn Tab) */}
+            <View style={styles.popoverPointer} />
+
           </Animated.View>
         </View>
       )}
@@ -248,14 +263,14 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
             activeOpacity={0.7}
           >
             <Ionicons 
-              name={activeTab === 'Home' ? "home" : "home-outline"} 
+              name={isHomeActive ? "home" : "home-outline"} 
               size={22} 
-              color={activeTab === 'Home' ? "#D1582D" : "#8C7E72"} 
+              color={isHomeActive ? "#D1582D" : "#8C7E72"} 
             />
-            <Text style={[styles.tabLabel, activeTab === 'Home' && styles.tabLabelActive]}>
+            <Text style={[styles.tabLabel, isHomeActive && styles.tabLabelActive]}>
               Home
             </Text>
-            {activeTab === 'Home' && <View style={styles.activeDot} />}
+            {isHomeActive && <View style={styles.activeDot} />}
           </TouchableOpacity>
 
           {/* TAB 2: LEARN (Opens Learning Studio) */}
@@ -265,14 +280,14 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
             activeOpacity={0.7}
           >
             <Ionicons 
-              name={activeTab === 'Learn' || showLearnModal ? "book" : "book-outline"} 
+              name={isLearnActive ? "book" : "book-outline"} 
               size={22} 
-              color={activeTab === 'Learn' || showLearnModal ? "#D1582D" : "#8C7E72"} 
+              color={isLearnActive ? "#D1582D" : "#8C7E72"} 
             />
-            <Text style={[styles.tabLabel, (activeTab === 'Learn' || showLearnModal) && styles.tabLabelActive]}>
+            <Text style={[styles.tabLabel, isLearnActive && styles.tabLabelActive]}>
               Learn
             </Text>
-            {(activeTab === 'Learn' || showLearnModal) && <View style={styles.activeDot} />}
+            {isLearnActive && <View style={styles.activeDot} />}
           </TouchableOpacity>
 
           {/* TAB 3: CENTER ELEVATED AI CAMERA SCANNER FAB */}
@@ -306,14 +321,14 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
             activeOpacity={0.7}
           >
             <Ionicons 
-              name={activeTab === 'Leaderboard' ? "trophy" : "trophy-outline"} 
+              name={isLeaderboardActive ? "trophy" : "trophy-outline"} 
               size={22} 
-              color={activeTab === 'Leaderboard' ? "#D1582D" : "#8C7E72"} 
+              color={isLeaderboardActive ? "#D1582D" : "#8C7E72"} 
             />
-            <Text style={[styles.tabLabel, activeTab === 'Leaderboard' && styles.tabLabelActive]}>
+            <Text style={[styles.tabLabel, isLeaderboardActive && styles.tabLabelActive]}>
               Ranks
             </Text>
-            {activeTab === 'Leaderboard' && <View style={styles.activeDot} />}
+            {isLeaderboardActive && <View style={styles.activeDot} />}
           </TouchableOpacity>
 
           {/* TAB 5: PROFILE */}
@@ -323,14 +338,14 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
             activeOpacity={0.7}
           >
             <Ionicons 
-              name={activeTab === 'Profile' ? "person" : "person-outline"} 
+              name={isProfileActive ? "person" : "person-outline"} 
               size={22} 
-              color={activeTab === 'Profile' ? "#D1582D" : "#8C7E72"} 
+              color={isProfileActive ? "#D1582D" : "#8C7E72"} 
             />
-            <Text style={[styles.tabLabel, activeTab === 'Profile' && styles.tabLabelActive]}>
+            <Text style={[styles.tabLabel, isProfileActive && styles.tabLabelActive]}>
               Profile
             </Text>
-            {activeTab === 'Profile' && <View style={styles.activeDot} />}
+            {isProfileActive && <View style={styles.activeDot} />}
           </TouchableOpacity>
 
         </View>
@@ -448,7 +463,7 @@ const styles = StyleSheet.create({
   },
   modalCard: {
     backgroundColor: '#FFFBF6',
-    borderRadius: 28,
+    borderRadius: 24,
     marginHorizontal: 16,
     marginBottom: Platform.OS === 'ios' ? 98 : 88,
     padding: 16,
@@ -462,12 +477,31 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 20,
     elevation: 16,
+    position: 'relative',
+  },
+  popoverPointer: {
+    position: 'absolute',
+    bottom: -8,
+    left: '26%',
+    width: 14,
+    height: 14,
+    backgroundColor: '#FFFBF6',
+    borderRightWidth: 1.5,
+    borderBottomWidth: 1.5,
+    borderColor: '#EDE3D8',
+    transform: [{ rotate: '45deg' }],
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
+  },
+  headerBadgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 2,
   },
   modalSubHeader: {
     fontFamily: 'Poppins_700Bold',
