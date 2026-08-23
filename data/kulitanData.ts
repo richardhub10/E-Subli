@@ -10,7 +10,7 @@ export type SyllableData = {
   exampleMeaning: string;
 };
 
-// Based EXACTLY on Baybayin Pamagkulit Font by Nordenx (Sulat Kapampangan)
+// Authentic Sulat Kapampangan (Kulitan) Syllabary and Orthography
 export const kulitanSyllables: SyllableData[] = [
   {
     "id": "1",
