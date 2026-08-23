@@ -28,7 +28,23 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
   const handleLogout = async () => {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(
+        language === 'EN' ? 'Are you sure you want to sign out of E-Subli?' : 'Sigurado ka bang nais mong mag-sign out?'
+      );
+      if (confirmed) {
+        try {
+          await signOut();
+        } catch (error) {
+          console.error('Logout error:', error);
+        }
+      }
+      return;
+    }
+
     Alert.alert(
       language === 'EN' ? 'Confirm Sign Out' : 'Kumpirmahin ang Pag-logout',
       language === 'EN' ? 'Are you sure you want to sign out of E-Subli?' : 'Sigurado ka bang nais mong mag-sign out?',
