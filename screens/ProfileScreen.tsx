@@ -11,6 +11,7 @@ import { supabase } from '../supabaseClient';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { Language } from '../utils/translations';
+import FloatingBottomBar from '../components/FloatingBottomBar';
 
 type ProfileScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -391,6 +392,8 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         </View>
       </Modal>
 
+      {/* Floating Curved Notch Bottom Navigation Bar */}
+      <FloatingBottomBar activeTab="Profile" navigation={navigation} />
     </LinearGradient>
   );
 }
@@ -440,7 +443,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 100,
     paddingTop: 6,
   },
   heroCard: {

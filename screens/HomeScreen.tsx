@@ -8,6 +8,7 @@ import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Language } from '../utils/translations';
 import { kulitanSyllables } from '../data/kulitanData';
+import FloatingBottomBar from '../components/FloatingBottomBar';
 
 const { width, height } = Dimensions.get('window');
 
@@ -534,6 +535,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
       </ScrollView>
 
+      {/* Floating Curved Notch Bottom Navigation Bar */}
+      <FloatingBottomBar activeTab="Home" navigation={navigation} />
+
       {/* Hero Expanding Transition Ripple Overlay */}
       {expandingFeature && (
         <Animated.View style={[StyleSheet.absoluteFill, { 
@@ -749,7 +753,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 110,
   },
   masterCard: {
     borderRadius: 24,

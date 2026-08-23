@@ -8,6 +8,7 @@ import Flashcard from '../components/Flashcard';
 import { kulitanSyllables } from '../data/kulitanData';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
+import FloatingBottomBar from '../components/FloatingBottomBar';
 
 type ReadHubScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -281,6 +282,8 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
           </View>
         </View>
       </Modal>
+      {/* Floating Curved Notch Bottom Navigation Bar */}
+      <FloatingBottomBar activeTab="Learn" navigation={navigation} />
     </LinearGradient>
   );
 }
@@ -316,7 +319,7 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontFamily: 'Poppins_600SemiBold',
-    fontSize: 10,
+    fontSize: 9,
     color: '#D1582D',
     letterSpacing: 1,
   },
@@ -426,7 +429,7 @@ const styles = StyleSheet.create({
   },
   controlsContainer: {
     paddingHorizontal: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    paddingBottom: Platform.OS === 'ios' ? 95 : 85,
     paddingTop: 10,
   },
   navButtonsRow: {
