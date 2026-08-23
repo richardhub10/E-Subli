@@ -27,22 +27,16 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
     switch (gridFilter) {
       case 'roots':
         return kulitanSyllables.filter(s => 
-          s.latin === 'a' || s.latin === 'i' || s.latin === 'u' || s.latin === 'e' || s.latin === 'o' ||
+          s.latin === 'a' || s.latin === 'i' || s.latin === 'u' || 
           (s.latin.length === 2 && s.latin.endsWith('a')) || 
-          s.latin === 'nga' || s.latin === 'ya' || s.latin === 'wa'
+          s.latin === 'nga'
         );
       case 'vowel_i':
-        return kulitanSyllables.filter(s => 
-          s.latin.endsWith('i') || s.latin.endsWith('e') || s.latin.includes('/î') || s.latin.includes('/i')
-        );
+        return kulitanSyllables.filter(s => s.latin.endsWith('i') && s.latin !== 'i');
       case 'vowel_u':
-        return kulitanSyllables.filter(s => 
-          s.latin.endsWith('u') || s.latin.endsWith('o') || s.latin.includes('/û') || s.latin.includes('/u')
-        );
+        return kulitanSyllables.filter(s => s.latin.endsWith('u') && s.latin !== 'u');
       case 'coda':
-        return kulitanSyllables.filter(s => 
-          s.latin.includes('ang') || s.latin.includes('ank') || s.latin.endsWith('ng')
-        );
+        return kulitanSyllables.filter(s => s.latin.endsWith('ang'));
       default:
         return kulitanSyllables;
     }
@@ -480,7 +474,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
                     activeOpacity={0.75}
                   >
                     <View style={styles.glyphBox}>
-                      <Text style={styles.glyphFontText}>{char.latin}</Text>
+                      <KulitanGlyph symbol={char.latin} size={36} color="#D1582D" strokeWidth={3.6} />
                     </View>
                     <Text style={styles.glyphLatinText} numberOfLines={1}>
                       {char.latin.toUpperCase()}
