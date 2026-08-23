@@ -704,8 +704,12 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
               </Text>
             </View>
 
-            <Text style={styles.questionPrompt}>{t('what_does_this_mean')}</Text>
-            <Text style={styles.kapampanganWord}>{currentQ.kapampangan}</Text>
+            <Text style={styles.questionPrompt}>
+              {currentQ.category === 'words' ? t('what_does_this_mean') : 'Identify Glyph'}
+            </Text>
+            <Text style={styles.kapampanganWord}>
+              {currentQ.category === 'words' ? currentQ.kapampangan : 'Read this Glyph'}
+            </Text>
             
             <View style={styles.kulitanContainer}>
               {getKulitanSyllables(currentQ.kapampangan).map((syllables, index) => (

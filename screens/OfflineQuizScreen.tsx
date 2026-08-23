@@ -321,17 +321,21 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
             <View style={styles.questionHeaderBadge}>
               <Text style={styles.questionHeaderText}>
                 {currentQ.category === 'basics' 
-                  ? (language === 'EN' ? 'IDENTIFY CHARACTER' : 'KILALANIN ANG TITIK')
+                  ? (language === 'EN' ? 'IDENTIFY GLYPH' : 'KILALANIN ANG TITIK')
                   : currentQ.category === 'kudlits'
-                  ? (language === 'EN' ? 'KUDLIT MODIFICATION' : 'PAGBABAGONG GARLIT')
+                  ? (language === 'EN' ? 'KUDLIT RULE & SOUND' : 'TUNOG AT PANUNTUNAN NG GARLIT')
                   : (language === 'EN' ? 'WHAT DOES THIS MEAN?' : 'ANO ANG KAHULUGAN?')}
               </Text>
             </View>
 
-            <Text style={styles.questionWord}>{currentQ.kapampangan}</Text>
+            <Text style={styles.questionWord}>
+              {currentQ.category === 'words' 
+                ? currentQ.kapampangan 
+                : (language === 'EN' ? 'Read this Glyph' : 'Basahin ang Titik')}
+            </Text>
 
-            {/* Syllable Breakdown Indicator */}
-            {currentQ.syllables && (
+            {/* Syllable Breakdown Indicator - Shown immediately for words, or revealed upon answer for basics/kudlits */}
+            {currentQ.syllables && (currentQ.category === 'words' || selectedOption !== null) && (
               <View style={styles.syllablesChip}>
                 <Ionicons name="sparkles" size={12} color="#D1582D" />
                 <Text style={styles.syllablesChipText}>{currentQ.syllables}</Text>
