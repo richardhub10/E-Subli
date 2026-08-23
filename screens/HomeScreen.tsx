@@ -84,11 +84,8 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       />
 
       {/* 2. AMBIENT GLOW RADIAL ORBS */}
-      {/* Top-Right Solar Gold Bloom */}
       <View style={styles.topRightGlowOrb} pointerEvents="none" />
-      {/* Mid-Left Terracotta Radiance Bloom */}
       <View style={styles.midLeftGlowOrb} pointerEvents="none" />
-      {/* Bottom-Right Amber Warm Mist */}
       <View style={styles.bottomRightGlowOrb} pointerEvents="none" />
 
       {/* 3. SUBTLE WATERMARK KULITAN MANUSCRIPT GLYPHS */}
@@ -162,17 +159,17 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         showsVerticalScrollIndicator={false}
       >
         
-        {/* 5. MASTER SCHOLAR PROGRESS CARD */}
+        {/* 5. MASTER SCHOLAR PROGRESS & STREAK CARD */}
         <View style={styles.masterCard}>
           <LinearGradient 
-            colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 252, 248, 0.90)']} 
+            colors={['rgba(255, 255, 255, 0.96)', 'rgba(255, 252, 248, 0.92)']} 
             style={styles.masterCardInner}
           >
-            {/* Top Row: Rank & Elo */}
+            {/* Top Stats Header */}
             <View style={styles.masterTopRow}>
               <View>
                 <View style={styles.scholarTierBadge}>
-                  <Ionicons name="ribbon" size={12} color="#D1582D" />
+                  <Ionicons name="ribbon" size={13} color="#D1582D" />
                   <Text style={styles.scholarTierText}>
                     LEVEL {profile.level} SCHOLAR
                   </Text>
@@ -182,15 +179,23 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 </Text>
               </View>
 
-              <TouchableOpacity 
-                style={styles.rpPillBtn}
-                onPress={() => navigation.navigate('Leaderboard')}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="trophy" size={13} color="#D97706" />
-                <Text style={styles.rpPillVal}>{profile.eloRating || 1000} RP</Text>
-                <Ionicons name="chevron-forward" size={12} color="#D97706" />
-              </TouchableOpacity>
+              <View style={styles.topBadgesGroup}>
+                {/* Streak Pill */}
+                <View style={styles.streakTopPill}>
+                  <Text style={{ fontSize: 13 }}>🔥</Text>
+                  <Text style={styles.streakTopText}>{profile.streakCount || 0}d</Text>
+                </View>
+
+                {/* RP Rating Pill */}
+                <TouchableOpacity 
+                  style={styles.rpPillBtn}
+                  onPress={() => navigation.navigate('Leaderboard')}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="trophy" size={13} color="#D97706" />
+                  <Text style={styles.rpPillVal}>{profile.eloRating || 1000} RP</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Glowing Shimmer Progress Bar */}
@@ -215,38 +220,24 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               </Animated.View>
             </View>
 
-            {/* Quick Actions Row */}
-            <View style={styles.masterStatsRow}>
-              {/* Streak */}
-              <View style={styles.statPillStreak}>
-                <Text style={styles.streakFlameIcon}>🔥</Text>
-                <Text style={styles.streakCountText}>
-                  {profile.streakCount || 0} {language === 'EN' ? 'Day Streak' : 'Araw'}
-                </Text>
+            {/* Daily Quest Highlight Banner */}
+            <TouchableOpacity 
+              style={styles.dailyQuestRow}
+              onPress={() => navigation.navigate('ReadHub')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.questIconBox}>
+                <Ionicons name="flag" size={14} color="#D1582D" />
               </View>
-
-              {/* Leaderboard Action */}
-              <TouchableOpacity 
-                style={styles.statActionBtn}
-                onPress={() => navigation.navigate('Leaderboard')}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="podium-outline" size={14} color="#D1582D" />
-                <Text style={styles.statActionBtnText}>{t('leaderboard')}</Text>
-              </TouchableOpacity>
-
-              {/* Friends Action */}
-              <TouchableOpacity 
-                style={styles.statActionBtn}
-                onPress={() => navigation.navigate('Friends')}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="people-outline" size={14} color="#2563EB" />
-                <Text style={[styles.statActionBtnText, { color: '#2563EB' }]}>
-                  {language === 'EN' ? 'Friends' : 'Kaibigan'}
+              <View style={styles.questTextBox}>
+                <Text style={styles.questTitle}>
+                  {language === 'EN' ? 'Daily Quest: Review 5 Syllables' : 'Arawang Misyon: Magbasa ng 5 Titik'}
                 </Text>
-              </TouchableOpacity>
-            </View>
+                <Text style={styles.questRewardText}>+25 Bonus XP Reward</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={14} color="#D1582D" />
+            </TouchableOpacity>
+
           </LinearGradient>
         </View>
 
@@ -257,43 +248,47 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           activeOpacity={0.9}
         >
           <LinearGradient 
-            colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 250, 243, 0.92)']} 
+            colors={['rgba(255, 255, 255, 0.96)', 'rgba(255, 250, 243, 0.94)']} 
             style={styles.spotlightInner}
           >
-            <View style={styles.spotlightLeft}>
-              <View style={styles.spotlightTagRow}>
-                <Ionicons name="sparkles" size={11} color="#D97706" />
-                <Text style={styles.spotlightTagText}>
-                  {language === 'EN' ? 'SYLLABLE SPOTLIGHT' : 'TITIK NG ARAW'}
+            <View style={styles.spotlightTopRow}>
+              <View style={styles.spotlightLeft}>
+                <View style={styles.spotlightTagRow}>
+                  <Ionicons name="sparkles" size={11} color="#D97706" />
+                  <Text style={styles.spotlightTagText}>
+                    {language === 'EN' ? 'SYLLABLE SPOTLIGHT' : 'TITIK NG ARAW'}
+                  </Text>
+                </View>
+
+                <Text style={styles.spotlightCharTitle}>
+                  {dailySyllable.latin.toUpperCase()}
+                </Text>
+
+                <Text style={styles.spotlightSubDetails} numberOfLines={1}>
+                  {dailySyllable.classification?.split('(')[0]?.trim() || 'Indû'} • /{cleanPronunciation}/
+                  {dailySyllable.exampleWord ? ` • "${dailySyllable.exampleWord}"` : ''}
                 </Text>
               </View>
 
-              <Text style={styles.spotlightCharTitle}>
-                {dailySyllable.latin.toUpperCase()}
-              </Text>
-
-              <Text style={styles.spotlightSubDetails} numberOfLines={1}>
-                {dailySyllable.classification?.split('(')[0]?.trim() || 'Indû'} • /{cleanPronunciation}/
-                {dailySyllable.exampleWord ? ` • "${dailySyllable.exampleWord}"` : ''}
-              </Text>
-
-              <View style={styles.practiceNowPill}>
-                <Text style={styles.practiceNowText}>
-                  {language === 'EN' ? 'Practice Stroke →' : 'Magsanay Sumulat →'}
-                </Text>
+              {/* Glowing Golden Kulitan Seal */}
+              <View style={styles.glyphMedallion}>
+                <LinearGradient 
+                  colors={['#1E293B', '#0F172A']} 
+                  style={styles.glyphMedallionGradient}
+                >
+                  <Text style={styles.glyphMedallionChar}>
+                    {dailySyllable.latin}
+                  </Text>
+                </LinearGradient>
               </View>
             </View>
 
-            {/* Glowing Golden Kulitan Seal */}
-            <View style={styles.glyphMedallion}>
-              <LinearGradient 
-                colors={['#1E293B', '#0F172A']} 
-                style={styles.glyphMedallionGradient}
-              >
-                <Text style={styles.glyphMedallionChar}>
-                  {dailySyllable.latin}
-                </Text>
-              </LinearGradient>
+            {/* High-Contrast Full-Width Action Button */}
+            <View style={styles.spotlightCtaBar}>
+              <Text style={styles.spotlightCtaText}>
+                {language === 'EN' ? `✍️  Practice "${dailySyllable.latin.toUpperCase()}" Stroke (+25 XP)` : `✍️  Sanayin ang "${dailySyllable.latin.toUpperCase()}" (+25 XP)`}
+              </Text>
+              <Ionicons name="arrow-forward" size={14} color="#D1582D" />
             </View>
           </LinearGradient>
         </TouchableOpacity>
@@ -441,7 +436,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           </AnimatedTouchable>
         </View>
 
-        {/* 9. SECTION 3: UTILITIES & TOOLS */}
+        {/* 9. SECTION 3: SCHOLAR UTILITIES */}
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionHeading}>
             {language === 'EN' ? 'Scholar Utilities' : 'Mga Kagamitan'}
@@ -466,27 +461,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 {language === 'EN' ? 'Kulitan Guide & History' : 'Gabay sa Kulitan'}
               </Text>
               <Text style={styles.toolSubDesc}>
-                {language === 'EN' ? 'Indû, Anak, and Kudlit rules' : 'Panuntunan ng pagsulat'}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
-          </TouchableOpacity>
-
-          {/* AI Camera Scanner */}
-          <TouchableOpacity 
-            style={styles.toolGlassCard}
-            onPress={() => handleFeaturePress('CameraScanner', 'Scanner', <Ionicons name="scan-circle" size={64} color="#FFF" />, ['#8B5CF6', '#6D28D9'])}
-            activeOpacity={0.85}
-          >
-            <View style={[styles.toolIconSquare, { backgroundColor: '#F5F3FF' }]}>
-              <Ionicons name="scan-circle" size={22} color="#7C3AED" />
-            </View>
-            <View style={styles.toolTextCol}>
-              <Text style={styles.toolMainTitle}>
-                {language === 'EN' ? 'AI Camera Scanner' : 'AI Scanner ng Titik'}
-              </Text>
-              <Text style={styles.toolSubDesc}>
-                {language === 'EN' ? 'Scan real glyphs with AI' : 'Tukuyin gamit ang Gemini AI'}
+                {language === 'EN' ? 'Indû, Anak, and Kudlit writing rules' : 'Panuntunan ng pagsulat'}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
@@ -768,7 +743,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 16,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.85)',
+    borderColor: 'rgba(255, 255, 255, 0.9)',
   },
   masterTopRow: {
     flexDirection: 'row',
@@ -797,20 +772,41 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_700Bold',
     color: '#1E1B18',
   },
+  topBadgesGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  streakTopPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF7ED',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+    gap: 3,
+  },
+  streakTopText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 11,
+    color: '#C2410C',
+  },
   rpPillBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FEF3C7',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 14,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 12,
     gap: 4,
     borderWidth: 1,
     borderColor: '#FDE68A',
   },
   rpPillVal: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#B45309',
   },
   progressTrack: {
@@ -824,45 +820,36 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 4,
   },
-  masterStatsRow: {
+  dailyQuestRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  statPillStreak: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF7ED',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    backgroundColor: '#FFF8F4',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: '#FED7AA',
-    gap: 4,
+    gap: 10,
   },
-  streakFlameIcon: {
-    fontSize: 13,
+  questIconBox: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#FFEFE6',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  streakCountText: {
+  questTextBox: {
+    flex: 1,
+  },
+  questTitle: {
     fontFamily: 'Poppins_700Bold',
     fontSize: 11,
-    color: '#C2410C',
+    color: '#1E1B18',
   },
-  statActionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 6,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E8DED3',
-    gap: 4,
-  },
-  statActionBtnText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 11,
+  questRewardText: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 10,
     color: '#D1582D',
   },
   spotlightCard: {
@@ -877,10 +864,13 @@ const styles = StyleSheet.create({
   spotlightInner: {
     borderRadius: 22,
     padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
     borderWidth: 1.5,
     borderColor: '#FED7AA',
+  },
+  spotlightTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   spotlightLeft: {
     flex: 1,
@@ -908,26 +898,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_400Regular',
     fontSize: 11,
     color: '#8C7E72',
-    marginBottom: 6,
-  },
-  practiceNowPill: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#FFF7ED',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#FED7AA',
-  },
-  practiceNowText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 10,
-    color: '#D1582D',
   },
   glyphMedallion: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     padding: 2,
     backgroundColor: '#F59E0B',
     shadowColor: '#F59E0B',
@@ -938,14 +913,30 @@ const styles = StyleSheet.create({
   },
   glyphMedallionGradient: {
     flex: 1,
-    borderRadius: 26,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
   },
   glyphMedallionChar: {
     fontFamily: 'Kulitan',
-    fontSize: 28,
+    fontSize: 26,
     color: '#F59E0B',
+  },
+  spotlightCtaBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF5EE',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+  },
+  spotlightCtaText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 11,
+    color: '#D1582D',
   },
   sectionHeaderRow: {
     flexDirection: 'row',
