@@ -185,35 +185,42 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         {/* 5. MASTER SCHOLAR PROGRESS & DAILY MISSION CARD */}
         <View style={styles.masterCard}>
           <LinearGradient 
-            colors={['rgba(255, 255, 255, 0.96)', 'rgba(255, 252, 248, 0.92)']} 
+            colors={['#FFFFFF', '#FCF9F5']} 
             style={styles.masterCardInner}
           >
             {/* Top Stats Header */}
             <View style={styles.masterTopRow}>
-              <View>
+              <View style={styles.masterLeftCol}>
                 <View style={styles.scholarTierBadge}>
-                  <Ionicons name="ribbon" size={13} color="#D1582D" />
+                  <Ionicons name="ribbon" size={12} color="#D1582D" />
                   <Text style={styles.scholarTierText}>
                     LEVEL {profile.level} SCHOLAR
                   </Text>
                 </View>
-                <Text style={styles.xpFractionText}>
-                  <Text style={styles.xpBold}>{currentLevelXp}</Text> / 100 XP
-                </Text>
+                <View style={styles.xpCountRow}>
+                  <Text style={styles.xpFractionText}>
+                    <Text style={styles.xpBold}>{currentLevelXp}</Text> / 100 XP
+                  </Text>
+                  <View style={styles.xpRemainderPill}>
+                    <Text style={styles.xpRemainderText}>
+                      {100 - currentLevelXp} XP to Lvl {profile.level + 1}
+                    </Text>
+                  </View>
+                </View>
               </View>
 
               <View style={styles.topBadgesGroup}>
-                {/* Streak Pill */}
+                {/* Streak Capsule */}
                 <View style={styles.streakTopPill}>
                   <Text style={{ fontSize: 13 }}>🔥</Text>
                   <Text style={styles.streakTopText}>{profile.streakCount || 0}d</Text>
                 </View>
 
-                {/* RP Rating Pill */}
+                {/* RP Rating Capsule */}
                 <TouchableOpacity 
                   style={styles.rpPillBtn}
                   onPress={() => navigation.navigate('Leaderboard')}
-                  activeOpacity={0.7}
+                  activeOpacity={0.75}
                 >
                   <Ionicons name="trophy" size={13} color="#D97706" />
                   <Text style={styles.rpPillVal}>{profile.eloRating || 1000} RP</Text>
@@ -247,10 +254,10 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             <TouchableOpacity 
               style={styles.dailyQuestRow}
               onPress={() => navigation.navigate('ReadHub')}
-              activeOpacity={0.85}
+              activeOpacity={0.88}
             >
               <View style={styles.questIconBox}>
-                <Ionicons name={isQuestDone ? "checkmark-circle" : "flag"} size={16} color={isQuestDone ? "#059669" : "#D1582D"} />
+                <Ionicons name={isQuestDone ? "checkmark-circle" : "flag"} size={17} color={isQuestDone ? "#059669" : "#D1582D"} />
               </View>
               
               <View style={styles.questTextBox}>
@@ -258,7 +265,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                   <Text style={styles.questTitle}>
                     {language === 'EN' ? 'Daily Quest: Review 5 Syllables' : 'Arawang Misyon: Magbasa ng 5 Titik'}
                   </Text>
-                  <Text style={styles.questFractionBadge}>{questProgress} / 5</Text>
+                  <View style={styles.questFractionBadgePill}>
+                    <Text style={styles.questFractionBadge}>{questProgress} / 5</Text>
+                  </View>
                 </View>
                 
                 {/* Mini Quest Progress Bar */}
@@ -266,9 +275,12 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                   <View style={[styles.questProgressFill, { width: `${questPercent}%`, backgroundColor: isQuestDone ? '#059669' : '#D1582D' }]} />
                 </View>
 
-                <Text style={styles.questRewardText}>
-                  {isQuestDone ? '🎉 Quest Complete! (+25 XP Earned)' : '🎁 Reward: +25 Bonus XP'}
-                </Text>
+                <View style={styles.questRewardRow}>
+                  <Ionicons name="gift" size={11} color="#D97706" />
+                  <Text style={styles.questRewardText}>
+                    {isQuestDone ? '🎉 Quest Complete! (+25 XP Earned)' : 'Reward: +25 Bonus XP'}
+                  </Text>
+                </View>
               </View>
               
               <Ionicons name="chevron-forward" size={14} color="#CBD5E1" />
@@ -281,16 +293,16 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         <TouchableOpacity 
           style={styles.spotlightCard}
           onPress={() => navigation.navigate('WriteTrace')}
-          activeOpacity={0.9}
+          activeOpacity={0.92}
         >
           <LinearGradient 
-            colors={['rgba(255, 255, 255, 0.96)', 'rgba(255, 250, 243, 0.94)']} 
+            colors={['#FFFFFF', '#FFFDF9']} 
             style={styles.spotlightInner}
           >
             <View style={styles.spotlightTopRow}>
               <View style={styles.spotlightLeft}>
                 <View style={styles.spotlightTagRow}>
-                  <Ionicons name="sparkles" size={11} color="#D97706" />
+                  <Ionicons name="sparkles" size={10} color="#B45309" />
                   <Text style={styles.spotlightTagText}>
                     {language === 'EN' ? 'SYLLABLE SPOTLIGHT' : 'TITIK NG ARAW'}
                   </Text>
@@ -300,13 +312,24 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                   {dailySyllable.latin.toUpperCase()}
                 </Text>
 
-                <Text style={styles.spotlightSubDetails} numberOfLines={1}>
-                  {dailySyllable.classification?.split('(')[0]?.trim() || 'Indû'} • /{cleanPronunciation}/
-                  {dailySyllable.exampleWord ? ` • "${dailySyllable.exampleWord}"` : ''}
-                </Text>
+                <View style={styles.spotlightChipsRow}>
+                  <View style={styles.spotlightTypePill}>
+                    <Text style={styles.spotlightTypePillText}>
+                      {dailySyllable.classification?.split('(')[0]?.trim() || 'Indû'}
+                    </Text>
+                  </View>
+                  <View style={styles.spotlightPhoneticPill}>
+                    <Text style={styles.spotlightPhoneticText}>/{cleanPronunciation}/</Text>
+                  </View>
+                  {dailySyllable.exampleWord ? (
+                    <View style={styles.spotlightMeaningPill}>
+                      <Text style={styles.spotlightMeaningText}>"{dailySyllable.exampleWord}"</Text>
+                    </View>
+                  ) : null}
+                </View>
               </View>
 
-              {/* Glowing Golden Kulitan Seal */}
+              {/* Glowing 24K Gold & Obsidian Kulitan Seal */}
               <View style={styles.glyphMedallion}>
                 <LinearGradient 
                   colors={['#1E293B', '#0F172A']} 
@@ -320,12 +343,17 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             </View>
 
             {/* High-Contrast Full-Width Action Button */}
-            <View style={styles.spotlightCtaBar}>
+            <LinearGradient
+              colors={['#E05326', '#D1582D', '#B83814']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.spotlightCtaBar}
+            >
               <Text style={styles.spotlightCtaText}>
                 {language === 'EN' ? `✍️  Practice "${dailySyllable.latin.toUpperCase()}" Stroke (+25 XP)` : `✍️  Sanayin ang "${dailySyllable.latin.toUpperCase()}" (+25 XP)`}
               </Text>
-              <Ionicons name="arrow-forward" size={14} color="#D1582D" />
-            </View>
+              <Ionicons name="arrow-forward" size={14} color="#FFFFFF" />
+            </LinearGradient>
           </LinearGradient>
         </TouchableOpacity>
 
@@ -699,7 +727,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginBottom: 14,
     shadowColor: '#D1582D',
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 14,
     elevation: 4,
@@ -708,34 +736,60 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 16,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.9)',
+    borderColor: '#EDE3D8',
   },
   masterTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
+  },
+  masterLeftCol: {
+    flex: 1,
   },
   scholarTierBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginBottom: 2,
+    marginBottom: 3,
+    backgroundColor: '#FFF7ED',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#FED7AA',
   },
   scholarTierText: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 11,
+    fontSize: 9.5,
     color: '#D1582D',
     letterSpacing: 0.5,
   },
+  xpCountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   xpFractionText: {
     fontFamily: 'Poppins_500Medium',
-    fontSize: 12,
+    fontSize: 13,
     color: '#8C7E72',
   },
   xpBold: {
     fontFamily: 'Poppins_700Bold',
     color: '#1E1B18',
+  },
+  xpRemainderPill: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  xpRemainderText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 9,
+    color: '#64748B',
   },
   topBadgesGroup: {
     flexDirection: 'row',
@@ -747,9 +801,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFF7ED',
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 1.2,
     borderColor: '#FED7AA',
     gap: 3,
   },
@@ -762,11 +816,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FEF3C7',
-    paddingHorizontal: 9,
-    paddingVertical: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
     borderRadius: 12,
     gap: 4,
-    borderWidth: 1,
+    borderWidth: 1.2,
     borderColor: '#FDE68A',
   },
   rpPillVal: {
@@ -775,34 +829,41 @@ const styles = StyleSheet.create({
     color: '#B45309',
   },
   progressTrack: {
-    height: 8,
-    backgroundColor: '#EAE0D3',
-    borderRadius: 4,
+    height: 9,
+    backgroundColor: '#EFE7DC',
+    borderRadius: 5,
     overflow: 'hidden',
-    marginBottom: 12,
+    marginVertical: 10,
   },
   progressFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 5,
   },
   dailyQuestRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF8F4',
+    backgroundColor: '#FFF9F5',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#FED7AA',
+    borderRadius: 16,
+    borderWidth: 1.2,
+    borderColor: '#FDE8D7',
     gap: 10,
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
   questIconBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: '#FFEFE6',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FED7AA',
   },
   questTextBox: {
     flex: 1,
@@ -811,55 +872,63 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 4,
   },
   questTitle: {
     flex: 1,
     fontFamily: 'Poppins_700Bold',
-    fontSize: 11,
+    fontSize: 11.5,
     color: '#1E1B18',
     marginRight: 6,
   },
-  questFractionBadge: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 10,
-    color: '#D1582D',
+  questFractionBadgePill: {
     backgroundColor: '#FFEFE6',
     paddingHorizontal: 6,
-    paddingVertical: 1,
+    paddingVertical: 1.5,
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+  },
+  questFractionBadge: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 9.5,
+    color: '#D1582D',
   },
   questProgressTrack: {
     height: 5,
     backgroundColor: '#EAE0D3',
     borderRadius: 3,
     overflow: 'hidden',
-    marginTop: 4,
-    marginBottom: 4,
+    marginTop: 5,
+    marginBottom: 5,
   },
   questProgressFill: {
     height: '100%',
     borderRadius: 3,
   },
+  questRewardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   questRewardText: {
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'Poppins_600SemiBold',
     fontSize: 10,
-    color: '#8C7E72',
+    color: '#B45309',
   },
   spotlightCard: {
-    borderRadius: 22,
-    marginBottom: 18,
-    shadowColor: '#D1582D',
+    borderRadius: 24,
+    marginBottom: 16,
+    shadowColor: '#D97706',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
   spotlightInner: {
-    borderRadius: 22,
+    borderRadius: 24,
     padding: 16,
     borderWidth: 1.5,
-    borderColor: '#FED7AA',
+    borderColor: '#FDE68A',
   },
   spotlightTopRow: {
     flexDirection: 'row',
@@ -868,69 +937,117 @@ const styles = StyleSheet.create({
   },
   spotlightLeft: {
     flex: 1,
-    paddingRight: 8,
+    paddingRight: 10,
   },
   spotlightTagRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     marginBottom: 2,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
   },
   spotlightTagText: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 9,
-    color: '#D97706',
-    letterSpacing: 0.5,
+    fontSize: 8.5,
+    color: '#B45309',
+    letterSpacing: 0.6,
   },
   spotlightCharTitle: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 22,
+    fontSize: 26,
     color: '#1E1B18',
-    lineHeight: 26,
+    lineHeight: 30,
   },
-  spotlightSubDetails: {
-    fontFamily: 'Poppins_400Regular',
-    fontSize: 11,
+  spotlightChipsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 4,
+    flexWrap: 'wrap',
+  },
+  spotlightTypePill: {
+    backgroundColor: '#FFF7ED',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+  },
+  spotlightTypePillText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 9.5,
+    color: '#C2410C',
+  },
+  spotlightPhoneticPill: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  spotlightPhoneticText: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 9.5,
+    color: '#64748B',
+  },
+  spotlightMeaningPill: {
+    backgroundColor: '#FAF5EE',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  spotlightMeaningText: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 9.5,
     color: '#8C7E72',
   },
   glyphMedallion: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    padding: 2,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    padding: 2.5,
     backgroundColor: '#F59E0B',
     shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 6,
   },
   glyphMedallionGradient: {
     flex: 1,
-    borderRadius: 25,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FDE68A',
   },
   glyphMedallionChar: {
     fontFamily: 'Kulitan',
-    fontSize: 26,
-    color: '#F59E0B',
+    fontSize: 32,
+    color: '#FBBF24',
   },
   spotlightCtaBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFF5EE',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#FED7AA',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
   },
   spotlightCtaText: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 11,
-    color: '#D1582D',
+    fontSize: 11.5,
+    color: '#FFFFFF',
   },
   sectionHeaderRow: {
     flexDirection: 'row',
