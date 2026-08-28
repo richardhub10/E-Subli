@@ -9,6 +9,8 @@ import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getRandomQuestions } from '../utils/quizQuestions';
+import { checkAppVersion, VersionCheckResult } from '../services/versionService';
+import UpdateModal from '../components/UpdateModal';
 
 type MultiplayerLobbyScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -19,11 +21,25 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
   const [isSearching, setIsSearching] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [roomId, setRoomId] = useState<string | null>(null);
+  const [versionInfo, setVersionInfo] = useState<VersionCheckResult | null>(null);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const { user } = useAuth();
   const { profile } = useProfile();
   const { t, language } = useLanguage();
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  // Check version on lobby mount
+  useEffect(() => {
+    async function checkVersionOnLoad() {
+      const verResult = await checkAppVersion();
+      setVersionInfo(verResult);
+      if (verResult.isUpdateRequired) {
+        setShowUpdateModal(true);
+      }
+    }
+    checkVersionOnLoad();
+  }, []);
 
   useEffect(() => {
     if (route.params?.privateRoomId) {
@@ -85,6 +101,13 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
 
   const findMatch = async () => {
     if (!user) return;
+    
+    // Guard against outdated game versions
+    if (versionInfo?.isUpdateRequired) {
+      setShowUpdateModal(true);
+      return;
+    }
+
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsSearching(true);
     setStatusMessage(t('searching'));
@@ -254,6 +277,14 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
             )}
           </View>
         </View>
+
+        {/* In-App Multiplayer Version Check Guard Modal */}
+        <UpdateModal
+          visible={showUpdateModal}
+          versionInfo={versionInfo}
+          isForceUpdate={versionInfo?.isUpdateRequired}
+          onClose={() => setShowUpdateModal(false)}
+        />
       </SafeAreaView>
     </LinearGradient>
   );

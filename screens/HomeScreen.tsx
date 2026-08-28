@@ -9,6 +9,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { useQuest } from '../context/QuestContext';
 import { Language } from '../utils/translations';
 import { kulitanSyllables } from '../data/kulitanData';
+import { checkAppVersion, VersionCheckResult } from '../services/versionService';
+import UpdateModal from '../components/UpdateModal';
 import FloatingBottomBar from '../components/FloatingBottomBar';
 
 const { width, height } = Dimensions.get('window');
@@ -24,9 +26,23 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   const [expandingFeature, setExpandingFeature] = useState<any>(null);
   const [claimedToast, setClaimedToast] = useState<{ message: string; visible: boolean }>({ message: '', visible: false });
+  const [versionInfo, setVersionInfo] = useState<VersionCheckResult | null>(null);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const expandAnim = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Check version on HomeScreen mount (soft update alert if new version available)
+  useEffect(() => {
+    async function checkVersion() {
+      const result = await checkAppVersion();
+      setVersionInfo(result);
+      if (result.isUpdateRequired) {
+        setShowUpdateModal(true);
+      }
+    }
+    checkVersion();
+  }, []);
 
   // Syllable of the day based on day of year
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
@@ -565,6 +581,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
       {/* Floating Curved Notch Bottom Navigation Bar */}
       <FloatingBottomBar activeTab="Home" navigation={navigation} />
+
+      {/* In-App Update Modal */}
+      <UpdateModal
+        visible={showUpdateModal}
+        versionInfo={versionInfo}
+        isForceUpdate={versionInfo?.isUpdateRequired}
+        onClose={() => setShowUpdateModal(false)}
+      />
 
       {/* Hero Expanding Transition Ripple Overlay */}
       {expandingFeature && (
