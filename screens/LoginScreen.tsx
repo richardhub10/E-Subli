@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Animated, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Animated, ScrollView, SafeAreaView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -156,7 +156,11 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             {/* Header Brand & Heritage Seal */}
             <View style={styles.headerContainer}>
               <View style={styles.sealCircle}>
-                <Text style={styles.sealKulitan}>e{'\n'}S</Text>
+                <Image 
+                  source={require('../assets/esubli-logo.png')} 
+                  style={styles.sealLogoImage} 
+                  resizeMode="contain" 
+                />
               </View>
 
               <Text style={styles.logoTitle}>
@@ -393,9 +397,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sealCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: '#050B14',
     justifyContent: 'center',
     alignItems: 'center',
@@ -407,13 +411,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 5,
+    overflow: 'hidden',
   },
-  sealKulitan: {
-    fontFamily: 'Kulitan',
-    fontSize: 22,
-    color: '#F59E0B',
-    textAlign: 'center',
-    lineHeight: 22,
+  sealLogoImage: {
+    width: 68,
+    height: 68,
   },
   logoTitle: {
     fontSize: 34,

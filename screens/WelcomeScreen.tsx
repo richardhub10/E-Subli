@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, StatusBar, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, StatusBar, Platform, Image } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useLanguage } from '../context/LanguageContext';
 import { Language } from '../utils/translations';
@@ -27,9 +27,15 @@ export default function WelcomeScreen({ navigation }: WelcomeScreenProps) {
         </Text>
       </View>
 
-      {/* Center Art */}
+      {/* Center Hero Logo */}
       <View style={styles.artContainer}>
-        <Text style={styles.kulitanArt}>e{'\n'}S</Text>
+        <View style={styles.logoBadgeWrap}>
+          <Image 
+            source={require('../assets/esubli-logo.png')} 
+            style={styles.heroLogoImage} 
+            resizeMode="contain" 
+          />
+        </View>
       </View>
 
       {/* Welcome Text */}
@@ -121,12 +127,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  kulitanArt: {
-    fontFamily: 'Kulitan',
-    fontSize: 120,
-    color: '#FBBF24',
-    textAlign: 'center',
-    lineHeight: 120,
+  logoBadgeWrap: {
+    width: 170,
+    height: 170,
+    borderRadius: 85,
+    backgroundColor: '#0F1A2C',
+    borderWidth: 2.5,
+    borderColor: '#FBBF24',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    shadowColor: '#FBBF24',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  heroLogoImage: {
+    width: 160,
+    height: 160,
   },
   welcomeContainer: {
     alignItems: 'center',

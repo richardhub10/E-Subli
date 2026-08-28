@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Animated, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Animated, ScrollView, SafeAreaView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -155,7 +155,11 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
             {/* Header Brand */}
             <View style={styles.headerContainer}>
               <View style={styles.sealCircle}>
-                <Text style={styles.sealKulitan}>e{'\n'}S</Text>
+                <Image 
+                  source={require('../assets/esubli-logo.png')} 
+                  style={styles.sealLogoImage} 
+                  resizeMode="contain" 
+                />
               </View>
 
               <Text style={styles.logoTitle}>
@@ -408,22 +412,25 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sealCircle: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     backgroundColor: '#050B14',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
     borderWidth: 2,
     borderColor: '#F59E0B',
+    overflow: 'hidden',
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  sealKulitan: {
-    fontFamily: 'Kulitan',
-    fontSize: 20,
-    color: '#F59E0B',
-    textAlign: 'center',
-    lineHeight: 20,
+  sealLogoImage: {
+    width: 64,
+    height: 64,
   },
   logoTitle: {
     fontSize: 30,
