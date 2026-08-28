@@ -11,7 +11,7 @@ import {
 import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import { ActivityIndicator, View, Platform } from 'react-native';
-import { NavigationBar } from 'expo-navigation-bar';
+import * as NavigationBar from 'expo-navigation-bar';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import WelcomeScreen from './screens/WelcomeScreen';
@@ -116,7 +116,7 @@ export default function App() {
     // Auto-hide Android 3-button navigation bar (Sticky Immersive Mode)
     if (Platform.OS === 'android') {
       try {
-        NavigationBar.setHidden(true);
+        NavigationBar.setVisibilityAsync('hidden').catch(() => {});
       } catch (e) {
         console.log('NavigationBar setup error:', e);
       }
@@ -133,7 +133,6 @@ export default function App() {
 
   return (
     <AuthProvider>
-      {Platform.OS === 'android' && <NavigationBar hidden={true} />}
       <AppNavigator />
     </AuthProvider>
   );

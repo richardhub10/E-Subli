@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoText: {
-    fontFamily: 'Times New Roman', // Or any serif font available
+    fontFamily: Platform.OS === 'ios' ? 'Times New Roman' : 'serif',
     fontSize: 42,
     color: '#FBBF24',
     letterSpacing: 4,
