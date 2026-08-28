@@ -37,8 +37,8 @@ export function compareSemver(v1: string, v2: string): number {
 }
 
 /**
- * Checks for updates against Supabase app_config table.
- * If app_config table does not exist or fails, safely falls back without blocking user.
+ * Checks for updates against Supabase app_config table or GitHub Releases API.
+ * If remote check fails or table is not created yet, safely falls back without blocking user.
  */
 export async function checkAppVersion(): Promise<VersionCheckResult> {
   const fallbackResult: VersionCheckResult = {
@@ -52,35 +52,57 @@ export async function checkAppVersion(): Promise<VersionCheckResult> {
   };
 
   try {
+    // 1. Try Supabase app_config table if configured
     const { data, error } = await supabase
       .from('app_config')
       .select('*')
       .eq('key', 'version_control')
       .maybeSingle();
 
-    if (error || !data) {
-      return fallbackResult;
+    if (!error && data) {
+      const minVersion = data.min_version || CURRENT_APP_VERSION;
+      const latestVersion = data.latest_version || CURRENT_APP_VERSION;
+      const downloadUrl = data.download_url || DEFAULT_GITHUB_RELEASE_URL;
+      const releaseNotes = data.release_notes || fallbackResult.releaseNotes;
+
+      return {
+        isUpdateRequired: compareSemver(CURRENT_APP_VERSION, minVersion) < 0,
+        isUpdateAvailable: compareSemver(CURRENT_APP_VERSION, latestVersion) < 0,
+        currentVersion: CURRENT_APP_VERSION,
+        minSupportedVersion: minVersion,
+        latestVersion,
+        downloadUrl,
+        releaseNotes,
+      };
     }
 
-    const minVersion = data.min_version || CURRENT_APP_VERSION;
-    const latestVersion = data.latest_version || CURRENT_APP_VERSION;
-    const downloadUrl = data.download_url || DEFAULT_GITHUB_RELEASE_URL;
-    const releaseNotes = data.release_notes || fallbackResult.releaseNotes;
+    // 2. Otherwise query GitHub Releases API directly for latest tag
+    try {
+      const ghRes = await fetch('https://api.github.com/repos/richardhub10/E-Subli/releases/latest', {
+        headers: { 'Accept': 'application/vnd.github.v3+json' },
+      });
+      if (ghRes.ok) {
+        const ghData = await ghRes.json();
+        const tagVer = (ghData.tag_name || '').replace(/^v/, '');
+        if (tagVer) {
+          const isNewer = compareSemver(CURRENT_APP_VERSION, tagVer) < 0;
+          return {
+            isUpdateRequired: false,
+            isUpdateAvailable: isNewer,
+            currentVersion: CURRENT_APP_VERSION,
+            minSupportedVersion: CURRENT_APP_VERSION,
+            latestVersion: tagVer,
+            downloadUrl: ghData.html_url || DEFAULT_GITHUB_RELEASE_URL,
+            releaseNotes: ghData.body || fallbackResult.releaseNotes,
+          };
+        }
+      }
+    } catch (ghErr) {
+      // Offline or network restricted - use safe local fallback
+    }
 
-    const isUpdateRequired = compareSemver(CURRENT_APP_VERSION, minVersion) < 0;
-    const isUpdateAvailable = compareSemver(CURRENT_APP_VERSION, latestVersion) < 0;
-
-    return {
-      isUpdateRequired,
-      isUpdateAvailable,
-      currentVersion: CURRENT_APP_VERSION,
-      minSupportedVersion: minVersion,
-      latestVersion,
-      downloadUrl,
-      releaseNotes,
-    };
+    return fallbackResult;
   } catch (err) {
-    console.warn('App version check warning (using local fallback):', err);
     return fallbackResult;
   }
 }

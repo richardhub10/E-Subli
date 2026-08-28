@@ -11,6 +11,7 @@ import { supabase } from '../supabaseClient';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { Language } from '../utils/translations';
+import { CURRENT_APP_VERSION } from '../services/versionService';
 import FloatingBottomBar from '../components/FloatingBottomBar';
 
 type ProfileScreenProps = {
@@ -303,6 +304,15 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             <Text style={styles.logoutButtonText}>{t('log_out')}</Text>
           </View>
         </TouchableOpacity>
+
+        {/* VERSION INFO FOOTER */}
+        <View style={styles.versionFooterWrap}>
+          <View style={styles.versionBadgePill}>
+            <Ionicons name="shield-checkmark" size={11} color="#64748B" />
+            <Text style={styles.versionBadgeText}>Version {CURRENT_APP_VERSION}</Text>
+          </View>
+          <Text style={styles.versionSubText}>E-Subli • Kapampangan Heritage Studio</Text>
+        </View>
         
       </ScrollView>
 
@@ -733,6 +743,34 @@ const styles = StyleSheet.create({
     color: '#DC2626',
     fontFamily: 'Poppins_700Bold',
     fontSize: 14,
+  },
+  versionFooterWrap: {
+    alignItems: 'center',
+    marginTop: 14,
+    marginBottom: 40,
+    gap: 4,
+  },
+  versionBadgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(241, 245, 249, 0.8)',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  versionBadgeText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11,
+    color: '#64748B',
+    letterSpacing: 0.3,
+  },
+  versionSubText: {
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 9.5,
+    color: '#94A3B8',
   },
   modalOverlay: {
     flex: 1,
