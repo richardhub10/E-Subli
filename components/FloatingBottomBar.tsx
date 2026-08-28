@@ -17,8 +17,27 @@ type FloatingBottomBarProps = {
 export default function FloatingBottomBar({ activeTab, navigation }: FloatingBottomBarProps) {
   const [showLearnModal, setShowLearnModal] = useState(false);
   const centerScaleAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const { language } = useLanguage();
+
+  // Continuous Liquid Pulse for Center SCAN FAB
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.14,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   useEffect(() => {
     if (showLearnModal) {
@@ -258,13 +277,21 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
           
           {/* TAB 1: HOME */}
           <TouchableOpacity 
-            style={styles.tabItem} 
+            style={[styles.tabItem, isHomeActive && styles.tabItemActive]} 
             onPress={() => handleTabPress('Home', 'Home')}
             activeOpacity={0.7}
           >
+            {isHomeActive && (
+              <LinearGradient
+                colors={['rgba(209, 88, 45, 0.14)', 'rgba(245, 158, 11, 0.05)']}
+                style={styles.liquidActivePill}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+            )}
             <Ionicons 
               name={isHomeActive ? "home" : "home-outline"} 
-              size={22} 
+              size={isHomeActive ? 23 : 21} 
               color={isHomeActive ? "#D1582D" : "#8C7E72"} 
             />
             <Text style={[styles.tabLabel, isHomeActive && styles.tabLabelActive]}>
@@ -275,13 +302,21 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
 
           {/* TAB 2: LEARN (Opens Learning Studio) */}
           <TouchableOpacity 
-            style={styles.tabItem} 
+            style={[styles.tabItem, isLearnActive && styles.tabItemActive]} 
             onPress={() => handleTabPress('Learn', '')}
             activeOpacity={0.7}
           >
+            {isLearnActive && (
+              <LinearGradient
+                colors={['rgba(209, 88, 45, 0.14)', 'rgba(245, 158, 11, 0.05)']}
+                style={styles.liquidActivePill}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+            )}
             <Ionicons 
               name={isLearnActive ? "book" : "book-outline"} 
-              size={22} 
+              size={isLearnActive ? 23 : 21} 
               color={isLearnActive ? "#D1582D" : "#8C7E72"} 
             />
             <Text style={[styles.tabLabel, isLearnActive && styles.tabLabelActive]}>
@@ -292,6 +327,21 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
 
           {/* TAB 3: CENTER ELEVATED AI CAMERA SCANNER FAB */}
           <View style={styles.centerFabSlot} pointerEvents="box-none">
+            {/* Liquid Glow Halo Ring */}
+            <Animated.View 
+              style={[
+                styles.liquidHaloRing,
+                {
+                  transform: [{ scale: pulseAnim }],
+                  opacity: pulseAnim.interpolate({
+                    inputRange: [1, 1.14],
+                    outputRange: [0.6, 0.15],
+                  })
+                }
+              ]} 
+              pointerEvents="none" 
+            />
+
             <AnimatedTouchable
               style={[
                 styles.centerFabBtn,
@@ -301,7 +351,7 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
               activeOpacity={0.9}
             >
               <LinearGradient
-                colors={['#E05326', '#D1582D', '#B83814']}
+                colors={['#FF6A3D', '#E05326', '#B83814']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.centerFabGradient}
@@ -316,13 +366,21 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
 
           {/* TAB 4: LEADERBOARD */}
           <TouchableOpacity 
-            style={styles.tabItem} 
+            style={[styles.tabItem, isLeaderboardActive && styles.tabItemActive]} 
             onPress={() => handleTabPress('Leaderboard', 'Leaderboard')}
             activeOpacity={0.7}
           >
+            {isLeaderboardActive && (
+              <LinearGradient
+                colors={['rgba(209, 88, 45, 0.14)', 'rgba(245, 158, 11, 0.05)']}
+                style={styles.liquidActivePill}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+            )}
             <Ionicons 
               name={isLeaderboardActive ? "trophy" : "trophy-outline"} 
-              size={22} 
+              size={isLeaderboardActive ? 23 : 21} 
               color={isLeaderboardActive ? "#D1582D" : "#8C7E72"} 
             />
             <Text style={[styles.tabLabel, isLeaderboardActive && styles.tabLabelActive]}>
@@ -333,13 +391,21 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
 
           {/* TAB 5: PROFILE */}
           <TouchableOpacity 
-            style={styles.tabItem} 
+            style={[styles.tabItem, isProfileActive && styles.tabItemActive]} 
             onPress={() => handleTabPress('Profile', 'Profile')}
             activeOpacity={0.7}
           >
+            {isProfileActive && (
+              <LinearGradient
+                colors={['rgba(209, 88, 45, 0.14)', 'rgba(245, 158, 11, 0.05)']}
+                style={styles.liquidActivePill}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+            )}
             <Ionicons 
               name={isProfileActive ? "person" : "person-outline"} 
-              size={22} 
+              size={isProfileActive ? 23 : 21} 
               color={isProfileActive ? "#D1582D" : "#8C7E72"} 
             />
             <Text style={[styles.tabLabel, isProfileActive && styles.tabLabelActive]}>
@@ -367,27 +433,41 @@ const styles = StyleSheet.create({
   dockBar: {
     width: '100%',
     maxWidth: 420,
-    height: 64,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 32,
+    height: 66,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    borderRadius: 33,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.9)',
+    borderColor: 'rgba(255, 255, 255, 0.92)',
     shadowColor: '#D1582D',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.14,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
+    elevation: 10,
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
+    paddingVertical: 6,
     position: 'relative',
+    borderRadius: 20,
+  },
+  tabItemActive: {
+    transform: [{ scale: 1.04 }],
+  },
+  liquidActivePill: {
+    position: 'absolute',
+    top: 2,
+    bottom: 2,
+    left: 4,
+    right: 4,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(209, 88, 45, 0.22)',
   },
   tabLabel: {
     fontFamily: 'Poppins_600SemiBold',
@@ -401,16 +481,33 @@ const styles = StyleSheet.create({
   },
   activeDot: {
     position: 'absolute',
-    bottom: 0,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    bottom: 2,
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
     backgroundColor: '#D1582D',
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
   },
   centerFabSlot: {
     width: 72,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  liquidHaloRing: {
+    position: 'absolute',
+    top: -40,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: 'rgba(209, 88, 45, 0.4)',
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 18,
+    elevation: 8,
   },
   centerFabBtn: {
     position: 'absolute',

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, StatusBar, Platform, Image } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, StatusBar, Platform, Image, Animated } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useLanguage } from '../context/LanguageContext';
 import { Language } from '../utils/translations';
@@ -12,6 +12,24 @@ const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen({ navigation }: WelcomeScreenProps) {
   const { language, setLanguage, t } = useLanguage();
+  const floatAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: -8,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -29,13 +47,13 @@ export default function WelcomeScreen({ navigation }: WelcomeScreenProps) {
 
       {/* Center Hero Logo */}
       <View style={styles.artContainer}>
-        <View style={styles.logoBadgeWrap}>
+        <Animated.View style={[styles.logoBadgeWrap, { transform: [{ translateY: floatAnim }] }]}>
           <Image 
             source={require('../assets/esubli-logo.png')} 
             style={styles.heroLogoImage} 
-            resizeMode="contain" 
+            resizeMode="cover" 
           />
-        </View>
+        </Animated.View>
       </View>
 
       {/* Welcome Text */}
@@ -128,24 +146,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoBadgeWrap: {
-    width: 170,
-    height: 170,
-    borderRadius: 85,
+    width: 184,
+    height: 184,
+    borderRadius: 92,
     backgroundColor: '#0F1A2C',
-    borderWidth: 2.5,
+    borderWidth: 3.5,
     borderColor: '#FBBF24',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
     shadowColor: '#FBBF24',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.55,
+    shadowRadius: 24,
+    elevation: 12,
   },
   heroLogoImage: {
-    width: 160,
-    height: 160,
+    width: '100%',
+    height: '100%',
   },
   welcomeContainer: {
     alignItems: 'center',
