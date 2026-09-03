@@ -34,7 +34,7 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
     async function checkVersionOnLoad() {
       const verResult = await checkAppVersion();
       setVersionInfo(verResult);
-      if (verResult.isUpdateRequired) {
+      if (verResult.isUpdateRequired || verResult.isUpdateAvailable) {
         setShowUpdateModal(true);
       }
     }
@@ -102,8 +102,8 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
   const findMatch = async () => {
     if (!user) return;
     
-    // Guard against outdated game versions
-    if (versionInfo?.isUpdateRequired) {
+    // Guard against outdated game versions before joining matchmaking
+    if (versionInfo?.isUpdateRequired || versionInfo?.isUpdateAvailable) {
       setShowUpdateModal(true);
       return;
     }

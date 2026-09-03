@@ -54,9 +54,10 @@ function AppNavigator() {
     );
   }
 
-  // Screens that should NOT show the persistent bottom bar
-  const hideBottomBarRoutes = ['Welcome', 'Login', 'Register', 'CameraScanner', 'QuizBattle', 'OfflineQuiz'];
-  const showBottomBar = Boolean(user && !hideBottomBarRoutes.includes(currentRoute));
+  // The persistent bottom bar only belongs on the primary root tabs.
+  // Sub-screens (Multiplayer, Tracing Studio, Phrasebook, Guide, etc.) have full-screen layouts with their own back buttons.
+  const mainTabRoutes = ['Home', 'ReadHub', 'Leaderboard', 'Profile'];
+  const showBottomBar = Boolean(user && mainTabRoutes.includes(currentRoute));
 
   // Determine active tab highlighting for the current screen
   const getActiveTab = (route: string): TabName => {

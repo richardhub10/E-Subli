@@ -36,7 +36,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     async function checkVersion() {
       const result = await checkAppVersion();
       setVersionInfo(result);
-      if (result.isUpdateRequired) {
+      if (result.isUpdateRequired || result.isUpdateAvailable) {
         setShowUpdateModal(true);
       }
     }
