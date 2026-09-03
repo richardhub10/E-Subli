@@ -69,19 +69,19 @@ function AppNavigator() {
 
   return (
     <LanguageProvider>
-      <View style={{ flex: 1, backgroundColor: '#FAF5EE' }}>
-        <NavigationContainer 
-          ref={navigationRef}
-          onStateChange={() => {
-            const route = navigationRef.getCurrentRoute();
-            if (route?.name) {
-              setCurrentRoute(route.name);
-            }
-          }}
-        >
-          {user ? (
-            <ProfileProvider>
-              <QuestProvider>
+      <ProfileProvider>
+        <QuestProvider>
+          <View style={{ flex: 1, backgroundColor: '#FAF5EE' }}>
+            <NavigationContainer 
+              ref={navigationRef}
+              onStateChange={() => {
+                const route = navigationRef.getCurrentRoute();
+                if (route?.name) {
+                  setCurrentRoute(route.name);
+                }
+              }}
+            >
+              {user ? (
                 <Stack.Navigator screenOptions={{ 
                   headerShown: false, 
                   cardStyle: { flex: 1 },
@@ -101,30 +101,30 @@ function AppNavigator() {
                   <Stack.Screen name="QuizBattle" component={QuizBattleScreen} />
                   <Stack.Screen name="OfflineQuiz" component={OfflineQuizScreen} />
                 </Stack.Navigator>
-              </QuestProvider>
-            </ProfileProvider>
-          ) : (
-            <Stack.Navigator initialRouteName="Welcome" screenOptions={{ 
-              headerShown: false, 
-              cardStyle: { flex: 1 },
-              ...TransitionPresets.SlideFromRightIOS
-            }}>
-              <Stack.Screen name="Welcome" component={WelcomeScreen} />
-              <Stack.Screen name="KulitanGuide" component={KulitanGuideScreen} />
-              <Stack.Screen name="Login" component={LoginScreen} />
-              <Stack.Screen name="Register" component={RegisterScreen} />
-            </Stack.Navigator>
-          )}
-        </NavigationContainer>
+              ) : (
+                <Stack.Navigator initialRouteName="Welcome" screenOptions={{ 
+                  headerShown: false, 
+                  cardStyle: { flex: 1 },
+                  ...TransitionPresets.SlideFromRightIOS
+                }}>
+                  <Stack.Screen name="Welcome" component={WelcomeScreen} />
+                  <Stack.Screen name="KulitanGuide" component={KulitanGuideScreen} />
+                  <Stack.Screen name="Login" component={LoginScreen} />
+                  <Stack.Screen name="Register" component={RegisterScreen} />
+                </Stack.Navigator>
+              )}
+            </NavigationContainer>
 
-        {/* Persistent Floating Bottom Bar: Never disappears when changing pages! */}
-        {showBottomBar && (
-          <FloatingBottomBar
-            activeTab={getActiveTab(currentRoute)}
-            navigation={navigationRef}
-          />
-        )}
-      </View>
+            {/* Persistent Floating Bottom Bar: Never disappears when changing pages! */}
+            {showBottomBar && (
+              <FloatingBottomBar
+                activeTab={getActiveTab(currentRoute)}
+                navigation={navigationRef}
+              />
+            )}
+          </View>
+        </QuestProvider>
+      </ProfileProvider>
     </LanguageProvider>
   );
 }

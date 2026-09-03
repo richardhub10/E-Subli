@@ -679,7 +679,14 @@ const modalStyles = StyleSheet.create({
 export const useProfile = () => {
   const context = useContext(ProfileContext);
   if (context === undefined) {
-    throw new Error('useProfile must be used within a ProfileProvider');
+    return {
+      profile: defaultProfile,
+      updateProfile: async () => {},
+      addXP: async () => {},
+      incrementFlashcards: async () => {},
+      incrementWriting: async () => {},
+      updateSrsData: async () => {},
+    };
   }
   return context;
 };

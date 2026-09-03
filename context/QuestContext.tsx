@@ -149,7 +149,15 @@ export const QuestProvider = ({ children }: { children: ReactNode }) => {
 export const useQuest = () => {
   const context = useContext(QuestContext);
   if (!context) {
-    throw new Error('useQuest must be used within a QuestProvider');
+    return {
+      currentQuest: SCHOLAR_QUESTS[0],
+      questProgress: 0,
+      isCompleted: false,
+      isClaiming: false,
+      claimQuestReward: async () => null,
+      recordQuestAction: async () => {},
+      resetQuests: async () => {},
+    };
   }
   return context;
 };
