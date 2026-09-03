@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
-import { AppState, AppStateStatus, Alert, Platform } from 'react-native';
+import { AppState, AppStateStatus, Alert, Platform, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../supabaseClient';
@@ -127,7 +127,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
 
-    // 4. Periodic heartbeat while app is in active use
+    // 4. Handle OAuth redirect deep links (esubli://auth/callback#access_token=...)
+    const handleAuthUrl = async (url: string | null) => {
+      if (!url) return;
+      try {
+        const cleanUrl = url.replace('#', '?');
+        const parsed = new URL(cleanUrl);
+        const access_token = parsed.searchParams.get('access_token');
+        const refresh_token = parsed.searchParams.get('refresh_token');
+
+        if (access_token && refresh_token) {
+          await supabase.auth.setSession({ access_token, refresh_token });
+        }
+      } catch (e) {
+        console.log('Error handling auth deep link:', e);
+      }
+    };
+
+    Linking.getInitialURL().then(handleAuthUrl);
+    const linkingSubscription = Linking.addEventListener('url', (event: { url: string }) => handleAuthUrl(event.url));
+
+    // 5. Periodic heartbeat while app is in active use
     const heartbeatInterval = setInterval(() => {
       if (appState.current === 'active' && user) {
         recordActivity();
@@ -137,6 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       subscription.unsubscribe();
       appStateSubscription.remove();
+      linkingSubscription.remove();
       clearInterval(heartbeatInterval);
     };
   }, []);

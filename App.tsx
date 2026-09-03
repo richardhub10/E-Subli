@@ -12,6 +12,9 @@ import { NavigationContainer, createNavigationContainerRef } from '@react-naviga
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import { ActivityIndicator, View, Platform } from 'react-native';
 import * as NavigationBar from 'expo-navigation-bar';
+import * as WebBrowser from 'expo-web-browser';
+
+WebBrowser.maybeCompleteAuthSession();
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import WelcomeScreen from './screens/WelcomeScreen';

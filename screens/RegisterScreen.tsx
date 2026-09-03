@@ -93,6 +93,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
 
           if (access_token && refresh_token) {
             await supabase.auth.setSession({ access_token, refresh_token });
+            WebBrowser.dismissAuthSession();
           }
         }
       }

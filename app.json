@@ -2,7 +2,8 @@
   "expo": {
     "name": "E-Subli",
     "slug": "E-Subli",
-    "version": "1.0.1",
+    "scheme": "esubli",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
