@@ -61,7 +61,10 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
 
     if (showLearnModal) setShowLearnModal(false);
 
-    if (activeTab === tab) return;
+    if (activeTab === tab) {
+      const currentRoute = navigation?.getCurrentRoute?.()?.name;
+      if (!currentRoute || currentRoute === routeName) return;
+    }
     if (Platform.OS !== 'web') Haptics.selectionAsync();
     navigation.navigate(routeName);
   };

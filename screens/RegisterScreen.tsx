@@ -93,12 +93,19 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
 
           if (access_token && refresh_token) {
             await supabase.auth.setSession({ access_token, refresh_token });
-            WebBrowser.dismissAuthSession();
+            if (Platform.OS === 'ios') {
+              try {
+                WebBrowser.dismissAuthSession();
+              } catch {}
+            }
           }
         }
       }
     } catch (error: any) {
       console.error('Google Sign-Up Error:', error);
+      if (error?.message?.includes('dismissBrowser')) {
+        return;
+      }
       Alert.alert('Google Sign-Up', error.message || 'Could not complete Google registration.');
     } finally {
       setGoogleLoading(false);

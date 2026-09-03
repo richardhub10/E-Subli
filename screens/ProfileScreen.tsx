@@ -12,7 +12,6 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { Language } from '../utils/translations';
 import { CURRENT_APP_VERSION } from '../services/versionService';
-import FloatingBottomBar from '../components/FloatingBottomBar';
 
 type ProfileScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -449,9 +448,6 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           </View>
         </View>
       </Modal>
-
-      {/* Floating Curved Notch Bottom Navigation Bar */}
-      <FloatingBottomBar activeTab="Profile" navigation={navigation} />
     </LinearGradient>
   );
 }

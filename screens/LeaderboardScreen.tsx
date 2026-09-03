@@ -7,7 +7,6 @@ import * as Haptics from 'expo-haptics';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import FloatingBottomBar from '../components/FloatingBottomBar';
 
 type LeaderboardScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -338,9 +337,6 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
           </Pressable>
         </Pressable>
       </Modal>
-
-      {/* Floating Curved Notch Bottom Navigation Bar */}
-      <FloatingBottomBar activeTab="Leaderboard" navigation={navigation} />
     </LinearGradient>
   );
 }

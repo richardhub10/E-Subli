@@ -36,6 +36,7 @@ import QuizBattleScreen from './screens/QuizBattleScreen';
 import OfflineQuizScreen from './screens/OfflineQuizScreen';
 import { ProfileProvider } from './context/ProfileContext';
 import { QuestProvider } from './context/QuestContext';
+import FloatingBottomBar, { TabName } from './components/FloatingBottomBar';
 
 const Stack = createStackNavigator();
 
@@ -43,6 +44,7 @@ export const navigationRef = createNavigationContainerRef<any>();
 
 function AppNavigator() {
   const { user, loading } = useAuth();
+  const [currentRoute, setCurrentRoute] = useState<string>('Home');
 
   if (loading) {
     return (
@@ -52,47 +54,77 @@ function AppNavigator() {
     );
   }
 
+  // Screens that should NOT show the persistent bottom bar
+  const hideBottomBarRoutes = ['Welcome', 'Login', 'Register', 'CameraScanner', 'QuizBattle', 'OfflineQuiz'];
+  const showBottomBar = Boolean(user && !hideBottomBarRoutes.includes(currentRoute));
+
+  // Determine active tab highlighting for the current screen
+  const getActiveTab = (route: string): TabName => {
+    if (route === 'Home') return 'Home';
+    if (['ReadHub', 'WriteTrace', 'Translator', 'Phrasebook', 'KulitanGuide'].includes(route)) return 'Learn';
+    if (['Leaderboard', 'Friends'].includes(route)) return 'Leaderboard';
+    if (route === 'Profile') return 'Profile';
+    return 'Home';
+  };
+
   return (
     <LanguageProvider>
-      <NavigationContainer ref={navigationRef}>
-        {user ? (
-          <ProfileProvider>
-            <QuestProvider>
-              <Stack.Navigator screenOptions={{ 
-                headerShown: false, 
-                cardStyle: { flex: 1 },
-                ...TransitionPresets.SlideFromRightIOS
-              }}>
-                {/* The routes are defined in the Auth listener above, but normally we'd structure it better. Let's just conditionally render here. */}
-                <Stack.Screen name="Home" component={HomeScreen} />
-                <Stack.Screen name="ReadHub" component={ReadHubScreen} />
-                <Stack.Screen name="WriteTrace" component={WriteTraceScreen} />
-                <Stack.Screen name="CameraScanner" component={CameraScannerScreen} />
-                <Stack.Screen name="Translator" component={TranslatorScreen} />
-                <Stack.Screen name="Phrasebook" component={PhrasebookScreen} />
-                <Stack.Screen name="KulitanGuide" component={KulitanGuideScreen} />
-                <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
-                <Stack.Screen name="Friends" component={FriendsScreen} />
-                <Stack.Screen name="Profile" component={ProfileScreen} />
-                <Stack.Screen name="MultiplayerLobby" component={MultiplayerLobbyScreen} />
-                <Stack.Screen name="QuizBattle" component={QuizBattleScreen} />
-                <Stack.Screen name="OfflineQuiz" component={OfflineQuizScreen} />
-              </Stack.Navigator>
-            </QuestProvider>
-          </ProfileProvider>
-        ) : (
-        <Stack.Navigator initialRouteName="Welcome" screenOptions={{ 
-          headerShown: false, 
-          cardStyle: { flex: 1 },
-          ...TransitionPresets.SlideFromRightIOS
-        }}>
-          <Stack.Screen name="Welcome" component={WelcomeScreen} />
-          <Stack.Screen name="KulitanGuide" component={KulitanGuideScreen} />
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
-        </Stack.Navigator>
-      )}
-      </NavigationContainer>
+      <View style={{ flex: 1, backgroundColor: '#FAF5EE' }}>
+        <NavigationContainer 
+          ref={navigationRef}
+          onStateChange={() => {
+            const route = navigationRef.getCurrentRoute();
+            if (route?.name) {
+              setCurrentRoute(route.name);
+            }
+          }}
+        >
+          {user ? (
+            <ProfileProvider>
+              <QuestProvider>
+                <Stack.Navigator screenOptions={{ 
+                  headerShown: false, 
+                  cardStyle: { flex: 1 },
+                  ...TransitionPresets.SlideFromRightIOS
+                }}>
+                  <Stack.Screen name="Home" component={HomeScreen} />
+                  <Stack.Screen name="ReadHub" component={ReadHubScreen} />
+                  <Stack.Screen name="WriteTrace" component={WriteTraceScreen} />
+                  <Stack.Screen name="CameraScanner" component={CameraScannerScreen} />
+                  <Stack.Screen name="Translator" component={TranslatorScreen} />
+                  <Stack.Screen name="Phrasebook" component={PhrasebookScreen} />
+                  <Stack.Screen name="KulitanGuide" component={KulitanGuideScreen} />
+                  <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
+                  <Stack.Screen name="Friends" component={FriendsScreen} />
+                  <Stack.Screen name="Profile" component={ProfileScreen} />
+                  <Stack.Screen name="MultiplayerLobby" component={MultiplayerLobbyScreen} />
+                  <Stack.Screen name="QuizBattle" component={QuizBattleScreen} />
+                  <Stack.Screen name="OfflineQuiz" component={OfflineQuizScreen} />
+                </Stack.Navigator>
+              </QuestProvider>
+            </ProfileProvider>
+          ) : (
+            <Stack.Navigator initialRouteName="Welcome" screenOptions={{ 
+              headerShown: false, 
+              cardStyle: { flex: 1 },
+              ...TransitionPresets.SlideFromRightIOS
+            }}>
+              <Stack.Screen name="Welcome" component={WelcomeScreen} />
+              <Stack.Screen name="KulitanGuide" component={KulitanGuideScreen} />
+              <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen name="Register" component={RegisterScreen} />
+            </Stack.Navigator>
+          )}
+        </NavigationContainer>
+
+        {/* Persistent Floating Bottom Bar: Never disappears when changing pages! */}
+        {showBottomBar && (
+          <FloatingBottomBar
+            activeTab={getActiveTab(currentRoute)}
+            navigation={navigationRef}
+          />
+        )}
+      </View>
     </LanguageProvider>
   );
 }

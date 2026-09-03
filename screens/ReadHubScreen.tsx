@@ -9,7 +9,6 @@ import { kulitanSyllables } from '../data/kulitanData';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useQuest } from '../context/QuestContext';
-import FloatingBottomBar from '../components/FloatingBottomBar';
 
 type ReadHubScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -286,8 +285,6 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
           </View>
         </View>
       </Modal>
-      {/* Floating Curved Notch Bottom Navigation Bar */}
-      <FloatingBottomBar activeTab="Learn" navigation={navigation} />
     </LinearGradient>
   );
 }

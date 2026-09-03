@@ -11,7 +11,6 @@ import { Language } from '../utils/translations';
 import { kulitanSyllables } from '../data/kulitanData';
 import { checkAppVersion, VersionCheckResult } from '../services/versionService';
 import UpdateModal from '../components/UpdateModal';
-import FloatingBottomBar from '../components/FloatingBottomBar';
 
 const { width, height } = Dimensions.get('window');
 
@@ -578,9 +577,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           </LinearGradient>
         </View>
       )}
-
-      {/* Floating Curved Notch Bottom Navigation Bar */}
-      <FloatingBottomBar activeTab="Home" navigation={navigation} />
 
       {/* In-App Update Modal */}
       <UpdateModal
