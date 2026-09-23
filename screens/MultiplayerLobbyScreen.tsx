@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated, Platform, AppState } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated, Platform, Modal, ScrollView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -8,6 +8,7 @@ import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useOnlinePresence } from '../context/OnlinePresenceContext';
 import { getRandomQuestions } from '../utils/quizQuestions';
 import { checkAppVersion, VersionCheckResult } from '../services/versionService';
 import UpdateModal from '../components/UpdateModal';
@@ -26,11 +27,19 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
   const { user } = useAuth();
   const { profile } = useProfile();
   const { t, language } = useLanguage();
-  const [activePlayersCount, setActivePlayersCount] = useState<number>(1);
-  const lobbyChannelRef = useRef<any>(null);
+  const { onlineCount, onlinePlayers, setActivity } = useOnlinePresence();
+  const [showPlayersModal, setShowPlayersModal] = useState(false);
   const livePulseAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  // Broadcast current activity to global presence
+  useEffect(() => {
+    setActivity('Multiplayer Lobby');
+    return () => {
+      setActivity('Online');
+    };
+  }, []);
 
   // Pulse animation for live active players indicator
   useEffect(() => {
@@ -59,61 +68,6 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
     inputRange: [0, 1],
     outputRange: [0.65, 0],
   });
-
-  // Accurate Realtime Presence tracking for active players
-  useEffect(() => {
-    const presenceKey = user?.id || `guest_${Math.random().toString(36).slice(2, 9)}`;
-
-    const channel = supabase.channel('online_multiplayer_lobby', {
-      config: {
-        presence: { key: presenceKey },
-      },
-    });
-    lobbyChannelRef.current = channel;
-
-    const updatePresenceCount = () => {
-      const state = channel.presenceState();
-      const count = Object.keys(state).length;
-      setActivePlayersCount(Math.max(1, count));
-    };
-
-    channel.on('presence', { event: 'sync' }, updatePresenceCount);
-    channel.on('presence', { event: 'join' }, updatePresenceCount);
-    channel.on('presence', { event: 'leave' }, updatePresenceCount);
-
-    channel.subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        await channel.track({
-          user_id: user?.id || presenceKey,
-          username: profile?.firstName || 'Scholar',
-          online_at: Date.now(),
-        }).catch(() => {});
-      }
-    });
-
-    const appStateSub = AppState.addEventListener('change', async (nextState) => {
-      if (nextState === 'active') {
-        try {
-          await channel.track({
-            user_id: user?.id || presenceKey,
-            username: profile?.firstName || 'Scholar',
-            online_at: Date.now(),
-          });
-        } catch (_) {}
-      } else if (nextState === 'background') {
-        try {
-          await channel.untrack();
-        } catch (_) {}
-      }
-    });
-
-    return () => {
-      appStateSub.remove();
-      channel.untrack().catch(() => {});
-      supabase.removeChannel(channel);
-      lobbyChannelRef.current = null;
-    };
-  }, [user?.id, profile?.firstName]);
 
   // Check version on lobby mount
   useEffect(() => {
@@ -304,12 +258,7 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
               activeOpacity={0.75}
               onPress={() => {
                 if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                Alert.alert(
-                  language === 'EN' ? 'Active Scholars' : 'Mga Aktibong Iskolar',
-                  language === 'EN'
-                    ? `${activePlayersCount} ${activePlayersCount === 1 ? 'scholar is' : 'scholars are'} currently active in multiplayer!`
-                    : `${activePlayersCount} iskolar ang kasalukuyang aktibo sa multiplayer!`
-                );
+                setShowPlayersModal(true);
               }}
             >
               <View style={styles.activePulseWrap}>
@@ -325,9 +274,9 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
                 <View style={styles.activePulseCore} />
               </View>
               <Ionicons name="people" size={13} color="#059669" />
-              <Text style={styles.activePlayersCount}>{activePlayersCount}</Text>
+              <Text style={styles.activePlayersCount}>{onlineCount}</Text>
               <Text style={styles.activePlayersLabel}>
-                {language === 'EN' ? (activePlayersCount === 1 ? 'Online' : 'Online') : 'Aktibo'}
+                {language === 'EN' ? (onlineCount === 1 ? 'Online' : 'Online') : 'Aktibo'}
               </Text>
             </TouchableOpacity>
 
@@ -407,6 +356,93 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
           isForceUpdate={versionInfo?.isUpdateRequired}
           onClose={() => setShowUpdateModal(false)}
         />
+
+        {/* Active Scholars Online Modal */}
+        <Modal
+          visible={showPlayersModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowPlayersModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.playersModalContent}>
+              <View style={styles.playersModalHeader}>
+                <View style={styles.playersModalTitleRow}>
+                  <View style={styles.modalPulseCore} />
+                  <Text style={styles.playersModalTitle}>
+                    {language === 'EN' ? 'Active Scholars' : 'Mga Aktibong Iskolar'} ({onlineCount})
+                  </Text>
+                </View>
+                <TouchableOpacity 
+                  onPress={() => setShowPlayersModal(false)} 
+                  style={styles.modalCloseBtn}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Ionicons name="close" size={20} color="#64748B" />
+                </TouchableOpacity>
+              </View>
+              
+              <Text style={styles.playersModalSubtitle}>
+                {language === 'EN' 
+                  ? 'All scholars currently active across the app' 
+                  : 'Lahat ng iskolar na kasalukuyang aktibo sa app'}
+              </Text>
+
+              <ScrollView style={styles.playersList} showsVerticalScrollIndicator={false}>
+                {onlinePlayers.map((player) => {
+                  const isMe = player.id === user?.id;
+                  const initials = player.name ? player.name.slice(0, 2).toUpperCase() : 'SC';
+                  return (
+                    <View key={player.id} style={[styles.playerItemRow, isMe && styles.playerItemRowMe]}>
+                      <View style={styles.playerAvatarWrap}>
+                        {player.avatarUrl ? (
+                          <Image source={{ uri: player.avatarUrl }} style={styles.playerAvatarImg} />
+                        ) : (
+                          <LinearGradient colors={['#059669', '#047857']} style={styles.playerInitialsBadge}>
+                            <Text style={styles.playerInitialsText}>{initials}</Text>
+                          </LinearGradient>
+                        )}
+                        <View style={styles.playerStatusDot} />
+                      </View>
+
+                      <View style={styles.playerInfoCol}>
+                        <View style={styles.playerNameRow}>
+                          <Text style={styles.playerNameText} numberOfLines={1}>
+                            {player.name}
+                          </Text>
+                          {isMe && (
+                            <View style={styles.youTag}>
+                              <Text style={styles.youTagText}>YOU</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text style={styles.playerSubText}>
+                          🛡️ {player.eloRating || 1000} RP
+                        </Text>
+                      </View>
+
+                      <View style={styles.playerActivityPill}>
+                        <Text style={styles.playerActivityText}>
+                          {player.activity || 'Active'}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+
+              <TouchableOpacity 
+                style={styles.modalDoneBtn} 
+                onPress={() => setShowPlayersModal(false)}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.modalDoneBtnText}>
+                  {language === 'EN' ? 'Close' : 'Isara'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -520,6 +556,168 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_700Bold',
     fontSize: 10.5,
     color: '#059669',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  playersModalContent: {
+    width: '100%',
+    maxWidth: 380,
+    maxHeight: '75%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  playersModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  playersModalTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  modalPulseCore: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+  },
+  playersModalTitle: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 16,
+    color: '#1E1B18',
+  },
+  modalCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  playersModalSubtitle: {
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 12,
+    color: '#64748B',
+    marginBottom: 14,
+  },
+  playersList: {
+    maxHeight: 320,
+  },
+  playerItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    backgroundColor: '#F8FAFC',
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  playerItemRowMe: {
+    borderColor: '#A7F3D0',
+    backgroundColor: '#ECFDF5',
+  },
+  playerAvatarWrap: {
+    position: 'relative',
+    marginRight: 12,
+  },
+  playerAvatarImg: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+  },
+  playerInitialsBadge: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  playerInitialsText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 13,
+    color: '#FFFFFF',
+  },
+  playerStatusDot: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#10B981',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  playerInfoCol: {
+    flex: 1,
+  },
+  playerNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  playerNameText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 13,
+    color: '#1E1B18',
+    maxWidth: 140,
+  },
+  youTag: {
+    backgroundColor: '#059669',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+  },
+  youTagText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 9,
+    color: '#FFFFFF',
+  },
+  playerSubText: {
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 11,
+    color: '#059669',
+    marginTop: 1,
+  },
+  playerActivityPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  playerActivityText: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 10.5,
+    color: '#475569',
+  },
+  modalDoneBtn: {
+    marginTop: 14,
+    backgroundColor: '#059669',
+    paddingVertical: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  modalDoneBtnText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 13,
+    color: '#FFFFFF',
   },
   content: {
     flex: 1,

@@ -8,6 +8,7 @@ import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useOnlinePresence } from '../context/OnlinePresenceContext';
 import { getRandomQuestions } from '../utils/quizQuestions';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -69,47 +70,14 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     };
   }, []);
 
-  // Track active multiplayer player presence while in live battle
+  // Set current activity in global presence while in live battle
+  const { setActivity } = useOnlinePresence();
   useEffect(() => {
-    const presenceKey = user?.id || `guest_${Math.random().toString(36).slice(2, 9)}`;
-    const battlePresenceChannel = supabase.channel('online_multiplayer_lobby', {
-      config: { presence: { key: presenceKey } },
-    });
-
-    battlePresenceChannel.subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        await battlePresenceChannel.track({
-          user_id: user?.id || presenceKey,
-          username: profile?.firstName || 'Scholar',
-          in_battle: true,
-          online_at: Date.now(),
-        }).catch(() => {});
-      }
-    });
-
-    const appStateSub = AppState.addEventListener('change', async (nextState) => {
-      if (nextState === 'active') {
-        try {
-          await battlePresenceChannel.track({
-            user_id: user?.id || presenceKey,
-            username: profile?.firstName || 'Scholar',
-            in_battle: true,
-            online_at: Date.now(),
-          });
-        } catch (_) {}
-      } else if (nextState === 'background') {
-        try {
-          await battlePresenceChannel.untrack();
-        } catch (_) {}
-      }
-    });
-
+    setActivity('In Quiz Battle');
     return () => {
-      appStateSub.remove();
-      battlePresenceChannel.untrack().catch(() => {});
-      supabase.removeChannel(battlePresenceChannel);
+      setActivity('Online');
     };
-  }, [user?.id, profile?.firstName]);
+  }, []);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const broadcastChannelRef = useRef<any>(null);

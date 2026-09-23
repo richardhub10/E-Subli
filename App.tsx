@@ -36,6 +36,7 @@ import QuizBattleScreen from './screens/QuizBattleScreen';
 import OfflineQuizScreen from './screens/OfflineQuizScreen';
 import { ProfileProvider } from './context/ProfileContext';
 import { QuestProvider } from './context/QuestContext';
+import { OnlinePresenceProvider } from './context/OnlinePresenceContext';
 import FloatingBottomBar, { TabName } from './components/FloatingBottomBar';
 
 const Stack = createStackNavigator();
@@ -72,7 +73,8 @@ function AppNavigator() {
     <LanguageProvider>
       <ProfileProvider>
         <QuestProvider>
-          <View style={{ flex: 1, backgroundColor: '#FAF5EE' }}>
+          <OnlinePresenceProvider>
+            <View style={{ flex: 1, backgroundColor: '#FAF5EE' }}>
             <NavigationContainer 
               ref={navigationRef}
               onStateChange={() => {
@@ -124,9 +126,10 @@ function AppNavigator() {
               />
             )}
           </View>
-        </QuestProvider>
-      </ProfileProvider>
-    </LanguageProvider>
+        </OnlinePresenceProvider>
+      </QuestProvider>
+    </ProfileProvider>
+  </LanguageProvider>
   );
 }
 
