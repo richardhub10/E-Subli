@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated, Platform, AppState } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -26,8 +26,94 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
   const { user } = useAuth();
   const { profile } = useProfile();
   const { t, language } = useLanguage();
+  const [activePlayersCount, setActivePlayersCount] = useState<number>(1);
+  const lobbyChannelRef = useRef<any>(null);
+  const livePulseAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  // Pulse animation for live active players indicator
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(livePulseAnim, {
+          toValue: 1,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(livePulseAnim, {
+          toValue: 0,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const pulseScale = livePulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.9],
+  });
+
+  const pulseOpacity = livePulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.65, 0],
+  });
+
+  // Accurate Realtime Presence tracking for active players
+  useEffect(() => {
+    const presenceKey = user?.id || `guest_${Math.random().toString(36).slice(2, 9)}`;
+
+    const channel = supabase.channel('online_multiplayer_lobby', {
+      config: {
+        presence: { key: presenceKey },
+      },
+    });
+    lobbyChannelRef.current = channel;
+
+    const updatePresenceCount = () => {
+      const state = channel.presenceState();
+      const count = Object.keys(state).length;
+      setActivePlayersCount(Math.max(1, count));
+    };
+
+    channel.on('presence', { event: 'sync' }, updatePresenceCount);
+    channel.on('presence', { event: 'join' }, updatePresenceCount);
+    channel.on('presence', { event: 'leave' }, updatePresenceCount);
+
+    channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await channel.track({
+          user_id: user?.id || presenceKey,
+          username: profile?.firstName || 'Scholar',
+          online_at: Date.now(),
+        }).catch(() => {});
+      }
+    });
+
+    const appStateSub = AppState.addEventListener('change', async (nextState) => {
+      if (nextState === 'active') {
+        try {
+          await channel.track({
+            user_id: user?.id || presenceKey,
+            username: profile?.firstName || 'Scholar',
+            online_at: Date.now(),
+          });
+        } catch (_) {}
+      } else if (nextState === 'background') {
+        try {
+          await channel.untrack();
+        } catch (_) {}
+      }
+    });
+
+    return () => {
+      appStateSub.remove();
+      channel.untrack().catch(() => {});
+      supabase.removeChannel(channel);
+      lobbyChannelRef.current = null;
+    };
+  }, [user?.id, profile?.firstName]);
 
   // Check version on lobby mount
   useEffect(() => {
@@ -211,9 +297,45 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
             <Text style={styles.headerTitle}>{t('multiplayer_battle')}</Text>
           </View>
 
-          <View style={styles.headerBadgePill}>
-            <Ionicons name="shield-checkmark" size={14} color="#059669" />
-            <Text style={styles.headerBadgeText}>{profile.eloRating || 1000} RP</Text>
+          <View style={styles.headerRightContainer}>
+            {/* Live Active Players Card */}
+            <TouchableOpacity 
+              style={styles.activePlayersCard}
+              activeOpacity={0.75}
+              onPress={() => {
+                if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                Alert.alert(
+                  language === 'EN' ? 'Active Scholars' : 'Mga Aktibong Iskolar',
+                  language === 'EN'
+                    ? `${activePlayersCount} ${activePlayersCount === 1 ? 'scholar is' : 'scholars are'} currently active in multiplayer!`
+                    : `${activePlayersCount} iskolar ang kasalukuyang aktibo sa multiplayer!`
+                );
+              }}
+            >
+              <View style={styles.activePulseWrap}>
+                <Animated.View 
+                  style={[
+                    styles.activePulseRing, 
+                    { 
+                      transform: [{ scale: pulseScale }], 
+                      opacity: pulseOpacity 
+                    }
+                  ]} 
+                />
+                <View style={styles.activePulseCore} />
+              </View>
+              <Ionicons name="people" size={13} color="#059669" />
+              <Text style={styles.activePlayersCount}>{activePlayersCount}</Text>
+              <Text style={styles.activePlayersLabel}>
+                {language === 'EN' ? (activePlayersCount === 1 ? 'Online' : 'Online') : 'Aktibo'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* RP Badge */}
+            <View style={styles.headerBadgePill}>
+              <Ionicons name="shield-checkmark" size={11} color="#059669" />
+              <Text style={styles.headerBadgeText}>{profile.eloRating || 1000} RP</Text>
+            </View>
           </View>
         </View>
 
@@ -333,20 +455,70 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_700Bold',
     color: '#1E1B18',
   },
+  headerRightContainer: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  activePlayersCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 8,
+    paddingVertical: 4.5,
+    borderRadius: 12,
+    borderWidth: 1.2,
+    borderColor: '#A7F3D0',
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 1.5 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    gap: 4.5,
+  },
+  activePulseWrap: {
+    width: 10,
+    height: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activePulseRing: {
+    position: 'absolute',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#10B981',
+  },
+  activePulseCore: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#059669',
+  },
+  activePlayersCount: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 12,
+    color: '#065F46',
+  },
+  activePlayersLabel: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 10,
+    color: '#059669',
+  },
   headerBadgePill: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ECFDF5',
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    borderRadius: 14,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: '#A7F3D0',
-    gap: 4,
+    gap: 3,
   },
   headerBadgeText: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 11,
+    fontSize: 10.5,
     color: '#059669',
   },
   content: {

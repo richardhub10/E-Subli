@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated, Easing, Dimensions, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated, Easing, Dimensions, ScrollView, Platform, AppState } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -68,6 +68,49 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
+
+  // Track active multiplayer player presence while in live battle
+  useEffect(() => {
+    const presenceKey = user?.id || `guest_${Math.random().toString(36).slice(2, 9)}`;
+    const battlePresenceChannel = supabase.channel('online_multiplayer_lobby', {
+      config: { presence: { key: presenceKey } },
+    });
+
+    battlePresenceChannel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await battlePresenceChannel.track({
+          user_id: user?.id || presenceKey,
+          username: profile?.firstName || 'Scholar',
+          in_battle: true,
+          online_at: Date.now(),
+        }).catch(() => {});
+      }
+    });
+
+    const appStateSub = AppState.addEventListener('change', async (nextState) => {
+      if (nextState === 'active') {
+        try {
+          await battlePresenceChannel.track({
+            user_id: user?.id || presenceKey,
+            username: profile?.firstName || 'Scholar',
+            in_battle: true,
+            online_at: Date.now(),
+          });
+        } catch (_) {}
+      } else if (nextState === 'background') {
+        try {
+          await battlePresenceChannel.untrack();
+        } catch (_) {}
+      }
+    });
+
+    return () => {
+      appStateSub.remove();
+      battlePresenceChannel.untrack().catch(() => {});
+      supabase.removeChannel(battlePresenceChannel);
+    };
+  }, [user?.id, profile?.firstName]);
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const broadcastChannelRef = useRef<any>(null);
   
