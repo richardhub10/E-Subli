@@ -352,11 +352,13 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
                     color={translationSource === 'local' ? '#92400E' : '#B45309'} 
                   />
                   <Text style={styles.sourceBadgeText}>
-                    {translationSource === 'gemini' 
-                      ? 'GEMINI AI' 
-                      : translationSource === 'online' 
-                        ? 'NEURAL AI' 
-                        : 'AUTHENTIC KPM'}
+                    {translatedText.trim().toLowerCase() === sourceText.trim().toLowerCase()
+                      ? (language === 'EN' ? 'OFFLINE DICT' : 'TALASALITAAN')
+                      : translationSource === 'gemini' 
+                        ? 'GEMINI AI' 
+                        : translationSource === 'online' 
+                          ? 'NEURAL AI' 
+                          : 'AUTHENTIC KPM'}
                   </Text>
                 </View>
               </View>

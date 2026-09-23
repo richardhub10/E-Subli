@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { supabase } from '../supabaseClient';
 import appConfig from '../app.json';
 
@@ -53,6 +54,12 @@ export async function checkAppVersion(): Promise<VersionCheckResult> {
     downloadUrl: DEFAULT_GITHUB_RELEASE_URL,
     releaseNotes: 'Multiplayer synchronization, navigation improvements, and bug fixes.',
   };
+
+  // On Web (PWA / Vercel), the latest build is loaded automatically;
+  // skip raw GitHub and Supabase network checks to prevent CORS and 404 console errors.
+  if (Platform.OS === 'web') {
+    return fallbackResult;
+  }
 
   try {
     // 1. First priority: Check live remote version.json from GitHub master branch (cache-busted with timestamp)

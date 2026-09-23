@@ -6,15 +6,26 @@ export interface TranslationResult {
 }
 
 const GEMINI_MODELS = [
-  'gemini-2.5-flash',
-  'gemini-2.0-flash',
   'gemini-1.5-flash',
+  'gemini-2.0-flash-exp',
+  'gemini-1.5-pro',
 ];
 
 interface DictEntry {
   kpm: string;
   tag: string;
   eng: string;
+}
+
+/**
+ * Validates if the key matches the official Google Gemini API key format.
+ * Real Google AI Studio keys start with 'AIzaSy' and are at least 35 characters long.
+ * Non-Google keys (such as Vercel JWTs, project IDs, or invalid tokens) will 404/400.
+ */
+function isValidGeminiKey(key?: string): boolean {
+  if (!key) return false;
+  const trimmed = key.trim();
+  return trimmed.startsWith('AIza') && trimmed.length >= 35;
 }
 
 // Comprehensive authentic Kapampangan, Tagalog, and English dictionary
@@ -27,11 +38,10 @@ const DICTIONARY_ENTRIES: DictEntry[] = [
   { kpm: 'Ninu', tag: 'Sino', eng: 'Who' },
   { kpm: 'Ninu ka', tag: 'Sino ka', eng: 'Who are you' },
   { kpm: 'Nukarin', tag: 'Saan', eng: 'Where' },
-  { kpm: 'Nukarin ya', tag: 'Nasaan ito', eng: 'Where is it' },
+  { kpm: 'Nukarin ya', tag: 'Nasaan / Nasaan ito', eng: 'Where is it' },
   { kpm: 'Nukarin ka munta', tag: 'Saan ka pupunta', eng: 'Where are you going' },
   { kpm: 'Kapilan', tag: 'Kailan', eng: 'When' },
-  { kpm: 'Bakit / Obat', tag: 'Bakit', eng: 'Why' },
-  { kpm: 'Obat', tag: 'Bakit', eng: 'Why' },
+  { kpm: 'Obat / Bakit', tag: 'Bakit', eng: 'Why' },
   { kpm: 'Makananu', tag: 'Paano', eng: 'How' },
   { kpm: 'Magkanu', tag: 'Magkano', eng: 'How much' },
   { kpm: 'Pilan', tag: 'Ilan', eng: 'How many' },
@@ -42,31 +52,84 @@ const DICTIONARY_ENTRIES: DictEntry[] = [
   { kpm: 'Mayap a gatpanapun', tag: 'Magandang hapon', eng: 'Good afternoon' },
   { kpm: 'Mayap a bengi', tag: 'Magandang gabi', eng: 'Good evening' },
   { kpm: 'Mayap a oras kekayu ngan', tag: 'Magandang araw sa inyong lahat', eng: 'Good day to you all' },
-  { kpm: 'Dakal a salamat', tag: 'Salamat', eng: 'Thank you' },
-  { kpm: 'Dakal a salamat', tag: 'Maraming salamat', eng: 'Thank you very much' },
+  { kpm: 'Dakal a salamat', tag: 'Salamat / Maraming salamat', eng: 'Thank you / Thank you very much' },
   { kpm: 'Alang nanu man', tag: 'Walang anuman', eng: "You're welcome" },
   { kpm: 'Wa', tag: 'Oo', eng: 'Yes' },
   { kpm: 'Ali', tag: 'Hindi', eng: 'No' },
   { kpm: 'Kaluguran daka', tag: 'Mahal kita', eng: 'I love you' },
   { kpm: 'Kaluguran da kang bina', tag: 'Mahal na mahal kita', eng: 'I love you very much' },
-  { kpm: 'Komusta', tag: 'Kumusta', eng: 'How are you' },
-  { kpm: 'Komusta ka', tag: 'Kumusta ka', eng: 'How are you' },
-  { kpm: 'Komusta naka', tag: 'Kumusta ka na', eng: 'How are you now' },
-  { kpm: 'Masalese', tag: 'Mabuti', eng: 'Good' },
+  { kpm: 'Komusta', tag: 'Kumusta / Kamusta', eng: 'How are you' },
+  { kpm: 'Komusta ka', tag: 'Kumusta ka / Kamusta ka', eng: 'How are you' },
+  { kpm: 'Komusta naka', tag: 'Kumusta ka na / Kamusta ka na', eng: 'How are you now' },
+  { kpm: 'Masalese', tag: 'Mabuti / Maayos', eng: 'Good / Well / Fine' },
   { kpm: 'Masalese naman', tag: 'Mabuti naman', eng: 'I am doing well' },
-  { kpm: 'Mimingat ka', tag: 'Ingat', eng: 'Take care' },
+  { kpm: 'Mimingat ka', tag: 'Ingat / Mag-ingat ka', eng: 'Take care' },
   { kpm: 'Mim-ingat ka pane', tag: 'Mag-ingat ka palagi', eng: 'Take care always' },
-  { kpm: 'Mako naku', tag: 'Paalam', eng: 'Goodbye' },
+  { kpm: 'Mako naku', tag: 'Paalam / Aalis na ako', eng: 'Goodbye' },
   { kpm: 'Malaus ko pu', tag: 'Tuloy po kayo', eng: 'Welcome' },
   { kpm: 'Mikit kata pota', tag: 'Magkikita tayo mamaya', eng: 'See you later' },
-  { kpm: 'Patawad pu', tag: 'Patawad po', eng: 'I am sorry' },
+  { kpm: 'Patawad pu', tag: 'Patawad po / Pasensya na', eng: 'I am sorry' },
   { kpm: 'Eku balu', tag: 'Hindi ko alam', eng: 'I do not know' },
   { kpm: 'Aintindian ku', tag: 'Naiintindihan ko', eng: 'I understand' },
   { kpm: 'Eku aintindian', tag: 'Hindi ko naiintindihan', eng: 'I do not understand' },
 
-  // Pronouns
-  { kpm: 'Yaku', tag: 'Ako', eng: 'I' },
-  { kpm: 'Ika', tag: 'Ikaw', eng: 'You' },
+  // Descriptors, Slang & People (Critical for conversational testing!)
+  { kpm: 'Masanting', tag: 'Pogi / Gwapo / Guwapo', eng: 'Handsome' },
+  { kpm: 'Malagu', tag: 'Maganda / Magandang', eng: 'Beautiful / Pretty' },
+  { kpm: 'Matsura', tag: 'Pangit', eng: 'Ugly' },
+  { kpm: 'Manyaman', tag: 'Masarap', eng: 'Delicious / Yummy' },
+  { kpm: 'Masaya', tag: 'Masaya', eng: 'Happy' },
+  { kpm: 'Malungkut', tag: 'Malungkot', eng: 'Sad' },
+  { kpm: 'Mapagal', tag: 'Pagod', eng: 'Tired' },
+  { kpm: 'Maranup', tag: 'Gutom / Nagugutom', eng: 'Hungry' },
+  { kpm: 'Mau', tag: 'Uhaw / Nauuhaw', eng: 'Thirsty' },
+  { kpm: 'Masakit', tag: 'Masakit / May sakit', eng: 'Painful / Sick' },
+  { kpm: 'Mabandi', tag: 'Mayaman', eng: 'Rich' },
+  { kpm: 'Kalulu', tag: 'Mahirap', eng: 'Poor' },
+  { kpm: 'Mataba', tag: 'Mataba', eng: 'Fat' },
+  { kpm: 'Payat', tag: 'Payat', eng: 'Thin' },
+  { kpm: 'Matas', tag: 'Matangkad / Mataas', eng: 'Tall / High' },
+  { kpm: 'Mababa', tag: 'Pandak / Mababa', eng: 'Short / Low' },
+  { kpm: 'Malati', tag: 'Maliit', eng: 'Small' },
+  { kpm: 'Maragul', tag: 'Malaki', eng: 'Big' },
+  { kpm: 'Maluka', tag: 'Payak / Aba', eng: 'Humble' },
+  { kpm: 'Malugud', tag: 'Mapagmahal', eng: 'Loving' },
+  { kpm: 'Mabait', tag: 'Mabait', eng: 'Kind' },
+  { kpm: 'Bastus', tag: 'Bastos', eng: 'Rude' },
+  { kpm: 'Luku', tag: 'Loko / Gago', eng: 'Crazy / Fool' },
+  { kpm: 'Mal', tag: 'Mahal', eng: 'Expensive' },
+  { kpm: 'Mura', tag: 'Mura', eng: 'Cheap' },
+
+  // Common Verbs & Actions
+  { kpm: 'Mangan', tag: 'Kain / Kumain', eng: 'Eat' },
+  { kpm: 'Minum', tag: 'Inom / Uminom', eng: 'Drink' },
+  { kpm: 'Matudtud', tag: 'Tulog / Matulog', eng: 'Sleep' },
+  { kpm: 'Migising', tag: 'Gising / Gumising', eng: 'Wake up' },
+  { kpm: 'Tana', tag: 'Tara / Tayo na', eng: 'Let us go' },
+  { kpm: 'Mekeni', tag: 'Halika / Halika dito', eng: 'Come here' },
+  { kpm: 'Munta', tag: 'Punta / Pumunta', eng: 'Go' },
+  { kpm: 'Mako', tag: 'Alis / Umalis', eng: 'Leave / Depart' },
+  { kpm: 'Muli', tag: 'Uwi / Umuwi', eng: 'Go home' },
+  { kpm: 'Migaral', tag: 'Aral / Mag-aral', eng: 'Study' },
+  { kpm: 'Mamyalung', tag: 'Laro / Maglaro', eng: 'Play' },
+  { kpm: 'Saup', tag: 'Tulong / Tumulong', eng: 'Help' },
+  { kpm: 'Bisa', tag: 'Gusto / Nais', eng: 'Want / Like' },
+  { kpm: 'Ali bisa', tag: 'Ayaw', eng: 'Do not want' },
+  { kpm: 'Malyari', tag: 'Puwede / Maaari', eng: 'Can / Possible' },
+  { kpm: 'E malyari', tag: 'Hindi puwede / Bawal', eng: 'Cannot / Prohibited' },
+
+  // Time & Locations
+  { kpm: 'Keni', tag: 'Dito', eng: 'Here' },
+  { kpm: 'Kanta / Keta', tag: 'Diyan / Doon', eng: 'There' },
+  { kpm: 'Ngeni', tag: 'Ngayon', eng: 'Now / Today' },
+  { kpm: 'Napun', tag: 'Kahapon', eng: 'Yesterday' },
+  { kpm: 'Bukas', tag: 'Bukas', eng: 'Tomorrow' },
+  { kpm: 'Pota', tag: 'Mamaya', eng: 'Later' },
+  { kpm: 'Nandin', tag: 'Kanina', eng: 'Earlier' },
+
+  // Pronouns & Markers
+  { kpm: 'Yaku', tag: 'Ako', eng: 'I / Me' },
+  { kpm: 'Ika', tag: 'Ikaw / Ka', eng: 'You' },
   { kpm: 'Ya', tag: 'Siya', eng: 'He / She' },
   { kpm: 'Ikami', tag: 'Kami', eng: 'We' },
   { kpm: 'Ikatamu', tag: 'Tayo', eng: 'We all' },
@@ -75,24 +138,20 @@ const DICTIONARY_ENTRIES: DictEntry[] = [
   { kpm: 'Kanaku', tag: 'Akin', eng: 'Mine' },
   { kpm: 'Keka', tag: 'Iyo', eng: 'Yours' },
   { kpm: 'Kaya', tag: 'Kanya', eng: 'His / Hers' },
+  { kpm: 'Ing', tag: 'Ang', eng: 'The' },
+  { kpm: 'Mu', tag: 'Mo', eng: 'Your' },
+  { kpm: 'Ku', tag: 'Ko', eng: 'My' },
+  { kpm: 'Na', tag: 'Niya', eng: 'His / Her' },
+  { kpm: 'Da', tag: 'Nila', eng: 'Their' },
+  { kpm: 'Keng / King', tag: 'Sa', eng: 'In / To / At' },
+  { kpm: 'At', tag: 'At', eng: 'And' },
+  { kpm: 'Uling', tag: 'Dahil / Kasi', eng: 'Because' },
+  { kpm: 'Nung', tag: 'Kung', eng: 'If' },
+  { kpm: 'Bina', tag: 'Sobra / Napaka', eng: 'Very' },
+  { kpm: 'Dakal', tag: 'Marami', eng: 'Many / A lot' },
 
-  // Feelings & States
-  { kpm: 'Masaya', tag: 'Masaya', eng: 'Happy' },
-  { kpm: 'Malungkut', tag: 'Malungkot', eng: 'Sad' },
-  { kpm: 'Mapagal', tag: 'Pagod', eng: 'Tired' },
-  { kpm: 'Maranup', tag: 'Gutom', eng: 'Hungry' },
-  { kpm: 'Mau', tag: 'Uhaw', eng: 'Thirsty' },
-  { kpm: 'Masakit', tag: 'Masakit', eng: 'Painful / Sick' },
-  { kpm: 'Mayap', tag: 'Mabuti / Maayos', eng: 'Fine / Well' },
-  { kpm: 'Marok', tag: 'Masama', eng: 'Bad' },
-  { kpm: 'Malagu', tag: 'Maganda', eng: 'Beautiful' },
-  { kpm: 'Masanting', tag: 'Guwapo / Maganda', eng: 'Handsome' },
-  { kpm: 'Manyaman', tag: 'Masarap', eng: 'Delicious' },
-  { kpm: 'Mabandi', tag: 'Mayaman', eng: 'Rich' },
-  { kpm: 'Kalulu', tag: 'Mahirap', eng: 'Poor' },
-
-  // Common Nouns
-  { kpm: 'Bale', tag: 'Bahay', eng: 'House' },
+  // Nouns
+  { kpm: 'Bale', tag: 'Bahay', eng: 'House / Home' },
   { kpm: 'Danum', tag: 'Tubig', eng: 'Water' },
   { kpm: 'Pamangan', tag: 'Pagkain', eng: 'Food' },
   { kpm: 'Nasi', tag: 'Kanin', eng: 'Cooked rice' },
@@ -100,14 +159,17 @@ const DICTIONARY_ENTRIES: DictEntry[] = [
   { kpm: 'Pera / Salapi', tag: 'Pera', eng: 'Money' },
   { kpm: 'Dalan', tag: 'Daan / Kalsada', eng: 'Road / Street' },
   { kpm: 'Tau', tag: 'Tao', eng: 'Person' },
-  { kpm: 'Indu / Ima', tag: 'Ina', eng: 'Mother' },
-  { kpm: 'Tatang / Ibpa', tag: 'Ama', eng: 'Father' },
+  { kpm: 'Lalaki', tag: 'Lalaki', eng: 'Man / Boy' },
+  { kpm: 'Babai', tag: 'Babae', eng: 'Woman / Girl' },
+  { kpm: 'Anak', tag: 'Bata / Anak', eng: 'Child' },
+  { kpm: 'Matua', tag: 'Matanda', eng: 'Elder / Old' },
+  { kpm: 'Indu / Ima', tag: 'Ina / Nanay', eng: 'Mother' },
+  { kpm: 'Tatang / Ibpa', tag: 'Ama / Tatay', eng: 'Father' },
   { kpm: 'Kapatad', tag: 'Kapatid', eng: 'Sibling' },
   { kpm: 'Kakaluguran', tag: 'Kaibigan', eng: 'Friend' },
-  { kpm: 'Anak', tag: 'Anak', eng: 'Child' },
   { kpm: 'Ingkung', tag: 'Lolo', eng: 'Grandfather' },
   { kpm: 'Apu / Impo', tag: 'Lola', eng: 'Grandmother' },
-  { kpm: 'Aldo', tag: 'Araw', eng: 'Day / Sun' },
+  { kpm: 'Aldo', tag: 'Araw', eng: 'Sun / Day' },
   { kpm: 'Bengi', tag: 'Gabi', eng: 'Night' },
   { kpm: 'Uran', tag: 'Ulan', eng: 'Rain' },
   { kpm: 'Hangin', tag: 'Hangin', eng: 'Wind' },
@@ -221,8 +283,8 @@ export function localTokenFallback(text: string, sourceLang: string, targetLang:
     return rawWord;
   });
 
-  // Only return if we translated at least half or significant words
-  if (matches > 0 && matches / words.length >= 0.4) {
+  // Return if we translated at least one meaningful word
+  if (matches > 0 && matches / words.length >= 0.3) {
     return translated.join(' ');
   }
 
@@ -232,7 +294,7 @@ export function localTokenFallback(text: string, sourceLang: string, targetLang:
 /**
  * 3. Free Neural Translation Engine (MyMemory)
  * Supports authentic Kapampangan (pam), Tagalog (tl), and English (en)
- * Works without an API key, perfect for client and test APK builds
+ * Includes English bridge when Tagalog-to-Kapampangan lacks a direct single word
  */
 export async function onlineNeuralTranslate(
   text: string,
@@ -270,6 +332,34 @@ export async function onlineNeuralTranslate(
           return cleaned;
         }
       }
+
+      // If direct translation returned the identical word (untranslated), bridge via English
+      if (sCode === 'tl' && tCode === 'pam') {
+        const matchEn = data?.matches?.find(
+          (m: any) => m.translation && m.translation.trim().toLowerCase() !== text.trim().toLowerCase()
+        );
+        const enBridge = matchEn?.translation;
+        if (enBridge) {
+          // Check if English word is in our dictionary
+          const dictMatch = localDictionaryTranslate(enBridge, 'English', 'Kapampangan');
+          if (dictMatch) return dictMatch;
+
+          // Query en -> pam from MyMemory
+          const bridgeRes = await fetch(
+            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(enBridge.trim())}&langpair=en|pam`
+          );
+          if (bridgeRes.ok) {
+            const bridgeData = await bridgeRes.json();
+            const bridgeRaw = bridgeData?.responseData?.translatedText;
+            if (bridgeRaw && typeof bridgeRaw === 'string' && !bridgeRaw.startsWith('MYMEMORY WARNING')) {
+              const cleanedBridge = cleanTranslationText(bridgeRaw);
+              if (cleanedBridge && cleanedBridge.toLowerCase() !== text.trim().toLowerCase()) {
+                return cleanedBridge;
+              }
+            }
+          }
+        }
+      }
     }
   } catch (err) {
     // Online request failed or timed out
@@ -280,7 +370,7 @@ export async function onlineNeuralTranslate(
 
 /**
  * 4. Google Gemini AI REST API
- * Used whenever a valid API key is present
+ * Only called if a verified Google AI Studio API key starting with 'AIza' is supplied
  */
 export async function geminiTranslate(
   text: string,
@@ -288,6 +378,10 @@ export async function geminiTranslate(
   targetLang: string,
   apiKey: string
 ): Promise<string | null> {
+  if (!isValidGeminiKey(apiKey)) {
+    return null;
+  }
+
   const prompt = `You are an expert linguist specializing in authentic Kapampangan (Amanung Sisuan), Tagalog, and English. Translate the following text from ${sourceLang} to natural, fluent ${targetLang}. Output ONLY the translated ${targetLang} text with no commentary, no markdown, and no quotes. Text to translate: "${text.trim()}"`;
 
   for (const model of GEMINI_MODELS) {
@@ -295,7 +389,7 @@ export async function geminiTranslate(
       const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
       const timeoutId = controller ? setTimeout(() => controller.abort(), 4000) : null;
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -326,8 +420,8 @@ export async function geminiTranslate(
  * Robust Multi-Tier Translator Orchestrator
  * Pipeline:
  * 1. Zero-latency exact dictionary / phrasebook match (Offline)
- * 2. Gemini AI REST API (if EXPO_PUBLIC_GEMINI_API_KEY is configured)
- * 3. High-Accuracy Neural Translation Engine (MyMemory - Free, Zero Config)
+ * 2. Gemini AI REST API (if valid Google AI Studio key starting with 'AIza' is configured)
+ * 3. High-Accuracy Neural Translation Engine (MyMemory - Free, Zero Config, with English bridge)
  * 4. Word-by-word token substitution (Offline)
  * 5. Original text fallback
  */
@@ -348,9 +442,9 @@ export async function translateText(
     return { text: exactLocal, source: 'local' };
   }
 
-  // 2. Gemini AI (if API key available)
-  if (apiKey) {
-    const geminiResult = await geminiTranslate(trimmed, sourceLang, targetLang, apiKey);
+  // 2. Gemini AI (only if key starts with AIza)
+  if (isValidGeminiKey(apiKey)) {
+    const geminiResult = await geminiTranslate(trimmed, sourceLang, targetLang, apiKey!);
     if (geminiResult) {
       return { text: geminiResult, source: 'gemini' };
     }
