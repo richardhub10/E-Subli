@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator,
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { translateText } from '../services/geminiService';
+import { translateText, TranslationResult } from '../services/geminiService';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { useProfile } from '../context/ProfileContext';
@@ -28,6 +28,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
   const [targetLanguage, setTargetLanguage] = useState<LangType>('Kapampangan');
   const [sourceText, setSourceText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
+  const [translationSource, setTranslationSource] = useState<'gemini' | 'online' | 'local'>('local');
   const [isTranslating, setIsTranslating] = useState(false);
   const [showKulitan, setShowKulitan] = useState(true);
   const [orientation, setOrientation] = useState<'Horizontal' | 'Vertical'>('Horizontal');
@@ -59,10 +60,15 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
 
     try {
       const res = await translateText(sourceText, sourceLanguage, targetLanguage, apiKey);
-      setTranslatedText(res.text);
-      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      addXP(5);
-      recordQuestAction('translator');
+      if (res && res.text) {
+        setTranslatedText(res.text);
+        setTranslationSource(res.source);
+        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        addXP(5);
+        recordQuestAction('translator');
+      } else {
+        Alert.alert("Translation Notice", "Could not complete translation. Please check your network connection.");
+      }
     } catch (err) {
       console.error("Translation Error:", err);
       Alert.alert("Translation Notice", "Could not complete translation. Please check your network connection.");
@@ -81,18 +87,16 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
   };
 
   const getKulitanSyllables = (text: string): string[][] => {
-    const words = text.toLowerCase().split(/\s+/);
+    if (!text) return [];
+    // Clean punctuation
+    const clean = text.replace(/[^a-zA-Z\s]/g, ' ').trim();
+    const words = clean.split(/\s+/).filter(Boolean);
+
     return words.map(word => {
-      const parts = word.match(/(?:ng|[bcdfghjklmnpqrstvwxyz])?[aeiou]|(?:ng|[bcdfghjklmnpqrstvwxyz])/gi);
-      if (!parts) return [word];
-      
-      return parts.map(p => {
-        if (/[aeiou]$/.test(p)) {
-          return p;
-        } else {
-          return p + 'u';
-        }
-      });
+      // Map 'ng' to uppercase 'N' for Bay_K_Pamagkulit font which maps 'N' to Nga
+      const formattedWord = word.replace(/ng/gi, 'N');
+      const parts = formattedWord.match(/(?:[bcdfghjklmnpqrstvwxyzN])?[aeiou]+|(?:[bcdfghjklmnpqrstvwxyzN])+/gi);
+      return parts && parts.length > 0 ? parts : [formattedWord];
     });
   };
 
@@ -336,8 +340,25 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
             
             {/* Result Header */}
             <View style={styles.resultHeader}>
-              <View style={styles.resultBadgePill}>
-                <Text style={styles.resultBadgeText}>{targetLanguage.toUpperCase()}</Text>
+              <View style={styles.resultBadgeRow}>
+                <View style={styles.resultBadgePill}>
+                  <Text style={styles.resultBadgeText}>{targetLanguage.toUpperCase()}</Text>
+                </View>
+
+                <View style={styles.sourceBadgePill}>
+                  <Ionicons 
+                    name={translationSource === 'local' ? 'book-outline' : 'sparkles'} 
+                    size={11} 
+                    color={translationSource === 'local' ? '#92400E' : '#B45309'} 
+                  />
+                  <Text style={styles.sourceBadgeText}>
+                    {translationSource === 'gemini' 
+                      ? 'GEMINI AI' 
+                      : translationSource === 'online' 
+                        ? 'NEURAL AI' 
+                        : 'AUTHENTIC KPM'}
+                  </Text>
+                </View>
               </View>
 
               <TouchableOpacity 
@@ -706,6 +727,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
+  resultBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   resultBadgePill: {
     backgroundColor: '#FFF7ED',
     paddingHorizontal: 8,
@@ -719,6 +745,23 @@ const styles = StyleSheet.create({
     fontSize: 9.5,
     color: '#D1582D',
     letterSpacing: 0.8,
+  },
+  sourceBadgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    gap: 3,
+  },
+  sourceBadgeText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 9,
+    color: '#B45309',
+    letterSpacing: 0.5,
   },
   copyBtn: {
     flexDirection: 'row',
