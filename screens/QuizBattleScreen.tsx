@@ -118,21 +118,27 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     }).start();
   }, [myScore, opponentScore]);
 
+  // Initialize AI match once on mount
   useEffect(() => {
+    if (!isAiMatch) return;
+
+    const initialQuestions = getRandomQuestions(30);
+    setQuestions(initialQuestions);
+    setCurrentQuestionIndex(0);
+    setMyScore(0);
+    setOpponentScore(0);
+    setStatus('playing');
+    setOpponentId(aiOpponent?.id || 'ai-opponent');
+    setOpponentName(aiOpponent?.name || 'Scholar');
+    setIsLoading(false);
+  }, []);
+
+  // Supabase subscriptions for human multiplayer only
+  useEffect(() => {
+    if (isAiMatch || !roomId) return;
+
     let roomSubscription: any;
     let playersSubscription: any;
-
-    if (isAiMatch) {
-      const initialQuestions = getRandomQuestions(30);
-      setQuestions(initialQuestions);
-      setCurrentQuestionIndex(0);
-      setStatus('playing');
-      setOpponentId(aiOpponent?.id || 'ai-opponent');
-      setOpponentName(aiOpponent?.name || 'Scholar');
-      setOpponentScore(0);
-      setIsLoading(false);
-      return;
-    }
 
     const fetchState = async () => {
       try {
@@ -253,7 +259,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       supabase.removeChannel(playersSubscription);
       supabase.removeChannel(broadcastChannelRef.current);
     };
-  }, [roomId, status, isAiMatch]);
+  }, [roomId, status]);
 
   // VS Screen Countdown Timer
   useEffect(() => {
