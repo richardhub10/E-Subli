@@ -323,10 +323,23 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       }
 
       if (isAiMatch) {
-        const minDelay = aiOpponent?.minDelay || 3000;
-        const maxDelay = aiOpponent?.maxDelay || 6000;
-        const aiDelay = Math.floor(Math.random() * (maxDelay - minDelay)) + minDelay;
-        const accuracy = aiOpponent?.accuracy || 0.75;
+        // Competitive dynamic speed & rubber-banding
+        const scoreDiff = opponentScore - myScore;
+        let baseMin = aiOpponent?.minDelay || 1900;
+        let baseMax = aiOpponent?.maxDelay || 3600;
+
+        if (scoreDiff < -10) {
+          // Opponent is trailing: speeds up to contest aggressively
+          baseMin = Math.max(1500, baseMin - 400);
+          baseMax = Math.max(2400, baseMax - 600);
+        } else if (scoreDiff > 20) {
+          // Opponent has a large lead: slight hesitation window
+          baseMin += 300;
+          baseMax += 500;
+        }
+
+        const aiDelay = Math.floor(Math.random() * (baseMax - baseMin)) + baseMin;
+        const accuracy = aiOpponent?.accuracy || 0.86;
         const willBeCorrect = Math.random() < accuracy;
 
         aiDecisionTimerRef.current = setTimeout(() => {
@@ -377,11 +390,12 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   };
 
   const handleAiTurn = (willBeCorrect: boolean, delayMs: number) => {
+    // If round was already won by user, do nothing
     if (roundWinnerName !== null || (selectedOption !== null && isCorrectSelected)) {
       return;
     }
 
-    const isFast = delayMs <= 3500;
+    const isFast = delayMs <= 3000;
     const earnedPoints = isFast ? 15 : 10;
 
     if (willBeCorrect) {
@@ -391,7 +405,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       setRoundWinnerName(opponentName);
       if (isFast) setSpeedBonusGained(true);
 
-      if (Math.random() < 0.3) {
+      if (Math.random() < 0.4) {
         triggerAiEmoji();
       }
 
@@ -408,14 +422,23 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         });
       }, 850);
     } else {
+      // Opponent missed
       opponentWrongRef.current = true;
       if (myAnswerWrongRef.current) {
-        handleTimeOut();
+        // Both answered incorrectly -> advance smoothly
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerAnim.stopAnimation();
+        setTimeout(() => {
+          handleTimeOut();
+        }, 850);
       }
     }
   };
 
   const handleTimeOut = async () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (aiDecisionTimerRef.current) clearTimeout(aiDecisionTimerRef.current);
+
     const nextIndex = currentQuestionIndex + 1;
     if (nextIndex >= questions.length) {
       setStatus('finished');
@@ -444,12 +467,13 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     
     setSelectedOption(selectedOpt);
     setIsCorrectSelected(isCorrect);
-    
-    if ((isHost || isAiMatch) && timerRef.current) clearTimeout(timerRef.current);
-    if (isAiMatch && aiDecisionTimerRef.current) clearTimeout(aiDecisionTimerRef.current);
-    timerAnim.stopAnimation();
 
     if (isCorrect) {
+      // Correct! Cancel remaining question timers and award points
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (aiDecisionTimerRef.current) clearTimeout(aiDecisionTimerRef.current);
+      timerAnim.stopAnimation();
+
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
       const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'YOU';
@@ -462,13 +486,8 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       }
       setRoundWinnerName(myName);
       if (isFast) setSpeedBonusGained(true);
-    } else {
-      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    }
 
-    setTimeout(async () => {
-      if (isCorrect) {
-        // Point reward with speed bonus (+15 for <3s, +10 standard)
+      setTimeout(async () => {
         const earnedPoints = isFast ? 15 : 10;
         const newScore = myScore + earnedPoints;
         setMyScore(newScore);
@@ -488,20 +507,84 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
             await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
           }
         }
+      }, 850);
+    } else {
+      // WRONG answer selected!
+      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      myAnswerWrongRef.current = true;
+
+      if (!isAiMatch) {
+        // Human multiplayer: broadcast wrong answer
+        broadcastChannelRef.current?.send({ type: 'broadcast', event: 'wrong_answer' });
+        if (isHost && opponentWrongRef.current) {
+          if (timerRef.current) clearTimeout(timerRef.current);
+          timerAnim.stopAnimation();
+          setTimeout(() => {
+            handleTimeOut();
+          }, 850);
+        }
       } else {
-        myAnswerWrongRef.current = true;
-        if (!isAiMatch) {
-          broadcastChannelRef.current?.send({ type: 'broadcast', event: 'wrong_answer' });
-          if (isHost && opponentWrongRef.current) {
+        // AI match: competitive opponent steals the question!
+        if (aiDecisionTimerRef.current) clearTimeout(aiDecisionTimerRef.current);
+
+        if (opponentWrongRef.current) {
+          // Opponent was already wrong -> both wrong, advance
+          if (timerRef.current) clearTimeout(timerRef.current);
+          timerAnim.stopAnimation();
+          setTimeout(() => {
             handleTimeOut();
-          }
+          }, 850);
         } else {
-          if (opponentWrongRef.current) {
+          // Competitive opponent immediately capitalizes and steals (900ms - 1400ms)
+          const stealDelay = Math.floor(Math.random() * 500) + 900;
+          const stealAccuracy = Math.min(0.93, (aiOpponent?.accuracy || 0.86) + 0.08);
+          const willStealCorrect = Math.random() < stealAccuracy;
+
+          aiDecisionTimerRef.current = setTimeout(() => {
+            if (roundWinnerName !== null) return;
+
+            if (willStealCorrect) {
+              if (timerRef.current) clearTimeout(timerRef.current);
+              timerAnim.stopAnimation();
+
+              setRoundWinnerName(opponentName);
+              const earnedPoints = 10;
+
+              if (Math.random() < 0.35) {
+                triggerAiEmoji();
+              }
+
+              setTimeout(() => {
+                setOpponentScore(prev => {
+                  const newScore = prev + earnedPoints;
+                  const nextIndex = currentQuestionIndex + 1;
+                  if (newScore >= 60 || nextIndex >= questions.length) {
+                    setStatus('finished');
+                  } else {
+                    setCurrentQuestionIndex(nextIndex);
+                  }
+                  return newScore;
+                });
+              }, 850);
+            } else {
+              // Opponent also missed! Both are wrong -> advance
+              opponentWrongRef.current = true;
+              if (timerRef.current) clearTimeout(timerRef.current);
+              timerAnim.stopAnimation();
+              setTimeout(() => {
+                handleTimeOut();
+              }, 850);
+            }
+          }, stealDelay);
+
+          // Guaranteed failsafe timeout: never ever hang!
+          if (timerRef.current) clearTimeout(timerRef.current);
+          timerRef.current = setTimeout(() => {
             handleTimeOut();
-          }
+          }, 2800);
         }
       }
-    }, 850);
+    }
   };
 
   const requestRematch = async () => {
