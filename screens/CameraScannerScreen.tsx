@@ -481,14 +481,20 @@ If unreadable or blank:
                     </View>
 
                     {/* Recognition Engine Badge */}
-                    <View style={styles.engineBadgePill}>
+                    <View style={[
+                      styles.engineBadgePill,
+                      scanResult.engine === 'neural_net' ? styles.engineBadgeNeural : styles.engineBadgeGemini
+                    ]}>
                       <Ionicons 
-                        name={scanResult.engine === 'gemini' ? 'sparkles' : 'shield-checkmark-outline'} 
+                        name={scanResult.engine === 'gemini' ? 'sparkles' : 'hardware-chip'} 
                         size={11} 
-                        color="#B45309" 
+                        color={scanResult.engine === 'gemini' ? "#B45309" : "#1D4ED8"} 
                       />
-                      <Text style={styles.engineBadgeText}>
-                        {scanResult.engine === 'gemini' ? 'GEMINI VISION' : 'CALIBRATED ML'}
+                      <Text style={[
+                        styles.engineBadgeText,
+                        { color: scanResult.engine === 'gemini' ? "#B45309" : "#1D4ED8" }
+                      ]}>
+                        {scanResult.engine === 'gemini' ? 'GEMINI VISION' : 'NEURAL NET ML'}
                       </Text>
                     </View>
                   </View>
@@ -557,6 +563,39 @@ If unreadable or blank:
                             {scanResult.strokeAccuracy}
                           </Text>
                           <Text style={styles.metricLabel}>{language === 'EN' ? 'Form Precision' : 'Katumpakan'}</Text>
+                        </View>
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Neural Network Softmax Probability Card */}
+                  {scanResult.recognized && scanResult.neuralBreakdown && (
+                    <View style={styles.neuralCard}>
+                      <View style={styles.neuralHeader}>
+                        <Ionicons name="hardware-chip-outline" size={15} color="#2563EB" />
+                        <Text style={styles.neuralTitle}>
+                          {language === 'EN' ? 'Neural Network Classification' : 'Prediksyon ng Neural Network'}
+                        </Text>
+                      </View>
+                      <View style={styles.neuralRow}>
+                        <View style={styles.neuralClassCol}>
+                          <Text style={styles.neuralClassLabel}>{language === 'EN' ? 'Top Prediction' : 'Pangunahing Titik'}</Text>
+                          <Text style={styles.neuralClassText}>{scanResult.neuralBreakdown.topClass}</Text>
+                          <View style={styles.probBarBg}>
+                            <View style={[styles.probBarFill, { width: `${Math.min(100, Math.max(12, scanResult.neuralBreakdown.topProbability))}%` }]} />
+                          </View>
+                          <Text style={styles.probText}>{scanResult.neuralBreakdown.topProbability}% confidence</Text>
+                        </View>
+
+                        <View style={styles.neuralDivider} />
+
+                        <View style={styles.neuralClassCol}>
+                          <Text style={styles.neuralClassLabel}>{language === 'EN' ? 'Runner-Up' : 'Ikalawang Titik'}</Text>
+                          <Text style={styles.neuralClassTextSecondary}>{scanResult.neuralBreakdown.runnerUpClass}</Text>
+                          <View style={styles.probBarBg}>
+                            <View style={[styles.probBarFillSecondary, { width: `${Math.min(100, Math.max(8, scanResult.neuralBreakdown.runnerUpProbability))}%` }]} />
+                          </View>
+                          <Text style={styles.probTextSecondary}>{scanResult.neuralBreakdown.runnerUpProbability}%</Text>
                         </View>
                       </View>
                     </View>
@@ -1101,10 +1140,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#FEF3C7',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
+  },
+  engineBadgeNeural: {
+    backgroundColor: '#DBEAFE',
+  },
+  engineBadgeGemini: {
+    backgroundColor: '#FEF3C7',
   },
   engineBadgeText: {
     fontFamily: 'Poppins_600SemiBold',
@@ -1223,6 +1267,84 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#64748B',
     marginTop: 2,
+  },
+  neuralCard: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1.2,
+    borderColor: '#BFDBFE',
+    marginBottom: 14,
+  },
+  neuralHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
+  },
+  neuralTitle: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 12,
+    color: '#1D4ED8',
+  },
+  neuralRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  neuralClassCol: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  neuralClassLabel: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 10,
+    color: '#64748B',
+    marginBottom: 2,
+  },
+  neuralClassText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 22,
+    color: '#1E40AF',
+  },
+  neuralClassTextSecondary: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 18,
+    color: '#64748B',
+  },
+  probBarBg: {
+    width: '80%',
+    height: 6,
+    backgroundColor: '#DBEAFE',
+    borderRadius: 3,
+    marginVertical: 4,
+    overflow: 'hidden',
+  },
+  probBarFill: {
+    height: '100%',
+    backgroundColor: '#2563EB',
+    borderRadius: 3,
+  },
+  probBarFillSecondary: {
+    height: '100%',
+    backgroundColor: '#94A3B8',
+    borderRadius: 3,
+  },
+  probText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11,
+    color: '#1D4ED8',
+  },
+  probTextSecondary: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 10.5,
+    color: '#64748B',
+  },
+  neuralDivider: {
+    width: 1,
+    height: 48,
+    backgroundColor: '#BFDBFE',
+    marginHorizontal: 8,
   },
   feedbackCard: {
     backgroundColor: '#FFF7ED',

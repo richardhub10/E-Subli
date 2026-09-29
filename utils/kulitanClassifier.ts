@@ -2,6 +2,7 @@ import { decode as b64decode } from 'base64-arraybuffer';
 import { decode as decodeJpeg } from 'jpeg-js';
 import { kulitanPoints } from '../data/kulitanPoints';
 import { kulitanSyllables, SyllableData } from '../data/kulitanData';
+import { KULITAN_NEURAL_WEIGHTS } from './kulitanNeuralModel';
 
 export type ScanResult = {
   recognized: boolean;
@@ -12,11 +13,18 @@ export type ScanResult = {
   transliteration: string;
   feedback: string;
   strokeAccuracy: 'High' | 'Moderate' | 'Needs Practice';
-  engine?: 'gemini' | 'calibrated_cv';
+  engine?: 'gemini' | 'neural_net' | 'calibrated_cv';
   similarityBreakdown?: {
     chamferScore: number;
     spatialAlignment: number;
     strokeCoverage: number;
+  };
+  neuralBreakdown?: {
+    topClass: string;
+    topProbability: number;
+    runnerUpClass: string;
+    runnerUpProbability: number;
+    contourFit: number;
   };
 };
 
@@ -31,10 +39,78 @@ type NormalizedPrototype = {
   centroid: Point;
 };
 
+// ==========================================
+// 1. NEURAL NETWORK INFERENCE ENGINE (LeakyReLU + Dense + Softmax)
+// ==========================================
+const model = KULITAN_NEURAL_WEIGHTS;
+const W1 = new Float32Array(b64decode(model.w1));
+const b1 = new Float32Array(b64decode(model.b1));
+const W2 = new Float32Array(b64decode(model.w2));
+const b2 = new Float32Array(b64decode(model.b2));
+const W3 = new Float32Array(b64decode(model.w3));
+const b3 = new Float32Array(b64decode(model.b3));
+
+export type NeuralPrediction = {
+  class: string;
+  prob: number;
+};
+
 /**
- * Normalizes point sets to a unit box [0, 1] while preserving aspect ratio,
- * and resamples into a fixed count of evenly spaced points.
+ * Executes feedforward pass through the trained 3-layer Kulitan Neural Network
  */
+export function runNeuralInference(inputTensor784: Float32Array): NeuralPrediction[] {
+  const h1 = new Float32Array(model.h1Dim);
+  for (let j = 0; j < model.h1Dim; j++) {
+    let sum = b1[j];
+    const offset = j * model.inputDim;
+    for (let i = 0; i < model.inputDim; i++) {
+      sum += inputTensor784[i] * W1[offset + i];
+    }
+    h1[j] = sum > 0 ? sum : 0.01 * sum; // Leaky ReLU
+  }
+
+  const h2 = new Float32Array(model.h2Dim);
+  for (let j = 0; j < model.h2Dim; j++) {
+    let sum = b2[j];
+    const offset = j * model.h1Dim;
+    for (let i = 0; i < model.h1Dim; i++) {
+      sum += h1[i] * W2[offset + i];
+    }
+    h2[j] = sum > 0 ? sum : 0.01 * sum; // Leaky ReLU
+  }
+
+  const logits = new Float32Array(model.numClasses);
+  let maxLogit = -Infinity;
+  for (let j = 0; j < model.numClasses; j++) {
+    let sum = b3[j];
+    const offset = j * model.h2Dim;
+    for (let i = 0; i < model.h2Dim; i++) {
+      sum += h2[i] * W3[offset + i];
+    }
+    logits[j] = sum;
+    if (sum > maxLogit) maxLogit = sum;
+  }
+
+  let sumExp = 0;
+  const probs = new Float32Array(model.numClasses);
+  for (let j = 0; j < model.numClasses; j++) {
+    const e = Math.exp(logits[j] - maxLogit);
+    probs[j] = e;
+    sumExp += e;
+  }
+  for (let j = 0; j < model.numClasses; j++) {
+    probs[j] /= sumExp;
+  }
+
+  return model.classes.map((cls, idx) => ({
+    class: cls,
+    prob: parseFloat((probs[idx] * 100).toFixed(1))
+  })).sort((a, b) => b.prob - a.prob);
+}
+
+// ==========================================
+// 2. CONTOUR & CHAMFER DISTANCE PROTOTYPES
+// ==========================================
 function normalizeAndResamplePoints(pts: Point[], targetCount = 80): { points: Point[]; aspectRatio: number; centroid: Point } {
   if (pts.length === 0) {
     return { points: [], aspectRatio: 1, centroid: { x: 0.5, y: 0.5 } };
@@ -59,7 +135,6 @@ function normalizeAndResamplePoints(pts: Point[], targetCount = 80): { points: P
   const offsetX = (maxDim - w) / 2;
   const offsetY = (maxDim - h) / 2;
 
-  // Scale and center points inside [0, 1]
   const normalized = pts.map(p => ({
     x: ((p.x - minX) + offsetX) / maxDim,
     y: ((p.y - minY) + offsetY) / maxDim,
@@ -69,17 +144,6 @@ function normalizeAndResamplePoints(pts: Point[], targetCount = 80): { points: P
     x: (sumX / pts.length - minX + offsetX) / maxDim,
     y: (sumY / pts.length - minY + offsetY) / maxDim,
   };
-
-  // Resample to exact targetCount evenly along the point path
-  if (normalized.length <= targetCount) {
-    const resampled: Point[] = [];
-    const step = normalized.length / targetCount;
-    for (let i = 0; i < targetCount; i++) {
-      const idx = Math.min(normalized.length - 1, Math.floor(i * step));
-      resampled.push(normalized[idx]);
-    }
-    return { points: resampled, aspectRatio: h / w, centroid };
-  }
 
   const resampled: Point[] = [];
   const step = (normalized.length - 1) / (targetCount - 1);
@@ -91,7 +155,6 @@ function normalizeAndResamplePoints(pts: Point[], targetCount = 80): { points: P
   return { points: resampled, aspectRatio: h / w, centroid };
 }
 
-// Pre-compute & cache authentic Kulitan shape prototypes at module initialization
 const PROTOTYPES: NormalizedPrototype[] = (() => {
   const list: NormalizedPrototype[] = [];
   for (const [key, shape] of Object.entries(kulitanPoints)) {
@@ -120,10 +183,6 @@ const PROTOTYPES: NormalizedPrototype[] = (() => {
   return list;
 })();
 
-/**
- * Bidirectional Chamfer Distance between two normalized point sets A and B.
- * Evaluates the geometric Hausdorff proximity of stroke paths.
- */
 function computeChamferDistance(ptsA: Point[], ptsB: Point[]): number {
   if (ptsA.length === 0 || ptsB.length === 0) return 1.0;
 
@@ -158,22 +217,22 @@ function computeChamferDistance(ptsA: Point[], ptsB: Point[]): number {
   return (sumAtoB / ptsA.length + sumBtoA / ptsB.length) / 2;
 }
 
-/**
- * Extracts stroke contours and handwriting quality parameters from raw decoded image pixels.
- */
-function extractStrokeFeatures(
+// ==========================================
+// 3. IMAGE PREPROCESSING & 28x28 TENSOR GENERATION
+// ==========================================
+function extractStrokeAndTensor(
   width: number,
   height: number,
   rgba: Uint8Array
 ): {
-  points: Point[];
+  tensor28x28: Float32Array;
+  contourPoints: Point[];
   inkRatio: number;
   isBlank: boolean;
   isTooDark: boolean;
   isTooSmall: boolean;
 } {
-  // Downsample large images for rapid, low-latency execution (< 15ms)
-  const maxDim = 120;
+  const maxDim = 140;
   const step = Math.max(1, Math.floor(Math.max(width, height) / maxDim));
   const sampleW = Math.floor(width / step);
   const sampleH = Math.floor(height / step);
@@ -190,7 +249,6 @@ function extractStrokeFeatures(
       const r = rgba[idx];
       const g = rgba[idx + 1];
       const b = rgba[idx + 2];
-      // Perceived standard ITU-R BT.601 luminance
       const luma = 0.299 * r + 0.587 * g + 0.114 * b;
       lumaGrid[sy][sx] = luma;
       totalLuma += luma;
@@ -199,7 +257,6 @@ function extractStrokeFeatures(
   }
 
   const avgLuma = totalLuma / (pixelCount || 1);
-  // Adaptive threshold based on local lighting and contrast
   const inkThreshold = Math.min(185, Math.max(65, avgLuma * 0.74));
 
   let inkCount = 0;
@@ -220,46 +277,75 @@ function extractStrokeFeatures(
   }
 
   const inkRatio = inkCount / (pixelCount || 1);
+  const emptyTensor = new Float32Array(28 * 28);
 
-  // Blank surface / Lack of ink check
   if (inkRatio < 0.003 || inkCount < 12) {
-    return { points: [], inkRatio, isBlank: true, isTooDark: false, isTooSmall: false };
+    return { tensor28x28: emptyTensor, contourPoints: [], inkRatio, isBlank: true, isTooDark: false, isTooSmall: false };
   }
 
-  // Saturated / Solid dark image check
   if (inkRatio > 0.82) {
-    return { points: [], inkRatio, isBlank: false, isTooDark: true, isTooSmall: false };
+    return { tensor28x28: emptyTensor, contourPoints: [], inkRatio, isBlank: false, isTooDark: true, isTooSmall: false };
   }
 
   const bboxW = maxX - minX + 1;
   const bboxH = maxY - minY + 1;
 
   if (bboxW < 8 || bboxH < 8 || inkCount < 20) {
-    return { points: [], inkRatio, isBlank: false, isTooDark: false, isTooSmall: true };
+    return { tensor28x28: emptyTensor, contourPoints: [], inkRatio, isBlank: false, isTooDark: false, isTooSmall: true };
   }
 
-  // Extract stroke contour / edge points
+  // Extract edge contour points
   const contourPoints: Point[] = [];
   for (let y = minY; y <= maxY; y++) {
     for (let x = minX; x <= maxX; x++) {
       if (isInk[y][x]) {
         let isEdge = false;
-        // 4-neighborhood boundary check
         if (
           y === 0 || y === sampleH - 1 || x === 0 || x === sampleW - 1 ||
           !isInk[y - 1][x] || !isInk[y + 1][x] || !isInk[y][x - 1] || !isInk[y][x + 1]
         ) {
           isEdge = true;
         }
-        if (isEdge) {
-          contourPoints.push({ x, y });
+        if (isEdge) contourPoints.push({ x, y });
+      }
+    }
+  }
+
+  // Render centered 28x28 normalized grayscale tensor for Neural Network
+  const tensor28x28 = new Float32Array(28 * 28);
+  const maxBboxDim = Math.max(bboxW, bboxH);
+  const targetDim = 19;
+  const scale = targetDim / maxBboxDim;
+  const midX = (minX + maxX) / 2;
+  const midY = (minY + maxY) / 2;
+
+  for (let y = minY; y <= maxY; y++) {
+    for (let x = minX; x <= maxX; x++) {
+      if (isInk[y][x]) {
+        const nx = Math.round(14 + (x - midX) * scale);
+        const ny = Math.round(14 + (y - midY) * scale);
+        if (nx >= 0 && nx < 28 && ny >= 0 && ny < 28) {
+          tensor28x28[ny * 28 + nx] = 1.0;
+          // Soft 3x3 anti-aliasing
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              const ax = nx + dx;
+              const ay = ny + dy;
+              if (ax >= 0 && ax < 28 && ay >= 0 && ay < 28) {
+                const idx = ay * 28 + ax;
+                const v = 0.5;
+                if (v > tensor28x28[idx]) tensor28x28[idx] = v;
+              }
+            }
+          }
         }
       }
     }
   }
 
   return {
-    points: contourPoints,
+    tensor28x28,
+    contourPoints,
     inkRatio,
     isBlank: false,
     isTooDark: false,
@@ -267,12 +353,8 @@ function extractStrokeFeatures(
   };
 }
 
-/**
- * Safely decodes base64 JPEG payload into raw pixel data using jpeg-js
- */
 function decodeBase64ToRgba(base64: string): { width: number; height: number; data: Uint8Array } | null {
   try {
-    // Strip optional data URI prefix if present
     const cleanB64 = base64.includes(',') ? base64.split(',')[1] : base64;
     const arrayBuffer = b64decode(cleanB64);
     const uint8 = new Uint8Array(arrayBuffer);
@@ -288,10 +370,9 @@ function decodeBase64ToRgba(base64: string): { width: number; height: number; da
   }
 }
 
-/**
- * Core Calibrated Machine Learning Classifier for Sulat Kapampangan (Kulitan)
- * Evaluates stroke topology, Chamfer distance, structural transitions, and paleographic rules.
- */
+// ==========================================
+// 4. MAIN CLASSIFIER (Hybrid Deep Neural Network + Chamfer Ensemble)
+// ==========================================
 export async function classifyKulitanHandwriting(
   base64: string | null,
   targetSyllable?: string | null,
@@ -309,7 +390,7 @@ export async function classifyKulitanHandwriting(
         ? 'No clear handwriting strokes detected in frame. Please write with bold, dark ink on plain paper.'
         : 'Walang malinaw na sulat-kamay na nakita. Mangyaring sumulat gamit ang maitim na tinta sa malinis na papel.',
       strokeAccuracy: 'Needs Practice',
-      engine: 'calibrated_cv',
+      engine: 'neural_net',
     };
   }
 
@@ -326,11 +407,11 @@ export async function classifyKulitanHandwriting(
         ? 'Could not parse captured image. Please retake the photo under clear lighting.'
         : 'Hindi maiproseso ang larawan. Mangyaring kumuha muli nang may sapat na liwanag.',
       strokeAccuracy: 'Needs Practice',
-      engine: 'calibrated_cv',
+      engine: 'neural_net',
     };
   }
 
-  const features = extractStrokeFeatures(bitmap.width, bitmap.height, bitmap.data);
+  const features = extractStrokeAndTensor(bitmap.width, bitmap.height, bitmap.data);
 
   if (features.isBlank) {
     return {
@@ -344,7 +425,7 @@ export async function classifyKulitanHandwriting(
         ? 'Surface appears blank or without contrast. Write your Kulitan character boldly and align it inside the reticle.'
         : 'Mukhang walang guhit o kulang sa liwanag ang kuha. Isulat nang malinaw ang titik Kulitan sa loob ng gabay.',
       strokeAccuracy: 'Needs Practice',
-      engine: 'calibrated_cv',
+      engine: 'neural_net',
     };
   }
 
@@ -360,7 +441,7 @@ export async function classifyKulitanHandwriting(
         ? 'Image has too much glare or shadow. Move away from harsh light and use plain white paper.'
         : 'Masyadong madilim o may matinding anino ang kuha. Gumamit ng puting papel at iwasan ang silaw.',
       strokeAccuracy: 'Needs Practice',
-      engine: 'calibrated_cv',
+      engine: 'neural_net',
     };
   }
 
@@ -376,20 +457,21 @@ export async function classifyKulitanHandwriting(
         ? 'The drawn stroke is too small or faint. Fill the viewfinder with a full Kulitan character.'
         : 'Masyadong maliit o malabo ang guhit. Punuin ang gabay ng buong titik Kulitan.',
       strokeAccuracy: 'Needs Practice',
-      engine: 'calibrated_cv',
+      engine: 'neural_net',
     };
   }
 
-  // Normalize user stroke points
-  const userNorm = normalizeAndResamplePoints(features.points, 80);
+  // 1. Run Machine Learning Neural Network Inference
+  const neuralPredictions = runNeuralInference(features.tensor28x28);
+  const top1 = neuralPredictions[0];
+  const top2 = neuralPredictions[1];
 
-  // Score distance against all 47 authentic prototypes
+  // 2. Run Geometric Chamfer Metric Evaluation
+  const userNorm = normalizeAndResamplePoints(features.contourPoints, 80);
   const scoredPrototypes = PROTOTYPES.map(proto => {
     const chamfer = computeChamferDistance(userNorm.points, proto.points);
     const aspectDiff = Math.abs(userNorm.aspectRatio - proto.aspectRatio);
     const centroidDiff = Math.hypot(userNorm.centroid.x - proto.centroid.x, userNorm.centroid.y - proto.centroid.y);
-
-    // Multi-feature ensemble distance metric
     const totalDist = chamfer + aspectDiff * 0.08 + centroidDiff * 0.12;
 
     return {
@@ -401,109 +483,125 @@ export async function classifyKulitanHandwriting(
     };
   }).sort((a, b) => a.distance - b.distance);
 
-  const best = scoredPrototypes[0];
+  const bestChamfer = scoredPrototypes[0];
 
   // ==========================================
   // CASE A: User selected a specific Target Syllable
   // ==========================================
   if (targetSyllable) {
     const cleanTarget = targetSyllable.toLowerCase().trim();
-    const targetMatch = scoredPrototypes.find(
+    const targetProtoMatch = scoredPrototypes.find(
       p => p.proto.latin.toLowerCase() === cleanTarget || p.proto.key.toLowerCase() === cleanTarget
     );
 
-    if (targetMatch) {
-      const { proto, chamfer } = targetMatch;
-      const isTargetTop1 = best.proto.key.toLowerCase() === proto.key.toLowerCase();
-      const isTargetTop2 = scoredPrototypes.slice(0, 3).some(p => p.proto.key.toLowerCase() === proto.key.toLowerCase());
+    const targetNeuralRank = neuralPredictions.find(
+      p => p.class.toLowerCase() === cleanTarget
+    );
 
-      // Calibrated accuracy scoring
-      let confidence: number;
-      let strokeAccuracy: 'High' | 'Moderate' | 'Needs Practice';
-      let feedback: string;
+    const targetProb = targetNeuralRank ? targetNeuralRank.prob : 0;
+    const targetChamfer = targetProtoMatch ? targetProtoMatch.chamfer : 1.0;
+    const proto = targetProtoMatch ? targetProtoMatch.proto : bestChamfer.proto;
 
-      if (chamfer <= 0.055 || (isTargetTop1 && chamfer <= 0.075)) {
-        // High Accuracy Match
-        confidence = Math.min(98, Math.max(90, Math.round(100 - chamfer * 160)));
-        strokeAccuracy = 'High';
-        feedback = language === 'EN'
-          ? `Outstanding ${proto.latin.toUpperCase()} stroke formation! ${proto.syllableData.writingRule}`
-          : `Napakahusay na pagsulat ng ${proto.latin.toUpperCase()}! ${proto.syllableData.writingRule}`;
-      } else if (isTargetTop2 && chamfer <= 0.095) {
-        // Moderate Accuracy
-        confidence = Math.min(88, Math.max(74, Math.round(92 - chamfer * 180)));
-        strokeAccuracy = 'Moderate';
-        feedback = language === 'EN'
-          ? `Good attempt at ${proto.latin.toUpperCase()}! Check stroke balance: ${proto.syllableData.writingRule}`
-          : `Magandang simula para sa ${proto.latin.toUpperCase()}! Ayusin ang kurba: ${proto.syllableData.writingRule}`;
-      } else {
-        // Divergent stroke (Looks more like another glyph)
-        confidence = Math.max(28, Math.min(62, Math.round(75 - chamfer * 220)));
-        strokeAccuracy = 'Needs Practice';
-        const competingChar = best.proto.latin.toUpperCase();
-        feedback = language === 'EN'
-          ? `Your stroke resembles "${competingChar}" more than "${proto.latin.toUpperCase()}". Reminder: ${proto.syllableData.writingRule}`
-          : `Mas hawig sa "${competingChar}" kaysa "${proto.latin.toUpperCase()}". Paalala: ${proto.syllableData.writingRule}`;
-      }
+    // Check if target is top prediction in Neural Net or Chamfer
+    const isTargetTopNeural = top1.class.toLowerCase() === cleanTarget;
+    const isTargetTopChamfer = bestChamfer.proto.key.toLowerCase() === cleanTarget;
 
-      return {
-        recognized: confidence >= 70,
-        character: proto.latin.toUpperCase(),
-        kulitanSymbol: proto.syllableData.kulitanSymbol,
-        confidence,
-        type: proto.syllableData.classification,
-        transliteration: proto.latin,
-        feedback,
-        strokeAccuracy,
-        engine: 'calibrated_cv',
-        similarityBreakdown: {
-          chamferScore: Math.round((1 - Math.min(1, chamfer * 10)) * 100),
-          spatialAlignment: Math.round((1 - Math.min(1, targetMatch.centroidDiff * 4)) * 100),
-          strokeCoverage: Math.round(features.inkRatio * 1000),
-        },
-      };
+    let confidence: number;
+    let strokeAccuracy: 'High' | 'Moderate' | 'Needs Practice';
+    let feedback: string;
+
+    if ((isTargetTopNeural && targetProb >= 65) || (targetChamfer <= 0.058)) {
+      // High Accuracy Neural Confirmation
+      confidence = Math.min(99, Math.max(90, Math.round(0.55 * targetProb + 0.45 * (100 - targetChamfer * 150))));
+      strokeAccuracy = 'High';
+      feedback = language === 'EN'
+        ? `Super accurate ${proto.latin.toUpperCase()}! Neural Network confidence: ${targetProb}%. ${proto.syllableData.writingRule}`
+        : `Napakataas na katumpakan para sa ${proto.latin.toUpperCase()}! Kumpiyansa ng Neural Network: ${targetProb}%. ${proto.syllableData.writingRule}`;
+    } else if (targetProb >= 25 || targetChamfer <= 0.09) {
+      // Moderate Accuracy
+      confidence = Math.min(88, Math.max(72, Math.round(0.50 * targetProb + 0.50 * (95 - targetChamfer * 180))));
+      strokeAccuracy = 'Moderate';
+      feedback = language === 'EN'
+        ? `Recognized as ${proto.latin.toUpperCase()} (Neural Net: ${targetProb}%). Stroke curvature can be improved: ${proto.syllableData.writingRule}`
+        : `Kinilala bilang ${proto.latin.toUpperCase()} (${targetProb}%). Maaari pang ayusin ang arko: ${proto.syllableData.writingRule}`;
+    } else {
+      // Divergent stroke (User drew another character)
+      const competitorName = top1.class.toUpperCase();
+      confidence = Math.max(25, Math.min(58, Math.round(targetProb * 0.8 + 20)));
+      strokeAccuracy = 'Needs Practice';
+      feedback = language === 'EN'
+        ? `Neural network detects "${competitorName}" (${top1.prob}%) instead of "${proto.latin.toUpperCase()}". Note: ${proto.syllableData.writingRule}`
+        : `Natukoy ng Neural Network ang "${competitorName}" (${top1.prob}%) kaysa "${proto.latin.toUpperCase()}". Paalala: ${proto.syllableData.writingRule}`;
     }
+
+    return {
+      recognized: confidence >= 70,
+      character: proto.latin.toUpperCase(),
+      kulitanSymbol: proto.syllableData.kulitanSymbol,
+      confidence,
+      type: proto.syllableData.classification,
+      transliteration: proto.latin,
+      feedback,
+      strokeAccuracy,
+      engine: 'neural_net',
+      similarityBreakdown: {
+        chamferScore: Math.round((1 - Math.min(1, targetChamfer * 10)) * 100),
+        spatialAlignment: Math.round((1 - Math.min(1, (targetProtoMatch?.centroidDiff || 0.1) * 4)) * 100),
+        strokeCoverage: Math.round(features.inkRatio * 1000),
+      },
+      neuralBreakdown: {
+        topClass: top1.class.toUpperCase(),
+        topProbability: top1.prob,
+        runnerUpClass: top2.class.toUpperCase(),
+        runnerUpProbability: top2.prob,
+        contourFit: Math.round((1 - Math.min(1, targetChamfer * 10)) * 100),
+      },
+    };
   }
 
   // ==========================================
-  // CASE B: Auto-Detect Mode
+  // CASE B: Auto-Detect Mode (Neural Network Top Decision)
   // ==========================================
-  const topProto = best.proto;
-  const topChamfer = best.chamfer;
+  // Find prototype for neural top1
+  const neuralProto = PROTOTYPES.find(p => p.key.toLowerCase() === top1.class.toLowerCase()) || bestChamfer.proto;
+  const neuralChamferMatch = scoredPrototypes.find(p => p.proto.key.toLowerCase() === top1.class.toLowerCase());
+  const contourDist = neuralChamferMatch ? neuralChamferMatch.chamfer : bestChamfer.chamfer;
 
-  // Confidence is inversely proportional to Chamfer Distance
-  let confidence: number;
+  // Calibrate overall confidence from Neural Softmax and Chamfer distance
+  const neuralConfidence = top1.prob;
+  const contourConfidence = Math.max(50, Math.round(100 - contourDist * 180));
+  const finalConfidence = Math.min(99, Math.max(55, Math.round(0.60 * neuralConfidence + 0.40 * contourConfidence)));
+
   let strokeAccuracy: 'High' | 'Moderate' | 'Needs Practice';
-
-  if (topChamfer <= 0.052) {
-    confidence = Math.min(97, Math.max(90, Math.round(100 - topChamfer * 180)));
-    strokeAccuracy = 'High';
-  } else if (topChamfer <= 0.082) {
-    confidence = Math.min(88, Math.max(75, Math.round(92 - topChamfer * 180)));
-    strokeAccuracy = 'Moderate';
-  } else {
-    confidence = Math.min(72, Math.max(52, Math.round(82 - topChamfer * 200)));
-    strokeAccuracy = 'Needs Practice';
-  }
+  if (finalConfidence >= 88) strokeAccuracy = 'High';
+  else if (finalConfidence >= 72) strokeAccuracy = 'Moderate';
+  else strokeAccuracy = 'Needs Practice';
 
   const feedback = language === 'EN'
-    ? `Recognized as ${topProto.latin.toUpperCase()} (${topProto.syllableData.classification}). ${topProto.syllableData.writingRule}`
-    : `Kinilala bilang ${topProto.latin.toUpperCase()} (${topProto.syllableData.classification}). ${topProto.syllableData.writingRule}`;
+    ? `Machine Learning classified as ${neuralProto.latin.toUpperCase()} (${neuralConfidence}% Neural Probability). ${neuralProto.syllableData.writingRule}`
+    : `Tinukoy ng Machine Learning bilang ${neuralProto.latin.toUpperCase()} (${neuralConfidence}% Neural Probability). ${neuralProto.syllableData.writingRule}`;
 
   return {
     recognized: true,
-    character: topProto.latin.toUpperCase(),
-    kulitanSymbol: topProto.syllableData.kulitanSymbol,
-    confidence,
-    type: topProto.syllableData.classification,
-    transliteration: topProto.latin,
+    character: neuralProto.latin.toUpperCase(),
+    kulitanSymbol: neuralProto.syllableData.kulitanSymbol,
+    confidence: finalConfidence,
+    type: neuralProto.syllableData.classification,
+    transliteration: neuralProto.latin,
     feedback,
     strokeAccuracy,
-    engine: 'calibrated_cv',
+    engine: 'neural_net',
     similarityBreakdown: {
-      chamferScore: Math.round((1 - Math.min(1, topChamfer * 10)) * 100),
-      spatialAlignment: Math.round((1 - Math.min(1, best.centroidDiff * 4)) * 100),
+      chamferScore: Math.round((1 - Math.min(1, contourDist * 10)) * 100),
+      spatialAlignment: Math.round((1 - Math.min(1, (neuralChamferMatch?.centroidDiff || 0.1) * 4)) * 100),
       strokeCoverage: Math.round(features.inkRatio * 1000),
+    },
+    neuralBreakdown: {
+      topClass: top1.class.toUpperCase(),
+      topProbability: top1.prob,
+      runnerUpClass: top2.class.toUpperCase(),
+      runnerUpProbability: top2.prob,
+      contourFit: Math.round((1 - Math.min(1, contourDist * 10)) * 100),
     },
   };
 }
