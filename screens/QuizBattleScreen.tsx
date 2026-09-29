@@ -10,6 +10,7 @@ import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useOnlinePresence } from '../context/OnlinePresenceContext';
 import { getRandomQuestions } from '../utils/quizQuestions';
+import { AiOpponent } from '../utils/aiOpponents';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -25,7 +26,7 @@ type FloatingEmoji = {
 };
 
 export default function QuizBattleScreen({ navigation, route }: Props) {
-  const { roomId, roomCode, isHost } = route?.params || {};
+  const { roomId, roomCode, isHost, isAiMatch, aiOpponent } = route?.params || {};
   const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
   const { t, language } = useLanguage();
@@ -38,8 +39,8 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   
   const [myScore, setMyScore] = useState(0);
   const [opponentScore, setOpponentScore] = useState(0);
-  const [opponentId, setOpponentId] = useState<string | null>(null);
-  const [opponentName, setOpponentName] = useState<string>('OPPONENT');
+  const [opponentId, setOpponentId] = useState<string | null>(isAiMatch && aiOpponent?.id ? aiOpponent.id : null);
+  const [opponentName, setOpponentName] = useState<string>(isAiMatch && aiOpponent?.name ? aiOpponent.name : 'OPPONENT');
   const [opponentAvatar, setOpponentAvatar] = useState<string | null>(null);
   
   const [isLoading, setIsLoading] = useState(true);
@@ -67,6 +68,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (aiDecisionTimerRef.current) clearTimeout(aiDecisionTimerRef.current);
     };
   }, []);
 
@@ -80,6 +82,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   }, []);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const aiDecisionTimerRef = useRef<NodeJS.Timeout | null>(null);
   const broadcastChannelRef = useRef<any>(null);
   
   const myAnswerWrongRef = useRef(false);
@@ -118,6 +121,18 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   useEffect(() => {
     let roomSubscription: any;
     let playersSubscription: any;
+
+    if (isAiMatch) {
+      const initialQuestions = getRandomQuestions(30);
+      setQuestions(initialQuestions);
+      setCurrentQuestionIndex(0);
+      setStatus('playing');
+      setOpponentId(aiOpponent?.id || 'ai-opponent');
+      setOpponentName(aiOpponent?.name || 'Scholar');
+      setOpponentScore(0);
+      setIsLoading(false);
+      return;
+    }
 
     const fetchState = async () => {
       try {
@@ -238,7 +253,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       supabase.removeChannel(playersSubscription);
       supabase.removeChannel(broadcastChannelRef.current);
     };
-  }, [roomId, status]);
+  }, [roomId, status, isAiMatch]);
 
   // VS Screen Countdown Timer
   useEffect(() => {
@@ -301,14 +316,27 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         ])
       ).start();
 
-      if (isHost) {
+      if (isHost || isAiMatch) {
         timerRef.current = setTimeout(() => {
            handleTimeOut();
         }, 10000);
       }
 
+      if (isAiMatch) {
+        const minDelay = aiOpponent?.minDelay || 3000;
+        const maxDelay = aiOpponent?.maxDelay || 6000;
+        const aiDelay = Math.floor(Math.random() * (maxDelay - minDelay)) + minDelay;
+        const accuracy = aiOpponent?.accuracy || 0.75;
+        const willBeCorrect = Math.random() < accuracy;
+
+        aiDecisionTimerRef.current = setTimeout(() => {
+          handleAiTurn(willBeCorrect, aiDelay);
+        }, aiDelay);
+      }
+
       return () => {
         if (timerRef.current) clearTimeout(timerRef.current);
+        if (aiDecisionTimerRef.current) clearTimeout(aiDecisionTimerRef.current);
         timerAnim.stopAnimation();
         cardFloatAnim.stopAnimation();
       };
@@ -334,12 +362,71 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     }
   }, [status, myScore, opponentScore, hasAwardedXP]);
 
+  const triggerAiEmoji = () => {
+    const aiEmojis = ['🔥', '⚡', '👏', '🧠', '✨', '💪', '🎯'];
+    const randomEmoji = aiEmojis[Math.floor(Math.random() * aiEmojis.length)];
+    const newEmoji = {
+      id: Math.random().toString(),
+      emoji: randomEmoji,
+      xPosition: Math.random() * 30 + 55,
+    };
+    setFloatingEmojis((prev) => [...prev, newEmoji]);
+    setTimeout(() => {
+      setFloatingEmojis((prev) => prev.filter(e => e.id !== newEmoji.id));
+    }, 2200);
+  };
+
+  const handleAiTurn = (willBeCorrect: boolean, delayMs: number) => {
+    if (roundWinnerName !== null || (selectedOption !== null && isCorrectSelected)) {
+      return;
+    }
+
+    const isFast = delayMs <= 3500;
+    const earnedPoints = isFast ? 15 : 10;
+
+    if (willBeCorrect) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerAnim.stopAnimation();
+
+      setRoundWinnerName(opponentName);
+      if (isFast) setSpeedBonusGained(true);
+
+      if (Math.random() < 0.3) {
+        triggerAiEmoji();
+      }
+
+      setTimeout(() => {
+        setOpponentScore(prev => {
+          const newScore = prev + earnedPoints;
+          const nextIndex = currentQuestionIndex + 1;
+          if (newScore >= 60 || nextIndex >= questions.length) {
+            setStatus('finished');
+          } else {
+            setCurrentQuestionIndex(nextIndex);
+          }
+          return newScore;
+        });
+      }, 850);
+    } else {
+      opponentWrongRef.current = true;
+      if (myAnswerWrongRef.current) {
+        handleTimeOut();
+      }
+    }
+  };
+
   const handleTimeOut = async () => {
     const nextIndex = currentQuestionIndex + 1;
     if (nextIndex >= questions.length) {
-      await supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId);
+      setStatus('finished');
+      if (!isAiMatch && roomId) {
+        await supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId);
+      }
     } else {
-      await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
+      setCurrentQuestionIndex(nextIndex);
+      if (!isAiMatch && roomId) {
+        await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
+      }
     }
   };
 
@@ -358,18 +445,21 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     setSelectedOption(selectedOpt);
     setIsCorrectSelected(isCorrect);
     
-    if (isHost && timerRef.current) clearTimeout(timerRef.current);
+    if ((isHost || isAiMatch) && timerRef.current) clearTimeout(timerRef.current);
+    if (isAiMatch && aiDecisionTimerRef.current) clearTimeout(aiDecisionTimerRef.current);
     timerAnim.stopAnimation();
 
     if (isCorrect) {
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
       const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'YOU';
-      broadcastChannelRef.current?.send({
-        type: 'broadcast',
-        event: 'round_winner',
-        payload: { name: myName },
-      });
+      if (!isAiMatch) {
+        broadcastChannelRef.current?.send({
+          type: 'broadcast',
+          event: 'round_winner',
+          payload: { name: myName },
+        });
+      }
       setRoundWinnerName(myName);
       if (isFast) setSpeedBonusGained(true);
     } else {
@@ -387,31 +477,65 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         
         if (newScore >= 60 || nextIndex >= questions.length) {
           setStatus('finished');
-          await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user?.id);
-          await supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId);
+          if (!isAiMatch && roomId && user) {
+            await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user.id);
+            await supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId);
+          }
         } else {
           setCurrentQuestionIndex(nextIndex);
-          await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user?.id);
-          await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
+          if (!isAiMatch && roomId && user) {
+            await supabase.from('quiz_room_players').update({ score: newScore }).eq('room_id', roomId).eq('user_id', user.id);
+            await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
+          }
         }
       } else {
         myAnswerWrongRef.current = true;
-        broadcastChannelRef.current?.send({ type: 'broadcast', event: 'wrong_answer' });
-        
-        if (isHost && opponentWrongRef.current) {
-          handleTimeOut();
+        if (!isAiMatch) {
+          broadcastChannelRef.current?.send({ type: 'broadcast', event: 'wrong_answer' });
+          if (isHost && opponentWrongRef.current) {
+            handleTimeOut();
+          }
+        } else {
+          if (opponentWrongRef.current) {
+            handleTimeOut();
+          }
         }
       }
     }, 850);
   };
 
   const requestRematch = async () => {
+    if (isAiMatch) {
+      setRematchStatus('waiting');
+      setTimeout(() => {
+        setOpponentWantsRematch(true);
+        setRematchStatus('accepted');
+        setTimeout(() => {
+          triggerAiRematch();
+        }, 700);
+      }, 1200);
+      return;
+    }
+
     setRematchStatus('waiting');
     await supabase.from('quiz_room_players').update({ wants_rematch: true }).eq('room_id', roomId).eq('user_id', user?.id);
 
     if (isHost && opponentWantsRematch) {
       triggerRematch();
     }
+  };
+
+  const triggerAiRematch = () => {
+    const newQuestions = getRandomQuestions(30);
+    setQuestions(newQuestions);
+    setCurrentQuestionIndex(0);
+    setMyScore(0);
+    setOpponentScore(0);
+    setHasShownVsScreen(false);
+    setHasAwardedXP(false);
+    setRematchStatus('none');
+    setOpponentWantsRematch(false);
+    setStatus('playing');
   };
 
   useEffect(() => {
@@ -432,16 +556,34 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
 
   const sendEmoji = (emoji: string) => {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    broadcastChannelRef.current?.send({
-      type: 'broadcast',
-      event: 'emoji',
-      payload: { emoji },
-    });
+    if (!isAiMatch) {
+      broadcastChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'emoji',
+        payload: { emoji },
+      });
+    } else {
+      const newEmoji = {
+        id: Math.random().toString(),
+        emoji,
+        xPosition: Math.random() * 30 + 15,
+      };
+      setFloatingEmojis((prev) => [...prev, newEmoji]);
+      setTimeout(() => {
+        setFloatingEmojis((prev) => prev.filter(e => e.id !== newEmoji.id));
+      }, 2200);
+
+      if (Math.random() < 0.45) {
+        setTimeout(() => {
+          triggerAiEmoji();
+        }, 1100);
+      }
+    }
   };
 
   const leaveRoom = () => {
     navigation.goBack();
-    if (user) {
+    if (!isAiMatch && roomId && user) {
       supabase.from('quiz_room_players').delete().eq('room_id', roomId).eq('user_id', user.id).then();
     }
   };
@@ -585,7 +727,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
               ) : (
                 <View style={styles.waitingRematchPill}>
                   <ActivityIndicator size="small" color="#F59E0B" style={{ marginRight: 8 }} />
-                  <Text style={styles.waitingHostText}>Waiting for opponent...</Text>
+                  <Text style={styles.waitingHostText}>{isAiMatch ? `Waiting for ${opponentName}...` : 'Waiting for opponent...'}</Text>
                 </View>
               )}
 
@@ -631,7 +773,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
               <Text style={styles.vsAvatarInitial}>{opponentName.charAt(0)}</Text>
             </View>
             <Text style={styles.vsPlayerText} numberOfLines={1}>{opponentName}</Text>
-            <Text style={styles.vsPlayerSub}>Challenger</Text>
+            <Text style={styles.vsPlayerSub}>Lvl {aiOpponent?.level || 1} • {aiOpponent?.elo || 1000} RP</Text>
           </View>
         </View>
       </LinearGradient>

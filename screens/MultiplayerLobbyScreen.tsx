@@ -12,6 +12,7 @@ import { useOnlinePresence } from '../context/OnlinePresenceContext';
 import { getRandomQuestions } from '../utils/quizQuestions';
 import { checkAppVersion, VersionCheckResult } from '../services/versionService';
 import UpdateModal from '../components/UpdateModal';
+import { getRandomAiOpponent } from '../utils/aiOpponents';
 
 type MultiplayerLobbyScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -32,6 +33,28 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
   const livePulseAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  const [searchSeconds, setSearchSeconds] = useState(0);
+  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const roomIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    roomIdRef.current = roomId;
+  }, [roomId]);
+
+  const stopSearchTimer = () => {
+    if (searchTimerRef.current) {
+      clearInterval(searchTimerRef.current);
+      searchTimerRef.current = null;
+    }
+    setSearchSeconds(0);
+  };
+
+  useEffect(() => {
+    return () => {
+      stopSearchTimer();
+    };
+  }, []);
 
   // Broadcast current activity to global presence
   useEffect(() => {
@@ -96,6 +119,7 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
       subscription = supabase.channel(`wait_${roomId}`)
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quiz_rooms', filter: `id=eq.${roomId}` }, (payload) => {
           if (payload.new.status === 'playing') {
+            stopSearchTimer();
             setIsSearching(false);
             if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             navigation.navigate('QuizBattle', { roomId: payload.new.id, isHost: true });
@@ -132,6 +156,7 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
 
   const cancelSearch = async () => {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    stopSearchTimer();
     setIsSearching(false);
     if (roomId) {
       await supabase.from('quiz_rooms').delete().eq('id', roomId);
@@ -149,9 +174,53 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
     }
 
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    stopSearchTimer();
     setIsSearching(true);
     setStatusMessage(t('searching'));
     setRoomId(null);
+    setSearchSeconds(0);
+
+    // 15-second matchmaking timer -> Auto-match with AI if no human opponent joins
+    let elapsed = 0;
+    searchTimerRef.current = setInterval(async () => {
+      elapsed += 1;
+      setSearchSeconds(elapsed);
+
+      if (elapsed >= 15) {
+        stopSearchTimer();
+
+        const ai = getRandomAiOpponent(profile?.eloRating || 1000, profile?.level || 1);
+        const matchFoundMsg = language === 'EN' 
+          ? `Opponent Found: ${ai.name}!` 
+          : language === 'PH' 
+          ? `Kalaban Nahanap: ${ai.name}!` 
+          : `Kalaban Meakit: ${ai.name}!`;
+
+        setStatusMessage(matchFoundMsg);
+
+        // Delete waiting room from Supabase if one was created
+        const activeRoom = roomIdRef.current;
+        if (activeRoom) {
+          try {
+            await supabase.from('quiz_rooms').delete().eq('id', activeRoom);
+          } catch (e) {
+            console.warn('Failed to delete room after AI match:', e);
+          }
+          setRoomId(null);
+        }
+
+        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+        setTimeout(() => {
+          setIsSearching(false);
+          setSearchSeconds(0);
+          navigation.navigate('QuizBattle', {
+            isAiMatch: true,
+            aiOpponent: ai,
+          });
+        }, 750);
+      }
+    }, 1000);
     
     try {
       let { data: waitingRooms } = await supabase
@@ -174,6 +243,7 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
       }
 
       if (waitingRooms && waitingRooms.length > 0) {
+        stopSearchTimer();
         setStatusMessage(t('match_found'));
         const room = waitingRooms[0];
         
@@ -223,6 +293,7 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
       }
     } catch (err: any) {
       console.error(err);
+      stopSearchTimer();
       setIsSearching(false);
       Alert.alert('Matchmaking Error', 'Could not connect to the server.');
     }
@@ -329,6 +400,15 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
                 <ActivityIndicator size="large" color="#059669" />
                 <Text style={styles.searchingText}>{statusMessage}</Text>
                 
+                <View style={styles.timerBadge}>
+                  <Ionicons name="timer-outline" size={14} color="#047857" />
+                  <Text style={styles.timerBadgeText}>
+                    {searchSeconds < 15
+                      ? `${language === 'EN' ? 'Searching for match' : 'Naghahanap ng laban'}... ${Math.floor(searchSeconds / 60)}:${(searchSeconds % 60).toString().padStart(2, '0')}`
+                      : (language === 'EN' ? 'Match Found!' : 'May Nahanap na Kalaban!')}
+                  </Text>
+                </View>
+
                 <TouchableOpacity style={styles.cancelButton} onPress={cancelSearch} activeOpacity={0.8}>
                   <Text style={styles.cancelButtonText}>{language === 'EN' ? 'Cancel Match' : 'Kanselahin'}</Text>
                 </TouchableOpacity>
@@ -846,6 +926,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#1E1B18',
     textAlign: 'center',
+  },
+  timerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    gap: 5,
+    marginTop: 2,
+  },
+  timerBadgeText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11.5,
+    color: '#065F46',
   },
   cancelButton: {
     paddingVertical: 8,
