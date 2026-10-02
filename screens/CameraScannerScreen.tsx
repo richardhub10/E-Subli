@@ -26,6 +26,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { kulitanSyllables } from '../data/kulitanData';
 import KulitanGlyph from '../components/KulitanGlyph';
 import { classifyKulitanHandwriting, ScanResult } from '../utils/kulitanClassifier';
+import { callGroqVision, getKulitanVisionPrompt, isValidGroqKey } from '../services/groqVisionService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -53,7 +54,7 @@ const PRIMARY_KULITAN_LIST = [
 function isValidGeminiKey(key?: string): boolean {
   if (!key) return false;
   const trimmed = key.trim();
-  return trimmed.startsWith('AIza') && trimmed.length >= 35;
+  return (trimmed.startsWith('AIza') || trimmed.startsWith('AQ.')) && trimmed.length >= 35;
 }
 
 export default function CameraScannerScreen({ navigation }: CameraScannerScreenProps) {
@@ -68,27 +69,39 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
   const [analysisStep, setAnalysisStep] = useState<string>('');
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
 
-  // Custom API Key Modal State
+  // Custom API Key Modal State (Gemini Primary + Groq High-Speed Backup)
   const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false);
-  const [customApiKey, setCustomApiKey] = useState('');
-  const [savedCustomKey, setSavedCustomKey] = useState<string | null>(null);
+  const [customGeminiKey, setCustomGeminiKey] = useState('');
+  const [savedCustomGeminiKey, setSavedCustomGeminiKey] = useState<string | null>(null);
+  const [customGroqKey, setCustomGroqKey] = useState('');
+  const [savedCustomGroqKey, setSavedCustomGroqKey] = useState<string | null>(null);
 
   const { addXP } = useProfile();
   const { language } = useLanguage();
   const cameraRef = useRef<CameraView>(null);
   const scanLineAnim = useRef(new Animated.Value(0)).current;
 
-  // Load custom API key from storage if present
+  // Load custom API keys from storage if present, or fallback to environment variables
   useEffect(() => {
     (async () => {
       try {
-        const storedKey = await AsyncStorage.getItem('USER_GEMINI_API_KEY');
-        if (storedKey && isValidGeminiKey(storedKey)) {
-          setSavedCustomKey(storedKey);
-          setCustomApiKey(storedKey);
+        const storedGemini = await AsyncStorage.getItem('USER_GEMINI_API_KEY');
+        if (storedGemini && isValidGeminiKey(storedGemini)) {
+          setSavedCustomGeminiKey(storedGemini);
+          setCustomGeminiKey(storedGemini);
+        } else if (process.env.EXPO_PUBLIC_GEMINI_API_KEY && isValidGeminiKey(process.env.EXPO_PUBLIC_GEMINI_API_KEY)) {
+          setCustomGeminiKey(process.env.EXPO_PUBLIC_GEMINI_API_KEY);
+        }
+
+        const storedGroq = await AsyncStorage.getItem('USER_GROQ_API_KEY');
+        if (storedGroq && isValidGroqKey(storedGroq)) {
+          setSavedCustomGroqKey(storedGroq);
+          setCustomGroqKey(storedGroq);
+        } else if (process.env.EXPO_PUBLIC_GROQ_API_KEY && isValidGroqKey(process.env.EXPO_PUBLIC_GROQ_API_KEY)) {
+          setCustomGroqKey(process.env.EXPO_PUBLIC_GROQ_API_KEY);
         }
       } catch (err) {
-        console.warn('Failed to load stored API key:', err);
+        console.warn('Failed to load stored API keys:', err);
       }
     })();
   }, []);
@@ -114,31 +127,61 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
   }, [photoUri]);
 
   const saveApiKey = async () => {
-    const trimmed = customApiKey.trim();
-    if (trimmed && !isValidGeminiKey(trimmed)) {
+    const trimmedGemini = customGeminiKey.trim();
+    const trimmedGroq = customGroqKey.trim();
+
+    if (trimmedGemini && !isValidGeminiKey(trimmedGemini)) {
       Alert.alert(
-        language === 'EN' ? 'Invalid Key' : 'Hindi Wastong Key',
+        language === 'EN' ? 'Invalid Gemini Key' : 'Hindi Wastong Gemini Key',
         language === 'EN' 
-          ? 'Google Gemini API keys usually start with "AIza" and are at least 35 characters long.' 
-          : 'Karaniwang nagsisimula sa "AIza" ang Google Gemini API key at may 35 o higit pang titik.'
+          ? 'Google Gemini API keys start with "AIza" or "AQ." and are at least 35 characters long.' 
+          : 'Karaniwang nagsisimula sa "AIza" o "AQ." ang Google Gemini API key at may 35 o higit pang titik.'
+      );
+      return;
+    }
+
+    if (trimmedGroq && !isValidGroqKey(trimmedGroq)) {
+      Alert.alert(
+        language === 'EN' ? 'Invalid Groq Key' : 'Hindi Wastong Groq Key',
+        language === 'EN' 
+          ? 'Groq Cloud API keys usually start with "gsk_" and are at least 30 characters long.' 
+          : 'Karaniwang nagsisimula sa "gsk_" ang Groq API key at may 30 o higit pang titik.'
       );
       return;
     }
 
     try {
-      if (trimmed) {
-        await AsyncStorage.setItem('USER_GEMINI_API_KEY', trimmed);
-        setSavedCustomKey(trimmed);
+      if (trimmedGemini) {
+        await AsyncStorage.setItem('USER_GEMINI_API_KEY', trimmedGemini);
+        setSavedCustomGeminiKey(trimmedGemini);
       } else {
         await AsyncStorage.removeItem('USER_GEMINI_API_KEY');
-        setSavedCustomKey(null);
+        setSavedCustomGeminiKey(null);
       }
+
+      if (trimmedGroq) {
+        await AsyncStorage.setItem('USER_GROQ_API_KEY', trimmedGroq);
+        setSavedCustomGroqKey(trimmedGroq);
+      } else {
+        await AsyncStorage.removeItem('USER_GROQ_API_KEY');
+        setSavedCustomGroqKey(null);
+      }
+
       setIsSettingsModalVisible(false);
+
+      const activeServices: string[] = [];
+      if (trimmedGemini) activeServices.push('Gemini Vision');
+      if (trimmedGroq) activeServices.push('Groq Vision (Backup)');
+
       Alert.alert(
         language === 'EN' ? 'Settings Saved' : 'Na-save ang Setting',
-        trimmed
-          ? (language === 'EN' ? 'Gemini AI Vision key connected!' : 'Nakakonekta na ang Gemini AI key!')
-          : (language === 'EN' ? 'Using Calibrated Offline ML Vision Engine.' : 'Gagamitin ang Calibrated Offline ML Vision Engine.')
+        activeServices.length > 0
+          ? (language === 'EN' 
+              ? `Connected: ${activeServices.join(' & ')}.` 
+              : `Nakakonekta: ${activeServices.join(' & ')}.`)
+          : (language === 'EN' 
+              ? 'Using Calibrated Offline ML Vision Engine.' 
+              : 'Gagamitin ang Calibrated Offline ML Vision Engine.')
       );
     } catch {
       Alert.alert('Error', 'Failed to save settings.');
@@ -214,68 +257,22 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
 
     const cleanB64 = base64.includes(',') ? base64.split(',')[1] : base64;
 
-    // 2. Google Gemini Vision (If valid Google AI Studio key is present in env or AsyncStorage)
-    const effectiveApiKey = (savedCustomKey || process.env.EXPO_PUBLIC_GEMINI_API_KEY || '').trim();
-    if (isValidGeminiKey(effectiveApiKey)) {
+    const effectiveGeminiKey = (savedCustomGeminiKey || process.env.EXPO_PUBLIC_GEMINI_API_KEY || '').trim();
+    const effectiveGroqKey = (savedCustomGroqKey || process.env.EXPO_PUBLIC_GROQ_API_KEY || '').trim();
+
+    let cloudResult: ScanResult | null = null;
+
+    // 2. Primary Cloud Vision: Google Gemini Vision
+    if (isValidGeminiKey(effectiveGeminiKey)) {
       try {
-        setAnalysisStep(language === 'EN' ? 'Analyzing Kulitan strokes with Gemini AI...' : 'Sinusuri ang mga guhit ng Kulitan gamit ang AI...');
+        setAnalysisStep(
+          language === 'EN' 
+            ? 'Analyzing Kulitan strokes with Gemini AI...' 
+            : 'Sinusuri ang mga guhit ng Kulitan gamit ang Gemini AI...'
+        );
         
-        const ai = new GoogleGenAI({ apiKey: effectiveApiKey });
-        const targetHint = targetSyllable 
-          ? `The user is specifically attempting to draw the authentic Kulitan character "${targetSyllable.toUpperCase()}". Strictly verify if the handwriting matches "${targetSyllable.toUpperCase()}" with correct stroke curvature and components.` 
-          : 'Identify which authentic Sulat Kapampangan (Kulitan) character is drawn in the image.';
-
-        const prompt = `You are an expert paleographer specializing in authentic Sulat Kapampangan (Kulitan), the indigenous Brahmic script of Pampanga, Philippines.
-
-CRITICAL ORTHOGRAPHIC DISTINCTION:
-Kulitan is DISTINCT from Tagalog Baybayin. Do not evaluate this as Baybayin.
-Key distinctive Kulitan forms:
-- A: Downward looping hook curling upwards with a flourish at the bottom.
-- I / E: Horizontal wavy crown with a right-hand vertical downward stem.
-- U / O: Three-crested horizontal flowing wave.
-- Ka: Two parallel horizontal bars joined by a right-side connector curve or vertical stem.
-- Ga: Rounded arch with an open bottom, right leg curving inward.
-- Nga: Continuous undulating double-wave (horizontal W shape).
-- Ta: Open C-shaped loop with an angled bottom horizontal base.
-- Da / Ra: Open box bracket with an interior central step or notch.
-- Na: Left downward arc with an upward sweeping right tail.
-- Pa: Vertical descending stem looping up into a hook head.
-- Ba: Closed teardrop or rounded droplet loop.
-- Ma: Distinct double horizontal loop or spiral.
-- Ya: Open three-pronged upward fork/crest.
-- La: Vertical spine ending in a downward-right hook/curl.
-- Wa: Open rounded cup with a right-hand vertical spine.
-- Sa: S-shaped flowing vertical curve.
-
-TASK:
-${targetHint}
-
-Evaluate stroke quality, curvature, and proportions.
-If the image shows no clear handwriting, a plain blank page, or unreadable smudges, return recognized: false with confidence < 20.
-
-Respond strictly in valid JSON without markdown code fences using this exact schema:
-{
-  "recognized": true,
-  "character": "Ka",
-  "kulitanSymbol": "k",
-  "confidence": 92,
-  "type": "Consonant (Indung Sulat)",
-  "transliteration": "Ka",
-  "feedback": "Excellent stroke balance! Dual horizontal bars and vertical connector align well.",
-  "strokeAccuracy": "High"
-}
-
-If unreadable or blank:
-{
-  "recognized": false,
-  "character": "Unknown",
-  "kulitanSymbol": "?",
-  "confidence": 15,
-  "type": "Unrecognized",
-  "transliteration": "None",
-  "feedback": "The handwriting could not be recognized as Kulitan. Try writing the character larger with distinct strokes inside the guide.",
-  "strokeAccuracy": "Needs Practice"
-}`;
+        const ai = new GoogleGenAI({ apiKey: effectiveGeminiKey });
+        const prompt = getKulitanVisionPrompt(targetSyllable);
 
         let response: any = null;
         const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash'];
@@ -295,7 +292,7 @@ If unreadable or blank:
             });
             if (response && response.text) break;
           } catch (modelErr) {
-            console.warn(`Model ${modelName} call failed, trying fallback...`, modelErr);
+            console.warn(`Model ${modelName} call failed, trying next Gemini candidate...`, modelErr);
           }
         }
 
@@ -304,19 +301,43 @@ If unreadable or blank:
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]) as ScanResult;
           parsed.engine = 'gemini';
-          setScanResult(parsed);
-          if (parsed.recognized) {
-            addXP(50);
-          }
-          setIsAnalyzing(false);
-          return;
+          cloudResult = parsed;
         }
       } catch (err) {
-        console.warn("Gemini Vision failed, seamlessly falling back to Calibrated ML Classifier:", err);
+        console.warn("Gemini Vision failed, attempting Groq Vision backup...", err);
       }
     }
 
-    // 3. Calibrated On-Device Computer Vision & ML Classifier (Offline Guaranteed, Zero Math.random())
+    // 3. Backup Cloud Vision: Groq Vision (Ultra-fast LPU inference)
+    // Runs as backup if Gemini failed, or as primary if Gemini is not configured but Groq is
+    if (!cloudResult && isValidGroqKey(effectiveGroqKey)) {
+      try {
+        setAnalysisStep(
+          isValidGeminiKey(effectiveGeminiKey)
+            ? (language === 'EN' ? 'Gemini busy, switching to Groq Vision backup...' : 'Lumilipat sa Groq Vision backup...')
+            : (language === 'EN' ? 'Analyzing Kulitan strokes with Groq Vision...' : 'Sinusuri ang mga guhit gamit ang Groq AI...')
+        );
+
+        const groqResult = await callGroqVision(cleanB64, targetSyllable, effectiveGroqKey, language as any);
+        if (groqResult) {
+          cloudResult = groqResult;
+        }
+      } catch (groqErr) {
+        console.warn("Groq Vision backup failed:", groqErr);
+      }
+    }
+
+    // If either Cloud AI succeeded, finalize and return!
+    if (cloudResult) {
+      setScanResult(cloudResult);
+      if (cloudResult.recognized) {
+        addXP(50);
+      }
+      setIsAnalyzing(false);
+      return;
+    }
+
+    // 4. Calibrated On-Device Computer Vision & ML Classifier (Offline Guaranteed, Zero Math.random())
     setAnalysisStep(
       language === 'EN' 
         ? 'Evaluating character stroke topology with Calibrated ML...' 
@@ -365,7 +386,15 @@ If unreadable or blank:
     setIsAnalyzing(false);
   };
 
-  const isGeminiAvailable = Boolean(savedCustomKey || process.env.EXPO_PUBLIC_GEMINI_API_KEY);
+  const isGeminiAvailable = Boolean(
+    (savedCustomGeminiKey && isValidGeminiKey(savedCustomGeminiKey)) ||
+    (process.env.EXPO_PUBLIC_GEMINI_API_KEY && isValidGeminiKey(process.env.EXPO_PUBLIC_GEMINI_API_KEY))
+  );
+  const isGroqAvailable = Boolean(
+    (savedCustomGroqKey && isValidGroqKey(savedCustomGroqKey)) ||
+    (process.env.EXPO_PUBLIC_GROQ_API_KEY && isValidGroqKey(process.env.EXPO_PUBLIC_GROQ_API_KEY))
+  );
+  const hasCloudAI = isGeminiAvailable || isGroqAvailable;
 
   return (
     <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
@@ -377,66 +406,12 @@ If unreadable or blank:
         
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle}>AI Kulitan Scanner</Text>
-          <View style={styles.engineHeaderBadge}>
-            <Ionicons 
-              name={isGeminiAvailable ? "cloud-done-outline" : "hardware-chip-outline"} 
-              size={11} 
-              color={isGeminiAvailable ? "#2563EB" : "#D1582D"} 
-            />
-            <Text style={[styles.engineHeaderText, { color: isGeminiAvailable ? "#2563EB" : "#D1582D" }]}>
-              {isGeminiAvailable ? "Cloud AI + ML" : "Calibrated ML"}
-            </Text>
-          </View>
         </View>
 
-        <View style={styles.headerActionRow}>
-          <TouchableOpacity 
-            onPress={() => setIsSettingsModalVisible(true)} 
-            style={styles.headerIconBtn} 
-            activeOpacity={0.7}
-          >
-            <Ionicons name="key-outline" size={20} color="#64748B" />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={pickImage} style={styles.headerIconBtn} activeOpacity={0.7}>
-            <Ionicons name="images" size={21} color="#D1582D" />
-          </TouchableOpacity>
-        </View>
+        <View style={styles.headerRightSpacer} />
       </View>
 
-      {/* Target Syllable Filter / Guide Selector */}
-      {!photoUri && (
-        <View style={styles.targetBarContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.targetBarContent}>
-            <TouchableOpacity 
-              style={[styles.targetChip, !targetSyllable && styles.targetChipActive]}
-              onPress={() => setTargetSyllable(null)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="scan-outline" size={13} color={!targetSyllable ? '#FFFFFF' : '#D1582D'} />
-              <Text style={[styles.targetChipText, !targetSyllable && styles.targetChipTextActive]}>
-                Auto-Detect
-              </Text>
-            </TouchableOpacity>
 
-            {PRIMARY_KULITAN_LIST.map((s) => {
-              const isActive = targetSyllable === s.latin;
-              return (
-                <TouchableOpacity
-                  key={s.latin}
-                  style={[styles.targetChip, isActive && styles.targetChipActive]}
-                  onPress={() => setTargetSyllable(isActive ? null : s.latin)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.targetChipText, isActive && styles.targetChipTextActive]}>
-                    {s.latin}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-      )}
 
       {/* Main Viewport */}
       <View style={styles.content}>
@@ -483,18 +458,56 @@ If unreadable or blank:
                     {/* Recognition Engine Badge */}
                     <View style={[
                       styles.engineBadgePill,
-                      scanResult.engine === 'neural_net' ? styles.engineBadgeNeural : styles.engineBadgeGemini
+                      scanResult.engine === 'gemini' 
+                        ? styles.engineBadgeGemini 
+                        : scanResult.engine === 'groq'
+                          ? styles.engineBadgeGroq
+                          : scanResult.engine === 'neural_net'
+                            ? styles.engineBadgeNeural
+                            : styles.engineBadgeCV
                     ]}>
                       <Ionicons 
-                        name={scanResult.engine === 'gemini' ? 'sparkles' : 'hardware-chip'} 
+                        name={
+                          scanResult.engine === 'gemini' 
+                            ? 'sparkles' 
+                            : scanResult.engine === 'groq'
+                              ? 'flash'
+                              : scanResult.engine === 'neural_net'
+                                ? 'hardware-chip'
+                                : 'analytics'
+                        } 
                         size={11} 
-                        color={scanResult.engine === 'gemini' ? "#B45309" : "#1D4ED8"} 
+                        color={
+                          scanResult.engine === 'gemini' 
+                            ? "#B45309" 
+                            : scanResult.engine === 'groq'
+                              ? "#C2410C"
+                              : scanResult.engine === 'neural_net'
+                                ? "#1D4ED8"
+                                : "#475569"
+                        } 
                       />
                       <Text style={[
                         styles.engineBadgeText,
-                        { color: scanResult.engine === 'gemini' ? "#B45309" : "#1D4ED8" }
+                        { 
+                          color: scanResult.engine === 'gemini' 
+                            ? "#B45309" 
+                            : scanResult.engine === 'groq'
+                              ? "#C2410C"
+                              : scanResult.engine === 'neural_net'
+                                ? "#1D4ED8"
+                                : "#475569" 
+                        }
                       ]}>
-                        {scanResult.engine === 'gemini' ? 'GEMINI VISION' : 'NEURAL NET ML'}
+                        {
+                          scanResult.engine === 'gemini' 
+                            ? 'GEMINI VISION' 
+                            : scanResult.engine === 'groq'
+                              ? 'GROQ VISION (BACKUP)'
+                              : scanResult.engine === 'neural_net'
+                                ? 'NEURAL NET ML'
+                                : 'CALIBRATED CV'
+                        }
                       </Text>
                     </View>
                   </View>
@@ -717,10 +730,7 @@ If unreadable or blank:
       <View style={styles.footer}>
         {!photoUri ? (
           <View style={styles.footerRow}>
-            <TouchableOpacity style={styles.sideFooterBtn} onPress={pickImage} activeOpacity={0.7}>
-              <Ionicons name="images" size={24} color="#64748B" />
-              <Text style={styles.sideFooterText}>Gallery</Text>
-            </TouchableOpacity>
+            <View style={styles.sideFooterSpacer} />
 
             <TouchableOpacity style={styles.shutterBtn} onPress={takePicture} activeOpacity={0.8}>
               <View style={styles.shutterInner} />
@@ -745,84 +755,7 @@ If unreadable or blank:
         )}
       </View>
 
-      {/* Engine & API Key Settings Modal */}
-      <Modal
-        visible={isSettingsModalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setIsSettingsModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <View style={styles.modalHeaderTitleRow}>
-                <Ionicons name="options-outline" size={20} color="#0F172A" />
-                <Text style={styles.modalTitle}>AI Scanner Calibration</Text>
-              </View>
-              <TouchableOpacity onPress={() => setIsSettingsModalVisible(false)}>
-                <Ionicons name="close" size={22} color="#64748B" />
-              </TouchableOpacity>
-            </View>
 
-            <Text style={styles.modalDesc}>
-              {language === 'EN'
-                ? 'The scanner uses a calibrated on-device Computer Vision & ML classifier to evaluate stroke geometry and Chamfer contour distance without internet. You can optionally link a Google AI Studio key for multi-tier Cloud Vision.'
-                : 'Gumagamit ang scanner ng calibrated on-device ML Vision upang suriin ang guhit at kurba nang offline. Maaari ring maglagay ng Google AI key para sa karagdagang Cloud Vision.'}
-            </Text>
-
-            <View style={styles.engineStatusBox}>
-              <View style={styles.engineStatusRow}>
-                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                <Text style={styles.engineStatusText}>
-                  {language === 'EN' ? 'Calibrated ML Vision: Active (Offline)' : 'Calibrated ML Vision: Aktibo (Offline)'}
-                </Text>
-              </View>
-              <View style={styles.engineStatusRow}>
-                <Ionicons 
-                  name={isGeminiAvailable ? "checkmark-circle" : "ellipse-outline"} 
-                  size={16} 
-                  color={isGeminiAvailable ? "#10B981" : "#94A3B8"} 
-                />
-                <Text style={styles.engineStatusText}>
-                  {isGeminiAvailable 
-                    ? (language === 'EN' ? 'Google Gemini 2.5 Vision: Connected' : 'Google Gemini 2.5 Vision: Nakakonekta')
-                    : (language === 'EN' ? 'Google Gemini Vision: Not configured' : 'Google Gemini Vision: Hindi pa nakakabit')}
-                </Text>
-              </View>
-            </View>
-
-            <Text style={styles.inputLabel}>Google AI Studio Key (Optional)</Text>
-            <TextInput
-              style={styles.keyInput}
-              placeholder="AIzaSy..."
-              placeholderTextColor="#94A3B8"
-              value={customApiKey}
-              onChangeText={setCustomApiKey}
-              autoCapitalize="none"
-              autoCorrect={false}
-              secureTextEntry={false}
-            />
-
-            <View style={styles.modalBtnRow}>
-              <TouchableOpacity 
-                style={styles.modalCancelBtn} 
-                onPress={() => setIsSettingsModalVisible(false)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.modalCancelBtnText}>{language === 'EN' ? 'Cancel' : 'Kanselahin'}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.modalSaveBtn} 
-                onPress={saveApiKey}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.modalSaveBtnText}>{language === 'EN' ? 'Save & Calibrate' : 'I-save at I-calibrate'}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </LinearGradient>
   );
 }
@@ -859,6 +792,14 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     fontSize: 18,
     fontFamily: 'Poppins_700Bold',
+  },
+  headerRightSpacer: {
+    width: 44,
+    height: 44,
+  },
+  sideFooterSpacer: {
+    width: 50,
+    height: 50,
   },
   engineHeaderBadge: {
     flexDirection: 'row',
@@ -1149,6 +1090,12 @@ const styles = StyleSheet.create({
   },
   engineBadgeGemini: {
     backgroundColor: '#FEF3C7',
+  },
+  engineBadgeGroq: {
+    backgroundColor: '#FFEDD5',
+  },
+  engineBadgeCV: {
+    backgroundColor: '#F1F5F9',
   },
   engineBadgeText: {
     fontFamily: 'Poppins_600SemiBold',

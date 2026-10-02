@@ -3,6 +3,7 @@ import { decode as decodeJpeg } from 'jpeg-js';
 import { kulitanPoints } from '../data/kulitanPoints';
 import { kulitanSyllables, SyllableData } from '../data/kulitanData';
 import { KULITAN_NEURAL_WEIGHTS } from './kulitanNeuralModel';
+import { getDistilledFeedback } from '../data/distilledKulitanKnowledge';
 
 export type ScanResult = {
   recognized: boolean;
@@ -13,7 +14,7 @@ export type ScanResult = {
   transliteration: string;
   feedback: string;
   strokeAccuracy: 'High' | 'Moderate' | 'Needs Practice';
-  engine?: 'gemini' | 'neural_net' | 'calibrated_cv';
+  engine?: 'gemini' | 'groq' | 'neural_net' | 'calibrated_cv';
   similarityBreakdown?: {
     chamferScore: number;
     spatialAlignment: number;
@@ -514,24 +515,18 @@ export async function classifyKulitanHandwriting(
       // High Accuracy Neural Confirmation
       confidence = Math.min(99, Math.max(90, Math.round(0.55 * targetProb + 0.45 * (100 - targetChamfer * 150))));
       strokeAccuracy = 'High';
-      feedback = language === 'EN'
-        ? `Super accurate ${proto.latin.toUpperCase()}! Neural Network confidence: ${targetProb}%. ${proto.syllableData.writingRule}`
-        : `Napakataas na katumpakan para sa ${proto.latin.toUpperCase()}! Kumpiyansa ng Neural Network: ${targetProb}%. ${proto.syllableData.writingRule}`;
+      feedback = getDistilledFeedback(proto.latin, 'High', language, targetProb);
     } else if (targetProb >= 25 || targetChamfer <= 0.09) {
       // Moderate Accuracy
       confidence = Math.min(88, Math.max(72, Math.round(0.50 * targetProb + 0.50 * (95 - targetChamfer * 180))));
       strokeAccuracy = 'Moderate';
-      feedback = language === 'EN'
-        ? `Recognized as ${proto.latin.toUpperCase()} (Neural Net: ${targetProb}%). Stroke curvature can be improved: ${proto.syllableData.writingRule}`
-        : `Kinilala bilang ${proto.latin.toUpperCase()} (${targetProb}%). Maaari pang ayusin ang arko: ${proto.syllableData.writingRule}`;
+      feedback = getDistilledFeedback(proto.latin, 'Moderate', language, targetProb);
     } else {
       // Divergent stroke (User drew another character)
       const competitorName = top1.class.toUpperCase();
       confidence = Math.max(25, Math.min(58, Math.round(targetProb * 0.8 + 20)));
       strokeAccuracy = 'Needs Practice';
-      feedback = language === 'EN'
-        ? `Neural network detects "${competitorName}" (${top1.prob}%) instead of "${proto.latin.toUpperCase()}". Note: ${proto.syllableData.writingRule}`
-        : `Natukoy ng Neural Network ang "${competitorName}" (${top1.prob}%) kaysa "${proto.latin.toUpperCase()}". Paalala: ${proto.syllableData.writingRule}`;
+      feedback = getDistilledFeedback(proto.latin, 'Needs Practice', language, targetProb);
     }
 
     return {
@@ -577,9 +572,7 @@ export async function classifyKulitanHandwriting(
   else if (finalConfidence >= 72) strokeAccuracy = 'Moderate';
   else strokeAccuracy = 'Needs Practice';
 
-  const feedback = language === 'EN'
-    ? `Machine Learning classified as ${neuralProto.latin.toUpperCase()} (${neuralConfidence}% Neural Probability). ${neuralProto.syllableData.writingRule}`
-    : `Tinukoy ng Machine Learning bilang ${neuralProto.latin.toUpperCase()} (${neuralConfidence}% Neural Probability). ${neuralProto.syllableData.writingRule}`;
+  const feedback = getDistilledFeedback(neuralProto.latin, strokeAccuracy, language, finalConfidence);
 
   return {
     recognized: true,

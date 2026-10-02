@@ -25,7 +25,7 @@ interface DictEntry {
 function isValidGeminiKey(key?: string): boolean {
   if (!key) return false;
   const trimmed = key.trim();
-  return trimmed.startsWith('AIza') && trimmed.length >= 35;
+  return (trimmed.startsWith('AIza') || trimmed.startsWith('AQ.')) && trimmed.length >= 35;
 }
 
 // Comprehensive authentic Kapampangan, Tagalog, and English dictionary
