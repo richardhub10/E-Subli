@@ -1,0 +1,699 @@
+[
+  {
+    "datasetFilename": "IMG_2655(1).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "lo",
+    "rawLabel": "lo",
+    "description": "A vertical stem with a left-curving top forming a loop at the upper left, paired with a separate curved stroke resembling a 'v' or hook shape on the right.",
+    "source": "Datasets/IMG_2655(1).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(10).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "de",
+    "rawLabel": "de",
+    "description": "A Kulitan consonant glyph consisting of a main looped or curved baseline structure with a tilde-like or curl diacritic mark above the left section, and an elongated vertical stroke on the right side.",
+    "source": "Datasets/IMG_2655(10).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(11).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "ne",
+    "rawLabel": "ne",
+    "description": "A vertical stem crossed at the top by a curved arch or umbrella-like shape, with a curved wavy or looped stroke attached to its right side.",
+    "source": "Datasets/IMG_2655(11).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(12).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "me",
+    "rawLabel": "me",
+    "description": "A cursive Kulitan character composed of an intersecting loop on the left, an upward curved stroke over a wavy middle section, and a vertical tail pointing upward on the right.",
+    "source": "Datasets/IMG_2655(12).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(13).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "o",
+    "rawLabel": "o",
+    "description": "A wavy, serpentine Kulitan character consisting of multiple undulating curves resembling a sideways 'w' shape.",
+    "source": "Datasets/IMG_2655(13).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(14).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "go",
+    "rawLabel": "go",
+    "description": "A curved Kulitan glyph consisting of an arched or hook-like stroke on the left connected to a wavy, downward-extending tail on the right.",
+    "source": "Datasets/IMG_2655(14).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(15).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "ko",
+    "rawLabel": "ko",
+    "description": "A Kulitan consonant glyph featuring a wavy upward-curving main stroke with two horizontal slash marks above it.",
+    "source": "Datasets/IMG_2655(15).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(16).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "ngo",
+    "rawLabel": "ngo",
+    "description": "A complex calligraphic Kulitan glyph featuring a curved leading stroke, a wavy central stem or ligature, and a sweeping terminal line on the right.",
+    "source": "Datasets/IMG_2655(16).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(17).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "to",
+    "rawLabel": "to",
+    "description": "A cursive, serpentine Kulitan character consisting of a continuous winding stroke with a hook at the top left, dipping down, looping, and rising to a higher termination on the right.",
+    "source": "Datasets/IMG_2655(17).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(18).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "do",
+    "rawLabel": "do",
+    "description": "A cursive Kulitan glyph featuring a horizontal base line with a wavy looping pattern on the left, an upward curl at the top-left, and a sweeping upward stroke forming a hook shape on the right.",
+    "source": "Datasets/IMG_2655(18).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(19).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "no",
+    "rawLabel": "no",
+    "description": "A vertical stem crossed at the top by an arched horizontal line, with a wavy, curved extension to the right resembling a lowercase cursive 'v' or hook shape.",
+    "source": "Datasets/IMG_2655(19).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(2).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "be",
+    "rawLabel": "be",
+    "description": "A Kulitan consonant glyph consisting of an oval loop on the left connected to a wavy, upward-extending vertical stroke on the right.",
+    "source": "Datasets/IMG_2655(2).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(20).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "so",
+    "rawLabel": "so",
+    "description": "The glyph consists of a curving horizontal base stroke that loops upward into a numeral-3-like shape on the left, connecting to a downward loop on the right.",
+    "source": "Datasets/IMG_2655(20).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(21).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "mo",
+    "rawLabel": "mo",
+    "description": "A cursive Kulitan glyph featuring a central vertical-ish stroke crossed horizontally, with a sweeping upward arching line above and a looping wave shape to the right.",
+    "source": "Datasets/IMG_2655(21).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(22).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "bo",
+    "rawLabel": "bo",
+    "description": "A Kulitan character consisting of a loop or circle on the left connected to a wavy, curved stroke extending downwards and upwards on the right.",
+    "source": "Datasets/IMG_2655(22).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(3).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "pe",
+    "rawLabel": "pe",
+    "description": "The Kulitan glyph on the left features a curved, undulating calligraphic stroke that starts with a downward hook on the left, loops upward and over toward the right with an inner loop or wave shape, and ends in a tall vertical stroke on the right side.",
+    "source": "Datasets/IMG_2655(3).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(4).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "le",
+    "rawLabel": "le",
+    "description": "A vertical stem crossed at the top by a curved stroke looping to the left, with an adjacent connected wavy or curly component on the right.",
+    "source": "Datasets/IMG_2655(4).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(5).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "se",
+    "rawLabel": "se",
+    "description": "The Kulitan glyph on the left consists of a curved base line sweeping upward, with a looped letter form resembling a '3' connected to an angular upward stroke on the right.",
+    "source": "Datasets/IMG_2655(5).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(6).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "ke",
+    "rawLabel": "ke",
+    "description": "The Kulitan glyph consists of the consonant base character 'ka' (represented by a wavy, loop-like shape) with a diacritic tick or line to the left, which modifies the inherent vowel to 'e' ('ke').",
+    "source": "Datasets/IMG_2655(6).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(7).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "e",
+    "rawLabel": "e",
+    "description": "A cursive, flowing Kulitan character featuring a left-leaning loop connected to a horizontal bar and a rightward vertical stroke curving upward.",
+    "source": "Datasets/IMG_2655(7).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(8).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "nge",
+    "rawLabel": "nge",
+    "description": "A cursive Kulitan character combining a curving arch, a wavy middle section resembling an 'm', and an upward-stretching terminal line on the right.",
+    "source": "Datasets/IMG_2655(8).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655(9).PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "te",
+    "rawLabel": "te",
+    "description": "A curved, handwritten Kulitan character resembling a wavy horizontal line with an upward hook on the left and a vertical terminal on the right.",
+    "source": "Datasets/IMG_2655(9).PNG"
+  },
+  {
+    "datasetFilename": "IMG_2655.PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "po",
+    "rawLabel": "po",
+    "description": "A cursive Kulitan character with a sweeping upward arching top stroke, looping down into a wavy baseline curve resembling a stylized 'w' or 'u' shape with a small crossbar loop.",
+    "source": "Datasets/IMG_2655.PNG"
+  },
+  {
+    "datasetFilename": "IMG_2656.PNG",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "ge",
+    "rawLabel": "ge",
+    "description": "A Kulitan glyph featuring a curved, arching baseline on the left with a wave-like loop continuing into an upward-pointing vertical terminal on the right.",
+    "source": "Datasets/IMG_2656.PNG"
+  },
+  {
+    "datasetFilename": "IMG_6103.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "a",
+    "assetFilename": "exemplar_a.jpg",
+    "source": "assets/datasets/exemplar_a.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6104.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "ga",
+    "assetFilename": "exemplar_ga.jpg",
+    "source": "assets/datasets/exemplar_ga.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6105.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "ka",
+    "assetFilename": "exemplar_ka.jpg",
+    "source": "assets/datasets/exemplar_ka.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6106.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "nga",
+    "assetFilename": "exemplar_nga.jpg",
+    "source": "assets/datasets/exemplar_nga.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6107.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "ta",
+    "assetFilename": "exemplar_ta.jpg",
+    "source": "assets/datasets/exemplar_ta.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6108.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "da",
+    "assetFilename": "exemplar_da.jpg",
+    "source": "assets/datasets/exemplar_da.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6109.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "na",
+    "assetFilename": "exemplar_na.jpg",
+    "source": "assets/datasets/exemplar_na.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6110.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "la",
+    "assetFilename": "exemplar_la.jpg",
+    "source": "assets/datasets/exemplar_la.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6111.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "sa",
+    "assetFilename": "exemplar_sa.jpg",
+    "source": "assets/datasets/exemplar_sa.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6112.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "ma",
+    "assetFilename": "exemplar_ma.jpg",
+    "source": "assets/datasets/exemplar_ma.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6113.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "pa",
+    "assetFilename": "exemplar_pa.jpg",
+    "source": "assets/datasets/exemplar_pa.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6114.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "ba",
+    "assetFilename": "exemplar_ba.jpg",
+    "source": "assets/datasets/exemplar_ba.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6115.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "i",
+    "assetFilename": "exemplar_i.jpg",
+    "source": "assets/datasets/exemplar_i.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6116.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "gi",
+    "assetFilename": "exemplar_gi.jpg",
+    "source": "assets/datasets/exemplar_gi.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6117.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "ki",
+    "assetFilename": "exemplar_ki.jpg",
+    "source": "assets/datasets/exemplar_ki.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6118.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "ngi",
+    "assetFilename": "exemplar_ngi.jpg",
+    "source": "assets/datasets/exemplar_ngi.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6119.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "ti",
+    "assetFilename": "exemplar_ti.jpg",
+    "source": "assets/datasets/exemplar_ti.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6120.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "di",
+    "assetFilename": "exemplar_di.jpg",
+    "source": "assets/datasets/exemplar_di.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6121.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "ni",
+    "assetFilename": "exemplar_ni.jpg",
+    "source": "assets/datasets/exemplar_ni.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6122.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "li",
+    "assetFilename": "exemplar_li.jpg",
+    "source": "assets/datasets/exemplar_li.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6123.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "si",
+    "assetFilename": "exemplar_si.jpg",
+    "source": "assets/datasets/exemplar_si.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6124.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "mi",
+    "assetFilename": "exemplar_mi.jpg",
+    "source": "assets/datasets/exemplar_mi.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6125.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "pi",
+    "assetFilename": "exemplar_pi.jpg",
+    "source": "assets/datasets/exemplar_pi.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6126.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "bi",
+    "assetFilename": "exemplar_bi.jpg",
+    "source": "assets/datasets/exemplar_bi.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6127.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "u",
+    "assetFilename": "exemplar_u.jpg",
+    "source": "assets/datasets/exemplar_u.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6128.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "gu",
+    "assetFilename": "exemplar_gu.jpg",
+    "source": "assets/datasets/exemplar_gu.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6129.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "ku",
+    "assetFilename": "exemplar_ku.jpg",
+    "source": "assets/datasets/exemplar_ku.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6130.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "ngu",
+    "assetFilename": "exemplar_ngu.jpg",
+    "source": "assets/datasets/exemplar_ngu.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6131.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "tu",
+    "assetFilename": "exemplar_tu.jpg",
+    "source": "assets/datasets/exemplar_tu.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6132.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "du",
+    "assetFilename": "exemplar_du.jpg",
+    "source": "assets/datasets/exemplar_du.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6133.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "nu",
+    "assetFilename": "exemplar_nu.jpg",
+    "source": "assets/datasets/exemplar_nu.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6134.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "lu",
+    "assetFilename": "exemplar_lu.jpg",
+    "source": "assets/datasets/exemplar_lu.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6135.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "su",
+    "assetFilename": "exemplar_su.jpg",
+    "source": "assets/datasets/exemplar_su.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6136.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "mu",
+    "assetFilename": "exemplar_mu.jpg",
+    "source": "assets/datasets/exemplar_mu.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6137.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "pu",
+    "assetFilename": "exemplar_pu.jpg",
+    "source": "assets/datasets/exemplar_pu.jpg"
+  },
+  {
+    "datasetFilename": "IMG_6138.jpg",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "bu",
+    "assetFilename": "exemplar_bu.jpg",
+    "source": "assets/datasets/exemplar_bu.jpg"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 154525.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "gi",
+    "rawLabel": "gí/i",
+    "description": "A Kulitan character consisting of a curved base consonant glyph resembling the letter 'ga' with a superscript diacritic mark (pamudpod) above the first arch indicating the vowel /i/ or /gí/.",
+    "source": "Datasets/Screenshot 2026-10-02 154525.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 154549.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "g",
+    "rawLabel": "gú/û",
+    "description": "A cursive Kulitan consonant-vowel character featuring an upward initial loop/arc on the left, connected to a wavy, serpent-like downward and upward curved stroke ending in a tall right terminal.",
+    "source": "Datasets/Screenshot 2026-10-02 154549.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 154608.png",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "gang",
+    "assetFilename": "exemplar_gang.png",
+    "source": "assets/datasets/exemplar_gang.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 154627.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "ki",
+    "rawLabel": "kí/i",
+    "description": "The Kulitan glyph on the left features two horizontal baseline strokes, a connected wave-like or looped middle component, an upright vertical terminal stroke on the right, and a separate diagonal diacritic mark above the upper portion.",
+    "source": "Datasets/Screenshot 2026-10-02 154627.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 154651.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "k",
+    "rawLabel": "kú/û",
+    "description": "The Kulitan glyph on the left features a curved base consonant symbol accompanied by diacritics consisting of three short horizontal or slanting strokes above it and a small comma-like tick below.",
+    "source": "Datasets/Screenshot 2026-10-02 154651.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 154712.png",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "kang",
+    "assetFilename": "exemplar_kang.png",
+    "source": "assets/datasets/exemplar_kang.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 154730.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "ngi",
+    "rawLabel": "ngí/i",
+    "description": "The Kulitan glyph on the left features a curved base consonant character representing 'nga', combined with vowel diacritics (corporate or historical vowel marks placed above/around the base) to modify the sound to 'ngí/i'.",
+    "source": "Datasets/Screenshot 2026-10-02 154730.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 154757.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "ng",
+    "rawLabel": "ngú/û",
+    "description": "A cursive Kulitan ligature or character featuring a left-facing curved stroke, a central component with small loops or m-like waves, a dot/diacritic mark underneath, and a trailing upward-sweeping curve on the right.",
+    "source": "Datasets/Screenshot 2026-10-02 154757.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 154843.png",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "ngang",
+    "assetFilename": "exemplar_ngang.png",
+    "source": "assets/datasets/exemplar_ngang.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 154901.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "ti",
+    "rawLabel": "tí/i",
+    "description": "A Kulitan glyph representing the syllable 'ti' or vowel 'i', consisting of a flowing cursive stroke with a diacritical acute accent mark above the middle section.",
+    "source": "Datasets/Screenshot 2026-10-02 154901.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 154926.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "t",
+    "rawLabel": "tú/û",
+    "description": "A cursive Kulitan ligature or character combining a consonant glyph with vowel modifiers, featuring a wavy horizontal stroke with a leading hook on the left and a sweeping upward stroke on the right.",
+    "source": "Datasets/Screenshot 2026-10-02 154926.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 154949.png",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "tang",
+    "assetFilename": "exemplar_tang.png",
+    "source": "assets/datasets/exemplar_tang.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155052.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "d",
+    "rawLabel": "dí/î",
+    "description": "A cursive Kulitan glyph representing 'dí' or 'î', consisting of a complex undulating stroke with a superscript diacritic mark above it.",
+    "source": "Datasets/Screenshot 2026-10-02 155052.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155110.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "d",
+    "rawLabel": "dú/û",
+    "description": "A Kulitan consonant glyph with multiple diacritics, showing a main curved stroke with a small loop/hook on top and a subscript dot below.",
+    "source": "Datasets/Screenshot 2026-10-02 155110.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155207.png",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "dang",
+    "assetFilename": "exemplar_dang.png",
+    "source": "assets/datasets/exemplar_dang.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155243.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "ni",
+    "rawLabel": "ní/i",
+    "description": "A Kulitan consonant glyph with a vertical stem intersecting an arched horizontal stroke, accompanied by a superscript diacritic mark above and a wavy trailing tail on the right.",
+    "source": "Datasets/Screenshot 2026-10-02 155243.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155325.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "n",
+    "rawLabel": "nú/û",
+    "description": "A Kulitan glyph featuring a vertical stem with a curved upper arch spanning to the right, ending in a wavy, upward-curving stroke, accompanied by a small diacritic mark below and to the left of the stem.",
+    "source": "Datasets/Screenshot 2026-10-02 155325.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155407.png",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "nang",
+    "assetFilename": "exemplar_nang.png",
+    "source": "assets/datasets/exemplar_nang.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155424.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "lii",
+    "rawLabel": "li/i",
+    "description": "A Kulitan consonant glyph with a vertical stem intersected by a curved horizontal stroke, accompanied by a looped or wavy secondary component attached to the right.",
+    "source": "Datasets/Screenshot 2026-10-02 155424.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155450.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "l",
+    "rawLabel": "lú/û",
+    "description": "The Kulitan glyph consists of a vertical main stem crossed near the top by a curved loop extending to the left, accompanied by a small detached comma-like diacritic mark at the lower left, and a connected or adjacent curved stroke on the right side.",
+    "source": "Datasets/Screenshot 2026-10-02 155450.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155534.png",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "lang",
+    "assetFilename": "exemplar_lang.png",
+    "source": "assets/datasets/exemplar_lang.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155617.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "s",
+    "rawLabel": "sí/í",
+    "description": "The Kulitan glyph on the left features a curved base character resembling the consonant 'si' with a diacritic mark (an acute accent-like stroke) placed above it to modify its vowel sound to 'i'.",
+    "source": "Datasets/Screenshot 2026-10-02 155617.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155632.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "s",
+    "rawLabel": "sú/û",
+    "description": "A cursive Kulitan consonant character resembling a stylized '3' or looping wave combined with an upward sweeping stroke and a small diacritic comma-like mark below.",
+    "source": "Datasets/Screenshot 2026-10-02 155632.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155644.png",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "sang",
+    "assetFilename": "exemplar_sang.png",
+    "source": "assets/datasets/exemplar_sang.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155658.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "mi",
+    "rawLabel": "mí/i",
+    "description": "A cursive, flowing Kulitan character representing the consonant 'm' with an 'i' vowel diacritic/sign modifying it, showing a horizontal base-like stroke crossed by loops and a prominent acute diacritic mark above the curve.",
+    "source": "Datasets/Screenshot 2026-10-02 155658.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155710.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "m",
+    "rawLabel": "mú/û",
+    "description": "A cursive Kulitan glyph featuring a base consonant crossed by a horizontal slash with a wavy looping stroke on the right and a diacritic dot or stroke below.",
+    "source": "Datasets/Screenshot 2026-10-02 155710.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155728.png",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "mang",
+    "assetFilename": "exemplar_mang.png",
+    "source": "assets/datasets/exemplar_mang.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155748.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "p",
+    "rawLabel": "pí/í",
+    "description": "A Kulitan consonant glyph representing 'pa' (or a similar consonant) with a superscript diacritic (pamudtod/kudlit) above it to modify the inherent vowel sound to 'i', corresponding to the transliteration 'pí/í'.",
+    "source": "Datasets/Screenshot 2026-10-02 155748.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155759.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "p",
+    "rawLabel": "pú/û",
+    "description": "A cursive Kulitan glyph representing the consonant 'pa' with a superscript vowel diacritic (kulis) indicating the vowel 'u' / 'o', forming 'pú' or 'pû'.",
+    "source": "Datasets/Screenshot 2026-10-02 155759.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155814.png",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "pang",
+    "assetFilename": "exemplar_pang.png",
+    "source": "assets/datasets/exemplar_pang.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155828.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "b",
+    "rawLabel": "bí/î",
+    "description": "A Kulitan consonant glyph resembling a loop connected to a wavy horizontal stroke with an upward-curving terminal on the right, accompanied by a superscript diacritic mark above the left loop.",
+    "source": "Datasets/Screenshot 2026-10-02 155828.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155842.png",
+    "type": "Extended Allophone/Variant Card",
+    "syllable": "b",
+    "rawLabel": "bú/û",
+    "description": "A cursive Kulitan character consisting of a small diagonal tick or stroke at the bottom left, connected to a rounded loop, followed by a wavy or S-like curve extending upwards and to the right.",
+    "source": "Datasets/Screenshot 2026-10-02 155842.png"
+  },
+  {
+    "datasetFilename": "Screenshot 2026-10-02 155858.png",
+    "type": "Primary Exemplar (Standard)",
+    "syllable": "bang",
+    "assetFilename": "exemplar_bang.png",
+    "source": "assets/datasets/exemplar_bang.png"
+  }
+]

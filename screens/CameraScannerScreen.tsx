@@ -24,7 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 import { kulitanSyllables } from '../data/kulitanData';
-import { getKulitanExemplar } from '../data/kulitanDatasetExemplars';
+import { getKulitanExemplar, normalizeKulitanSyllable } from '../data/kulitanDatasetExemplars';
 import KulitanGlyph from '../components/KulitanGlyph';
 import { classifyKulitanHandwriting, cropViewfinderROI, ScanResult } from '../utils/kulitanClassifier';
 import { callGroqVision, getKulitanVisionPrompt, isValidGroqKey } from '../services/groqVisionService';
@@ -240,7 +240,7 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
               parsed.confidence = Math.round(parsed.confidence * 100);
             }
 
-            const searchLatin = (parsed.transliteration || parsed.character || '').toLowerCase().trim();
+            const searchLatin = normalizeKulitanSyllable(parsed.transliteration || parsed.character);
             const matched = kulitanSyllables.find(s => 
               s.latin.toLowerCase() === searchLatin || 
               s.id.toLowerCase() === searchLatin
@@ -410,8 +410,8 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
           const groqRes = successful.find(s => s.engine === 'groq')?.result;
 
           if (geminiRes && groqRes) {
-            const gemChar = (geminiRes.transliteration || geminiRes.character).toLowerCase().trim();
-            const groqChar = (groqRes.transliteration || groqRes.character).toLowerCase().trim();
+            const gemChar = normalizeKulitanSyllable(geminiRes.transliteration || geminiRes.character);
+            const groqChar = normalizeKulitanSyllable(groqRes.transliteration || groqRes.character);
 
             if (gemChar === groqChar) {
               // High-confidence consensus agreement!

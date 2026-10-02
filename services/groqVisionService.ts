@@ -1,4 +1,5 @@
 import { kulitanSyllables } from '../data/kulitanData';
+import { normalizeKulitanSyllable } from '../data/kulitanDatasetExemplars';
 import { ScanResult } from '../utils/kulitanClassifier';
 
 // Groq Vision models supporting multimodal image chat completions
@@ -21,7 +22,7 @@ export function isValidGroqKey(key?: string): boolean {
 
 /**
  * Generates the standardized Kulitan paleography prompt for Vision models.
- * Incorporates the authentic 47-syllable dataset orthography of Sulat Kapampangan.
+ * Incorporates the authentic 93-screenshot dataset orthography of Sulat Kapampangan.
  */
 export function getKulitanVisionPrompt(targetSyllable: string | null): string {
   const targetHint = targetSyllable 
@@ -37,7 +38,7 @@ If it is unrecognizable or unreadable, return recognized: false.`
 
 ORTHOGRAPHIC SCRIPT CONTEXT:
 Kulitan is STRICTLY INDIGENOUS KAPAMPANGAN and is DIFFERENT from Tagalog Baybayin.
-The authentic Kulitan syllabary consists of 47 standard syllables derived from archival Kapampangan calligraphy cards:
+The authentic Kulitan syllabary consists of 47 standard syllables and their allophones, fully validated from the 93 archival calligraphy screenshot cards:
 
 1. STANDALONE VOWELS (Indung Patinig):
 - A: Downward sweeping loop on the left curving up into a bottom hook with a prominent flourish.
@@ -59,13 +60,13 @@ The authentic Kulitan syllabary consists of 47 standard syllables derived from a
 
 3. UPPER GARLIT (Anak Sulat - Vowel /i/ or /e/):
 Base consonant modified with an acute tick, dot, or flourish placed ABOVE or near the top:
-- Ki, Gi, Ngi, Ti, Di, Ni, Li, Si, Mi, Pi, Bi
-(e.g., Ba with upper tick = Bi; Ga with upper tick = Gi; Ta with upper tick = Ti; Da with upper tick = Di).
+- Ki/Ke, Gi/Ge, Ngi/Nge, Ti/Te, Di/De, Ni/Ne, Li/Le, Si/Se, Mi/Me, Pi/Pe, Bi/Be.
+In Kapampangan orthography, /i/ and /e/ share the exact same upper Garlit diacritic mark.
 
 4. LOWER GARLIT (Anak Sulat - Vowel /u/ or /o/):
 Base consonant modified with a descending tick, dot, or flourish placed BELOW or near the bottom:
-- Ku, Gu, Ngu, Tu, Du, Nu, Lu, Su, Mu, Pu, Bu
-(e.g., Ba with lower tick = Bu; Ga with lower tick = Gu; Ka with lower tick = Ku).
+- Ku/Ko, Gu/Go, Ngu/Ngo, Tu/To, Du/Do, Nu/No, Lu/Lo, Su/So, Mu/Mo, Pu/Po, Bu/Bo.
+In Kapampangan orthography, /u/ and /o/ share the exact same lower Garlit diacritic mark.
 
 5. CODA LIGATURES (Kamulitan / Busal - Trailing -ng):
 Base consonant directly attached to a trailing horizontal undulating wave on the right representing coda nasal /-ng/:
@@ -193,8 +194,9 @@ export async function callGroqVision(
 
       // Cross-reference with our authentic Kulitan syllabary database for canonical metadata
       if (parsed.recognized) {
-        const query = (parsed.transliteration || parsed.character || '').trim().toLowerCase();
-        const matched = kulitanSyllables.find(s => s.latin.toLowerCase() === query || s.id.toLowerCase() === query);
+        const rawQuery = (parsed.transliteration || parsed.character || '').trim();
+        const normalized = normalizeKulitanSyllable(rawQuery);
+        const matched = kulitanSyllables.find(s => s.latin.toLowerCase() === normalized || s.id.toLowerCase() === normalized);
         if (matched) {
           parsed.kulitanSymbol = matched.kulitanSymbol;
           parsed.type = matched.classification;

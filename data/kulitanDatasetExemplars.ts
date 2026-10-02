@@ -49,8 +49,46 @@ export const KULITAN_DATASET_EXEMPLARS: Record<string, any> = {
   bang: require('../assets/datasets/exemplar_bang.png'),
 };
 
+/**
+ * Normalizes user and model transliterations into canonical Kulitan syllables.
+ * Accurately maps Kapampangan vowel allophones (-e -> -i, -o -> -u, diacritics like dí/î -> di)
+ * as established in the 93 authentic archival screenshot dataset.
+ */
+export function normalizeKulitanSyllable(query?: string | null): string {
+  if (!query) return '';
+  let clean = query.toLowerCase().trim();
+  if (clean.includes('/')) {
+    clean = clean.split('/')[0];
+  }
+  clean = clean
+    .replace(/[íî]/g, 'i')
+    .replace(/[úû]/g, 'u')
+    .replace(/[éê]/g, 'e')
+    .replace(/[óô]/g, 'o')
+    .replace(/[áâ]/g, 'a')
+    .replace(/[^a-z]/g, '');
+
+  const VOWEL_ALLOPHONES: Record<string, string> = {
+    e: 'i', o: 'u',
+    ke: 'ki', ko: 'ku',
+    ge: 'gi', go: 'gu',
+    nge: 'ngi', ngo: 'ngu',
+    te: 'ti', to: 'tu',
+    de: 'di', do: 'du',
+    ne: 'ni', no: 'nu',
+    le: 'li', lo: 'lu',
+    se: 'si', so: 'su',
+    me: 'mi', mo: 'mu',
+    pe: 'pi', po: 'pu',
+    be: 'bi', bo: 'bu',
+  };
+
+  return VOWEL_ALLOPHONES[clean] || clean;
+}
+
 export function getKulitanExemplar(latin: string): any | null {
   if (!latin) return null;
-  const clean = latin.toLowerCase().trim();
-  return KULITAN_DATASET_EXEMPLARS[clean] || null;
+  const canonical = normalizeKulitanSyllable(latin);
+  return KULITAN_DATASET_EXEMPLARS[canonical] || KULITAN_DATASET_EXEMPLARS[latin.toLowerCase().trim()] || null;
 }
+
