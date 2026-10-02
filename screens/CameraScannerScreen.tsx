@@ -26,7 +26,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { kulitanSyllables } from '../data/kulitanData';
 import { getKulitanExemplar } from '../data/kulitanDatasetExemplars';
 import KulitanGlyph from '../components/KulitanGlyph';
-import { classifyKulitanHandwriting, ScanResult } from '../utils/kulitanClassifier';
+import { classifyKulitanHandwriting, cropViewfinderROI, ScanResult } from '../utils/kulitanClassifier';
 import { callGroqVision, getKulitanVisionPrompt, isValidGroqKey } from '../services/groqVisionService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -197,19 +197,87 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
     }
   };
 
+  const executeGeminiVision = async (
+    cleanB64: string,
+    target: string | null,
+    apiKey: string,
+    mime: string
+  ): Promise<ScanResult | null> => {
+    try {
+      const ai = new GoogleGenAI({ apiKey });
+      const prompt = getKulitanVisionPrompt(target);
+      const candidateModels = [
+        'gemini-3.5-flash-lite',
+        'gemini-3-flash-preview',
+        'gemini-flash-latest',
+        'gemini-3.8-flash',
+      ];
+
+      for (const modelName of candidateModels) {
+        try {
+          const response = await ai.models.generateContent({
+            model: modelName,
+            contents: [
+              prompt,
+              { inlineData: { data: cleanB64, mimeType: mime } }
+            ],
+            config: {
+              temperature: 0.1,
+              responseMimeType: 'application/json',
+            } as any
+          });
+
+          const rawText = response?.text?.trim() || '';
+          if (!rawText) continue;
+
+          const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]) as ScanResult;
+            parsed.engine = 'gemini';
+
+            // Normalize decimal confidence (e.g. 0.98 -> 98)
+            if (typeof parsed.confidence === 'number' && parsed.confidence <= 1 && parsed.confidence > 0) {
+              parsed.confidence = Math.round(parsed.confidence * 100);
+            }
+
+            const searchLatin = (parsed.transliteration || parsed.character || '').toLowerCase().trim();
+            const matched = kulitanSyllables.find(s => 
+              s.latin.toLowerCase() === searchLatin || 
+              s.id.toLowerCase() === searchLatin
+            );
+            if (matched) {
+              parsed.character = matched.latin.toUpperCase();
+              parsed.transliteration = matched.latin;
+              parsed.kulitanSymbol = matched.kulitanSymbol;
+              parsed.type = matched.classification;
+            }
+            return parsed;
+          }
+        } catch (mErr) {
+          console.warn(`Gemini model ${modelName} failed, trying next candidate...`, mErr);
+        }
+      }
+    } catch (gErr) {
+      console.warn("Gemini Vision execution error:", gErr);
+    }
+    return null;
+  };
+
   const takePicture = async () => {
     if (cameraRef.current) {
       try {
         const photo = await cameraRef.current.takePictureAsync({ 
           base64: true, 
-          quality: 0.82,
+          quality: 0.85,
           skipProcessing: false 
         });
         if (photo) {
           setPhotoUri(photo.uri);
-          setBase64Data(photo.base64 || null);
           setScanResult(null);
-          analyzeImage(photo.base64 || null);
+          // Auto-crop Region of Interest (ROI) matching the central reticle frame
+          const croppedB64 = await cropViewfinderROI(photo.base64 || '', 0.68);
+          setBase64Data(croppedB64);
+          analyzeImage(croppedB64);
         }
       } catch (e) {
         console.error("Failed to take picture", e);
@@ -231,9 +299,10 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
       if (!result.canceled && result.assets[0]) {
         const asset = result.assets[0];
         setPhotoUri(asset.uri);
-        setBase64Data(asset.base64 || null);
         setScanResult(null);
-        analyzeImage(asset.base64 || null);
+        const croppedB64 = await cropViewfinderROI(asset.base64 || '', 0.90);
+        setBase64Data(croppedB64);
+        analyzeImage(croppedB64);
       }
     } catch (err) {
       console.error("Failed to pick image", err);
@@ -298,90 +367,86 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
     ).trim();
 
     let cloudResult: ScanResult | null = null;
+    const hasGemini = isValidGeminiKey(effectiveGeminiKey);
+    const hasGroq = isValidGroqKey(effectiveGroqKey);
 
-    // 2. Primary Cloud Vision: Google Gemini Vision
-    if (isValidGeminiKey(effectiveGeminiKey)) {
+    // 2. Multimodal Cloud Vision AI (Dual Ensemble: Gemini + Groq)
+    if (hasGemini || hasGroq) {
+      setAnalysisStep(
+        hasGemini && hasGroq
+          ? (language === 'EN' ? 'Analyzing with Gemini & Groq Multimodal AI...' : 'Sinusuri gamit ang Gemini at Groq AI...')
+          : hasGemini
+            ? (language === 'EN' ? 'Analyzing Kulitan strokes with Gemini AI...' : 'Sinusuri gamit ang Gemini AI...')
+            : (language === 'EN' ? 'Analyzing Kulitan strokes with Groq Vision...' : 'Sinusuri gamit ang Groq AI...')
+      );
+
       try {
-        setAnalysisStep(
-          language === 'EN' 
-            ? 'Analyzing Kulitan strokes with Gemini AI...' 
-            : 'Sinusuri ang mga guhit ng Kulitan gamit ang Gemini AI...'
-        );
-        
-        const ai = new GoogleGenAI({ apiKey: effectiveGeminiKey });
-        const prompt = getKulitanVisionPrompt(targetSyllable);
+        const promises: Promise<{ engine: 'gemini' | 'groq'; result: ScanResult | null }>[] = [];
 
-        let response: any = null;
-        const candidateModels = [
-          'gemini-3.5-flash-lite',
-          'gemini-3-flash-preview',
-          'gemini-flash-latest',
-          'gemini-3.8-flash',
-        ];
-
-        for (const modelName of candidateModels) {
-          try {
-            response = await ai.models.generateContent({
-              model: modelName,
-              contents: [
-                prompt,
-                { inlineData: { data: cleanB64, mimeType } }
-              ],
-              config: {
-                temperature: 0.1,
-                responseMimeType: 'application/json',
-              } as any
-            });
-            if (response && response.text) break;
-          } catch (modelErr) {
-            console.warn(`Model ${modelName} call failed, trying next Gemini candidate...`, modelErr);
-          }
-        }
-
-        const rawText = response?.text?.trim() || '';
-        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]) as ScanResult;
-          // Match with official syllable dictionary to ensure consistent kulitanSymbol and naming
-          const searchLatin = (parsed.transliteration || parsed.character || '').toLowerCase().trim();
-          const matched = kulitanSyllables.find(s => 
-            s.latin.toLowerCase() === searchLatin || 
-            s.id.toLowerCase() === searchLatin
+        if (hasGemini) {
+          promises.push(
+            executeGeminiVision(cleanB64, targetSyllable, effectiveGeminiKey, mimeType)
+              .then(res => ({ engine: 'gemini' as const, result: res }))
+              .catch(() => ({ engine: 'gemini' as const, result: null }))
           );
-          if (matched) {
-            parsed.character = matched.latin.toUpperCase();
-            parsed.transliteration = matched.latin;
-            parsed.kulitanSymbol = matched.kulitanSymbol;
-            parsed.type = matched.classification;
+        }
+
+        if (hasGroq) {
+          promises.push(
+            callGroqVision(cleanB64, targetSyllable, effectiveGroqKey, language as any, mimeType)
+              .then(res => ({ engine: 'groq' as const, result: res }))
+              .catch(() => ({ engine: 'groq' as const, result: null }))
+          );
+        }
+
+        const settled = await Promise.allSettled(promises);
+        const successful = settled
+          .filter((p): p is PromiseFulfilledResult<{ engine: 'gemini' | 'groq'; result: ScanResult | null }> => p.status === 'fulfilled')
+          .map(p => p.value)
+          .filter(v => v.result !== null && v.result.recognized) as { engine: 'gemini' | 'groq'; result: ScanResult }[];
+
+        if (successful.length >= 2) {
+          const geminiRes = successful.find(s => s.engine === 'gemini')?.result;
+          const groqRes = successful.find(s => s.engine === 'groq')?.result;
+
+          if (geminiRes && groqRes) {
+            const gemChar = (geminiRes.transliteration || geminiRes.character).toLowerCase().trim();
+            const groqChar = (groqRes.transliteration || groqRes.character).toLowerCase().trim();
+
+            if (gemChar === groqChar) {
+              // High-confidence consensus agreement!
+              cloudResult = {
+                ...geminiRes,
+                engine: 'consensus',
+                confidence: Math.max(97, Math.min(99, Math.round((geminiRes.confidence + groqRes.confidence) / 2 + 3))),
+                strokeAccuracy: 'High',
+                feedback: language === 'EN'
+                  ? `Dual AI Consensus Verified: ${geminiRes.feedback || groqRes.feedback}`
+                  : `Napatunayan ng Gemini at Groq: ${geminiRes.feedback || groqRes.feedback}`,
+              };
+            } else {
+              // Disagreement: select higher confidence result
+              cloudResult = geminiRes.confidence >= groqRes.confidence ? geminiRes : groqRes;
+            }
           }
-          parsed.engine = 'gemini';
-          cloudResult = parsed;
+        } else if (successful.length === 1) {
+          cloudResult = successful[0].result;
+        } else {
+          // If neither was recognized (e.g. blank page), capture the rejection feedback
+          const anyResult = settled
+            .filter((p): p is PromiseFulfilledResult<{ engine: 'gemini' | 'groq'; result: ScanResult | null }> => p.status === 'fulfilled')
+            .map(p => p.value.result)
+            .find(r => r !== null);
+          if (anyResult && !anyResult.recognized) {
+            cloudResult = anyResult;
+          }
         }
-      } catch (err) {
-        console.warn("Gemini Vision failed, attempting Groq Vision backup...", err);
+      } catch (cloudErr) {
+        console.warn('Cloud vision error, falling back to on-device ML:', cloudErr);
       }
     }
 
-    // 3. Backup Cloud Vision: Groq Vision (Ultra-fast LPU inference)
-    // Runs as backup if Gemini failed, or as primary if Gemini is not configured but Groq is
-    if (!cloudResult && isValidGroqKey(effectiveGroqKey)) {
-      try {
-        setAnalysisStep(
-          isValidGeminiKey(effectiveGeminiKey)
-            ? (language === 'EN' ? 'Gemini busy, switching to Groq Vision backup...' : 'Lumilipat sa Groq Vision backup...')
-            : (language === 'EN' ? 'Analyzing Kulitan strokes with Groq Vision...' : 'Sinusuri ang mga guhit gamit ang Groq AI...')
-        );
-
-        const groqResult = await callGroqVision(cleanB64, targetSyllable, effectiveGroqKey, language as any, mimeType);
-        if (groqResult) {
-          cloudResult = groqResult;
-        }
-      } catch (groqErr) {
-        console.warn("Groq Vision backup failed:", groqErr);
-      }
-    }
-
-    // If either Cloud AI succeeded, finalize and return!
+    // If Cloud AI succeeded, finalize and award XP!
     if (cloudResult) {
       setScanResult(cloudResult);
       if (cloudResult.recognized) {
@@ -391,7 +456,7 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
       return;
     }
 
-    // 4. Calibrated On-Device Computer Vision & ML Classifier (Offline Guaranteed, Zero Math.random())
+    // 3. Calibrated On-Device Computer Vision & ML Classifier (Offline Guaranteed)
     setAnalysisStep(
       language === 'EN' 
         ? 'Evaluating character stroke topology with Calibrated ML...' 
@@ -514,55 +579,65 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
                     {/* Recognition Engine Badge */}
                     <View style={[
                       styles.engineBadgePill,
-                      scanResult.engine === 'gemini' 
-                        ? styles.engineBadgeGemini 
-                        : scanResult.engine === 'groq'
-                          ? styles.engineBadgeGroq
-                          : scanResult.engine === 'neural_net'
-                            ? styles.engineBadgeNeural
-                            : styles.engineBadgeCV
+                      scanResult.engine === 'consensus'
+                        ? styles.engineBadgeConsensus
+                        : scanResult.engine === 'gemini' 
+                          ? styles.engineBadgeGemini 
+                          : scanResult.engine === 'groq'
+                            ? styles.engineBadgeGroq
+                            : scanResult.engine === 'neural_net'
+                              ? styles.engineBadgeNeural
+                              : styles.engineBadgeCV
                     ]}>
                       <Ionicons 
                         name={
-                          scanResult.engine === 'gemini' 
-                            ? 'sparkles' 
-                            : scanResult.engine === 'groq'
-                              ? 'flash'
-                              : scanResult.engine === 'neural_net'
-                                ? 'hardware-chip'
-                                : 'analytics'
+                          scanResult.engine === 'consensus'
+                            ? 'checkmark-done-circle'
+                            : scanResult.engine === 'gemini' 
+                              ? 'sparkles' 
+                              : scanResult.engine === 'groq'
+                                ? 'flash'
+                                : scanResult.engine === 'neural_net'
+                                  ? 'hardware-chip'
+                                  : 'analytics'
                         } 
-                        size={11} 
+                        size={12} 
                         color={
-                          scanResult.engine === 'gemini' 
-                            ? "#B45309" 
-                            : scanResult.engine === 'groq'
-                              ? "#C2410C"
-                              : scanResult.engine === 'neural_net'
-                                ? "#1D4ED8"
-                                : "#475569"
+                          scanResult.engine === 'consensus'
+                            ? "#059669"
+                            : scanResult.engine === 'gemini' 
+                              ? "#B45309" 
+                              : scanResult.engine === 'groq'
+                                ? "#C2410C"
+                                : scanResult.engine === 'neural_net'
+                                  ? "#1D4ED8"
+                                  : "#475569"
                         } 
                       />
                       <Text style={[
                         styles.engineBadgeText,
                         { 
-                          color: scanResult.engine === 'gemini' 
-                            ? "#B45309" 
-                            : scanResult.engine === 'groq'
-                              ? "#C2410C"
-                              : scanResult.engine === 'neural_net'
-                                ? "#1D4ED8"
-                                : "#475569" 
+                          color: scanResult.engine === 'consensus'
+                            ? "#065F46"
+                            : scanResult.engine === 'gemini' 
+                              ? "#B45309" 
+                              : scanResult.engine === 'groq'
+                                ? "#C2410C"
+                                : scanResult.engine === 'neural_net'
+                                  ? "#1D4ED8"
+                                  : "#475569" 
                         }
                       ]}>
                         {
-                          scanResult.engine === 'gemini' 
-                            ? 'GEMINI VISION' 
-                            : scanResult.engine === 'groq'
-                              ? 'GROQ VISION (BACKUP)'
-                              : scanResult.engine === 'neural_net'
-                                ? 'NEURAL NET ML'
-                                : 'CALIBRATED CV'
+                          scanResult.engine === 'consensus'
+                            ? 'GEMINI + GROQ DUAL AI'
+                            : scanResult.engine === 'gemini' 
+                              ? 'GEMINI 3.5 VISION' 
+                              : scanResult.engine === 'groq'
+                                ? 'GROQ VISION (LPU)'
+                                : scanResult.engine === 'neural_net'
+                                  ? 'NEURAL NET ML'
+                                  : 'CALIBRATED CV'
                         }
                       </Text>
                     </View>
@@ -1167,6 +1242,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
+  },
+  engineBadgeConsensus: {
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
   },
   engineBadgeNeural: {
     backgroundColor: '#DBEAFE',

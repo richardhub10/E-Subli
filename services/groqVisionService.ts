@@ -1,10 +1,9 @@
 import { kulitanSyllables } from '../data/kulitanData';
 import { ScanResult } from '../utils/kulitanClassifier';
 
-// Groq Vision models known to support image-based chat completions
+// Groq Vision models supporting multimodal image chat completions
 const GROQ_VISION_MODELS = [
-  'llama-3.2-11b-vision-preview',
-  'llama-3.2-90b-vision-preview',
+  'qwen/qwen3.8-27b',
 ];
 
 const GROQ_BYTES = [106,125,100,79,80,99,66,90,90,66,127,41,99,119,62,69,126,71,80,65,124,68,118,122,71,86,118,106,111,61,73,73,104,126,114,56,122,94,125,37,38,122,99,60,56,91,92,92,119,119,105,55,66,82,123,97];
@@ -21,64 +20,90 @@ export function isValidGroqKey(key?: string): boolean {
 }
 
 /**
- * Generates the standardized Kulitan paleography prompt for Vision models
+ * Generates the standardized Kulitan paleography prompt for Vision models.
+ * Incorporates the authentic 47-syllable dataset orthography of Sulat Kapampangan.
  */
 export function getKulitanVisionPrompt(targetSyllable: string | null): string {
   const targetHint = targetSyllable 
-    ? `The user is specifically attempting to draw the authentic Kulitan character "${targetSyllable.toUpperCase()}". Strictly verify if the handwriting matches "${targetSyllable.toUpperCase()}" with correct stroke curvature and components.` 
+    ? `TARGET EXPECTATION:
+The user is specifically attempting to draw the authentic Kulitan character "${targetSyllable.toUpperCase()}".
+Carefully compare the drawing against the canonical form of "${targetSyllable.toUpperCase()}".
+If it matches "${targetSyllable.toUpperCase()}", return recognized: true with high confidence (85-99).
+If the drawing clearly matches a different Kulitan character, identify the character actually drawn.
+If it is unrecognizable or unreadable, return recognized: false.` 
     : 'Identify which authentic Sulat Kapampangan (Kulitan) character is drawn in the image.';
 
-  return `You are an expert paleographer specializing in authentic Sulat Kapampangan (Kulitan), the indigenous Brahmic script of Pampanga, Philippines.
+  return `You are an expert paleographer specializing in authentic Sulat Kapampangan (Kulitan), the indigenous script of Pampanga, Philippines.
 
-CRITICAL ORTHOGRAPHIC DISTINCTION:
-Kulitan is DISTINCT from Tagalog Baybayin. Do not evaluate this as Baybayin.
-Key distinctive Kulitan forms:
-- A: Downward looping hook curling upwards with a flourish at the bottom.
-- I / E: Horizontal wavy crown with a right-hand vertical downward stem.
-- U / O: Three-crested horizontal flowing wave.
-- Ka: Two parallel horizontal bars joined by a right-side connector curve or vertical stem.
-- Ga: Rounded arch with an open bottom, right leg curving inward.
-- Nga: Continuous undulating double-wave (horizontal W shape).
-- Ta: Open C-shaped loop with an angled bottom horizontal base.
-- Da / Ra: Open box bracket with an interior central step or notch.
-- Na: Left downward arc with an upward sweeping right tail.
-- Pa: Vertical descending stem looping up into a hook head.
-- Ba: Closed teardrop or rounded droplet loop.
-- Ma: Distinct double horizontal loop or spiral.
-- Ya: Open three-pronged upward fork/crest.
-- La: Vertical spine ending in a downward-right hook/curl.
-- Wa: Open rounded cup with a right-hand vertical spine.
-- Sa: S-shaped flowing vertical curve.
+ORTHOGRAPHIC SCRIPT CONTEXT:
+Kulitan is STRICTLY INDIGENOUS KAPAMPANGAN and is DIFFERENT from Tagalog Baybayin.
+The authentic Kulitan syllabary consists of 47 standard syllables derived from archival Kapampangan calligraphy cards:
 
-GARLIT (VOWEL MODIFIERS / ANAK SULAT):
-- Base consonants (Indung Sulat) carry default inherent vowel /a/ (e.g. Ba, Ga, Ka, Ta, Da, etc.).
-- An upper tick or acute mark above or near the glyph modifies the vowel to /i/ or /e/ (e.g., Ba with upper tick = Bi; Ga with upper tick = Gi; Ka with upper tick = Ki; Ta with upper tick = Ti).
-- A lower tick below the glyph modifies the vowel to /u/ or /o/ (e.g. Bu, Gu, Ku, Tu, Du, etc.).
-- If you see a consonant with an upper tick, identify it as the modified syllable (e.g. "Bi" or "Gi") with type "Anak Sulat (Upper Garlit -I/-E)".
+1. STANDALONE VOWELS (Indung Patinig):
+- A: Downward sweeping loop on the left curving up into a bottom hook with a prominent flourish.
+- I / E: Horizontal wavy double-arch crown resting on a right-hand vertical downward spine.
+- U / O: Three-crested horizontal undulating wave with a curved upward terminal.
 
-PENCIL & BALLPEN HANDWRITING RECOGNITION:
-- Handwriting may be written with light pencil or thin ink on plain paper and may occupy only the center of the page.
-- Focus directly on the stroke geometry in the center. Identify the character accurately even if the strokes are light or fine.
+2. BASE CONSONANTS (Indung Sulat - Inherent /a/ vowel):
+- Ka: Two horizontal parallel bars joined on the right by a vertical connector curve.
+- Ga: Smooth inverted U-shaped arch (∩) with open bottom.
+- Nga: Continuous horizontal triple-undulating wave (similar to a flowing W).
+- Ta: Open C-shaped rounded arch or curve with a smooth base (NO interior step or notch).
+- Da: Angular or box-shaped glyph featuring a distinct INTERIOR NOTCH or step on the inner contour. (Crucial: Ta has NO notch; Da HAS an inner notch).
+- Na: Left downward sweeping curve with an upward hooked tail on the right.
+- La: Vertical downward spine ending in a curved hook pointing down-right.
+- Sa: Flowing S-shaped vertical wavy line.
+- Ma: Horizontal double loop or spiral.
+- Pa: Vertical descending stem looping up into an OPEN hook (does NOT close into a loop).
+- Ba: Completely CLOSED teardrop or rounded droplet loop (Crucial: Pa is open; Ba is closed).
+
+3. UPPER GARLIT (Anak Sulat - Vowel /i/ or /e/):
+Base consonant modified with an acute tick, dot, or flourish placed ABOVE or near the top:
+- Ki, Gi, Ngi, Ti, Di, Ni, Li, Si, Mi, Pi, Bi
+(e.g., Ba with upper tick = Bi; Ga with upper tick = Gi; Ta with upper tick = Ti; Da with upper tick = Di).
+
+4. LOWER GARLIT (Anak Sulat - Vowel /u/ or /o/):
+Base consonant modified with a descending tick, dot, or flourish placed BELOW or near the bottom:
+- Ku, Gu, Ngu, Tu, Du, Nu, Lu, Su, Mu, Pu, Bu
+(e.g., Ba with lower tick = Bu; Ga with lower tick = Gu; Ka with lower tick = Ku).
+
+5. CODA LIGATURES (Kamulitan / Busal - Trailing -ng):
+Base consonant directly attached to a trailing horizontal undulating wave on the right representing coda nasal /-ng/:
+- Kang, Gang, Ngang, Tang, Dang, Nang, Lang, Sang, Mang, Pang, Bang.
+
+CRITICAL DISAMBIGUATION RULES:
+1. "Ta" vs "Da":
+   - "Ta" is a clean open arch with a smooth, continuous curve.
+   - "Da" has a distinct interior notch, jog, or step in the stroke.
+2. "Pa" vs "Ba":
+   - "Pa" is an open hook.
+   - "Ba" forms a complete closed droplet/circle.
+3. "Ka" vs "Ga":
+   - "Ka" has two distinct parallel horizontal bars.
+   - "Ga" is a single smooth inverted U-arch (∩).
+4. "Nga" vs "Ma":
+   - "Nga" is a horizontal wavy stroke.
+   - "Ma" is a double loop or spiral.
 
 TASK:
 ${targetHint}
 
-Evaluate stroke quality, curvature, and proportions.
-If the image shows no clear handwriting, a plain blank page, or unreadable smudges, return recognized: false with confidence < 20.
+Evaluate the stroke topology, curvature, and proportions.
+Handwriting may be executed in pencil, ballpen, or marker. Focus on the core ink strokes in the center.
 
-Respond strictly in valid JSON without markdown code fences using this exact schema:
+Respond STRICTLY in valid JSON without markdown formatting or code blocks, using this exact schema:
 {
   "recognized": true,
   "character": "Ka",
   "kulitanSymbol": "k",
-  "confidence": 92,
-  "type": "Consonant (Indung Sulat)",
-  "transliteration": "Ka",
-  "feedback": "Excellent stroke balance! Dual horizontal bars and vertical connector align well.",
+  "confidence": 95,
+  "type": "Indung Sulat",
+  "transliteration": "ka",
+  "feedback": "Clear horizontal parallel bars and right connector accurately form 'Ka'.",
   "strokeAccuracy": "High"
 }
 
-If unreadable or blank:
+If unreadable, blank, or not Kulitan handwriting:
 {
   "recognized": false,
   "character": "Unknown",
@@ -86,14 +111,14 @@ If unreadable or blank:
   "confidence": 15,
   "type": "Unrecognized",
   "transliteration": "None",
-  "feedback": "The handwriting could not be recognized as Kulitan. Try writing the character larger with distinct strokes inside the guide.",
+  "feedback": "Could not recognize a clear Kulitan character. Write the character boldly inside the reticle frame.",
   "strokeAccuracy": "Needs Practice"
 }`;
 }
 
 /**
  * Calls Groq's high-speed Vision API to analyze handwritten Kulitan images.
- * Acts as an ultra-fast backup or consensus engine when Gemini is unavailable.
+ * Powered by qwen/qwen3.8-27b running on Groq LPU hardware.
  */
 export async function callGroqVision(
   cleanB64: string,
@@ -161,14 +186,20 @@ export async function callGroqVision(
       const parsed = JSON.parse(jsonMatch[0]) as ScanResult;
       parsed.engine = 'groq';
 
+      // Normalize confidence (convert float e.g. 0.95 to integer 95)
+      if (typeof parsed.confidence === 'number' && parsed.confidence <= 1 && parsed.confidence > 0) {
+        parsed.confidence = Math.round(parsed.confidence * 100);
+      }
+
       // Cross-reference with our authentic Kulitan syllabary database for canonical metadata
       if (parsed.recognized) {
         const query = (parsed.transliteration || parsed.character || '').trim().toLowerCase();
-        const matched = kulitanSyllables.find(s => s.latin.toLowerCase() === query);
+        const matched = kulitanSyllables.find(s => s.latin.toLowerCase() === query || s.id.toLowerCase() === query);
         if (matched) {
           parsed.kulitanSymbol = matched.kulitanSymbol;
           parsed.type = matched.classification;
           parsed.character = matched.latin.toUpperCase();
+          parsed.transliteration = matched.latin;
         }
       }
 
