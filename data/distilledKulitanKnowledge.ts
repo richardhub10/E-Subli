@@ -754,6 +754,196 @@ export const DISTILLED_KULITAN_KNOWLEDGE: Record<string, KulitanCharacterKnowled
       },
     },
   },
+
+  bi: {
+    latin: 'Bi',
+    name: 'Bi / Be',
+    symbol: 'bi',
+    classification: 'Anak Sulat (Upper Garlit -I/-E)',
+    pronunciation: '/bi/ or /be/ as in "bitis" (feet)',
+    anatomy: {
+      en: 'A closed droplet or oval base (Ba) with an acute tick or slash mark (Garlit) placed directly above to modify the inherent vowel /a/ to /i/ or /e/.',
+      fil: 'Saradong patak o bilog na base (Ba) na may pahilis na kudlit (Garlit) sa ibabaw upang gawing /i/ o /e/ ang patinig.',
+    },
+    strokeSequence: {
+      en: [
+        '1. Draw the base "Ba" oval/droplet loop starting from the top apex.',
+        '2. Lift pen and add a clean acute tick (Garlit) above the glyph.',
+      ],
+      fil: [
+        '1. Iguhit ang bilog na patak ng "Ba" mula sa itaas.',
+        '2. Itaas ang panulat at ilagay ang pahilis na kudlit (Garlit) sa ibabaw.',
+      ],
+    },
+    commonMistakes: {
+      en: [
+        'Placing the Garlit tick below instead of above (which turns it into "Bu").',
+        'Leaving the base oval unclosed.',
+      ],
+      fil: [
+        'Paglalagay ng kudlit sa ilalim sa halip na sa itaas (nagiging "Bu").',
+        'Pag-iwan na bukas ang bilog sa ilalim.',
+      ],
+    },
+    baybayinDistinction: {
+      en: 'Kulitan "Bi" uses a droplet base with an upper acute tick, whereas Baybayin "Bi" uses a heart-shaped glyph with an upper dot/tick.',
+      fil: 'Ang Kulitan "Bi" ay may patak na base at itaas na kudlit, samantalang ang Baybayin ay hugis-puso.',
+    },
+    feedbackTemplates: {
+      high: {
+        en: 'Outstanding Kulitan "Bi"! Clean closed oval with a precisely aligned upper Garlit vowel tick.',
+        fil: 'Napakahusay na Kulitan "Bi"! Malinis na saradong bilog na may wastong kudlit sa itaas.',
+      },
+      moderate: {
+        en: 'Recognized as "Bi". Ensure the upper Garlit tick is distinct and detached from the base droplet.',
+        fil: 'Kinilala bilang "Bi". Siguraduhing malinaw at hiwalay ang kudlit sa itaas ng bilog.',
+      },
+      needsPractice: {
+        en: 'Needs practice on "Bi". Draw a closed droplet for "Ba" and position the acute tick clearly above.',
+        fil: 'Magsanay sa "Bi". Isara ang bilog ng "Ba" at ilagay nang maayos ang kudlit sa itaas.',
+      },
+    },
+  },
+
+  bu: {
+    latin: 'Bu',
+    name: 'Bu / Bo',
+    symbol: 'bu',
+    classification: 'Anak Sulat (Lower Garlit -U/-O)',
+    pronunciation: '/bu/ or /bo/ as in "bukas" (tomorrow)',
+    anatomy: {
+      en: 'A closed droplet or oval base (Ba) with a downward tick or stroke (Garlit) placed below to modify the vowel to /u/ or /o/.',
+      fil: 'Saradong patak na base (Ba) na may pababang kudlit (Garlit) sa ilalim upang gawing /u/ o /o/ ang patinig.',
+    },
+    strokeSequence: {
+      en: [
+        '1. Draw the closed "Ba" droplet.',
+        '2. Add a descending tick directly beneath the base.',
+      ],
+      fil: [
+        '1. Iguhit ang saradong patak ng "Ba".',
+        '2. Maglagay ng pababang kudlit sa ilalim ng base.',
+      ],
+    },
+    commonMistakes: {
+      en: ['Putting the tick above instead of below (which makes it "Bi").'],
+      fil: ['Paglalagay ng kudlit sa itaas sa halip na sa ilalim (nagiging "Bi").'],
+    },
+    baybayinDistinction: {
+      en: 'Kulitan "Bu" features an oval with a bottom tick; Baybayin "Bu" uses a heart shape with a lower dot.',
+      fil: 'Kulitan "Bu" ay bilog na may kudlit sa ilalim; Baybayin ay hugis-puso na may tuldok sa ilalim.',
+    },
+    feedbackTemplates: {
+      high: {
+        en: 'Excellent Kulitan "Bu"! Clean base droplet and accurate lower Garlit placement.',
+        fil: 'Mahusay na Kulitan "Bu"! Malinis na patak at wastong kudlit sa ilalim.',
+      },
+      moderate: {
+        en: 'Recognized as "Bu". Keep the lower Garlit mark centered underneath.',
+        fil: 'Kinilala bilang "Bu". Panatilihing nakagitna ang kudlit sa ilalim.',
+      },
+      needsPractice: {
+        en: 'Needs practice on "Bu". Make sure the tick is placed underneath the closed loop.',
+        fil: 'Magsanay sa "Bu". Tiyaking nasa ilalim ng bilog ang kudlit.',
+      },
+    },
+  },
+
+  gi: {
+    latin: 'Gi',
+    name: 'Gi / Ge',
+    symbol: 'gi',
+    classification: 'Anak Sulat (Upper Garlit -I/-E)',
+    pronunciation: '/gi/ or /ge/ as in "ginu" (lord)',
+    anatomy: {
+      en: 'A rounded arch (Ga) with an open bottom, combined with an upper acute tick mark (Garlit) above the arch to indicate vowel /i/ or /e/.',
+      fil: 'Pabilog na arko (Ga) na may bukas na ilalim, kasama ang pahilis na kudlit (Garlit) sa itaas para sa patinig na /i/ o /e/.',
+    },
+    strokeSequence: {
+      en: [
+        '1. Form the smooth inverted U-arch from left to right.',
+        '2. Place an acute tick mark above the crown of the arch.',
+      ],
+      fil: [
+        '1. Buuin ang pabilog na arko mula kaliwa pakanan.',
+        '2. Maglagay ng pahilis na kudlit sa ibabaw ng arko.',
+      ],
+    },
+    commonMistakes: {
+      en: [
+        'Closing the bottom of the arch (turns it into "Ba").',
+        'Confusing with Baybayin "Gi".',
+      ],
+      fil: [
+        'Pagsasara sa ilalim ng arko (nagiging "Ba").',
+        'Pagkakalito sa anyo ng Baybayin "Gi".',
+      ],
+    },
+    baybayinDistinction: {
+      en: 'Kulitan "Gi" is an open arch with an upper tick; Baybayin "Gi" is an S-curve or spiral glyph with a dot.',
+      fil: 'Kulitan "Gi" ay bukas na arko na may kudlit sa itaas; Baybayin ay may spiral na anyo.',
+    },
+    feedbackTemplates: {
+      high: {
+        en: 'Superb Kulitan "Gi"! Classic open arch curvature with a distinct upper Garlit tick.',
+        fil: 'Napakahusay na Kulitan "Gi"! Magandang arko na may malinaw na kudlit sa itaas.',
+      },
+      moderate: {
+        en: 'Recognized as "Gi". Keep the bottom open so it is not confused with "Ba".',
+        fil: 'Kinilala bilang "Gi". Panatilihing bukas ang ilalim upang hindi mapagkamalang "Ba".',
+      },
+      needsPractice: {
+        en: 'Needs practice on "Gi". Ensure the arch is open at the bottom and the tick is above.',
+        fil: 'Magsanay sa "Gi". Siguraduhing bukas ang arko sa ilalim at nasa itaas ang kudlit.',
+      },
+    },
+  },
+
+  ki: {
+    latin: 'Ki',
+    name: 'Ki / Ke',
+    symbol: 'ki',
+    classification: 'Anak Sulat (Upper Garlit -I/-E)',
+    pronunciation: '/ki/ or /ke/ as in "kilala" (known)',
+    anatomy: {
+      en: 'Two horizontal parallel bars with a right-hand connector (Ka), crowned with an upper acute tick (Garlit) above for /i/ or /e/.',
+      fil: 'Dalawang pahigang magkatabing linya na may kanang dugtungan (Ka), na may kudlit sa ibabaw para sa /i/ o /e/.',
+    },
+    strokeSequence: {
+      en: [
+        '1. Draw the top and bottom horizontal bars of "Ka".',
+        '2. Add the vertical right connector.',
+        '3. Place the upper Garlit tick above the top bar.',
+      ],
+      fil: [
+        '1. Iguhit ang itaas at ilalim na pahigang linya ng "Ka".',
+        '2. Idagdag ang patayong dugtungan sa kanan.',
+        '3. Ilagay ang kudlit sa ibabaw ng itaas na linya.',
+      ],
+    },
+    commonMistakes: {
+      en: ['Drawing a cross (+) instead of parallel bars (cross is Baybayin Ka).'],
+      fil: ['Pagguhit ng krus (+) sa halip na magkatabing linya (krus ay Baybayin).'],
+    },
+    baybayinDistinction: {
+      en: 'Kulitan "Ki" uses parallel horizontal bars with an upper tick; Baybayin "Ki" is a cross with a dot.',
+      fil: 'Kulitan "Ki" ay magkatabing linya na may kudlit; Baybayin ay krus na may tuldok.',
+    },
+    feedbackTemplates: {
+      high: {
+        en: 'Excellent Kulitan "Ki"! Balanced parallel bars with a crisp upper Garlit.',
+        fil: 'Mahusay na Kulitan "Ki"! Balanseng mga linya na may malinaw na kudlit sa itaas.',
+      },
+      moderate: {
+        en: 'Recognized as "Ki". Keep the parallel bars straight and parallel.',
+        fil: 'Kinilala bilang "Ki". Panatilihing tuwid at magkatapat ang mga linya.',
+      },
+      needsPractice: {
+        en: 'Form needs practice on "Ki". Do not draw a cross; use parallel bars with an upper tick.',
+        fil: 'Magsanay sa "Ki". Huwag gumuhit ng krus; gumamit ng magkatabing linya na may kudlit.',
+      },
+    },
+  },
 };
 
 /**

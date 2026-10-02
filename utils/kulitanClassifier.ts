@@ -258,7 +258,8 @@ function extractStrokeAndTensor(
   }
 
   const avgLuma = totalLuma / (pixelCount || 1);
-  const inkThreshold = Math.min(185, Math.max(65, avgLuma * 0.74));
+  // Adjusted threshold to reliably detect faint pencil and fine ballpen strokes (84% of background)
+  const inkThreshold = Math.min(210, Math.max(70, avgLuma * 0.84));
 
   let inkCount = 0;
   let minX = sampleW, maxX = 0, minY = sampleH, maxY = 0;
@@ -280,18 +281,19 @@ function extractStrokeAndTensor(
   const inkRatio = inkCount / (pixelCount || 1);
   const emptyTensor = new Float32Array(28 * 28);
 
-  if (inkRatio < 0.003 || inkCount < 12) {
+  // Sensitive ink detection for fine pencil strokes
+  if (inkRatio < 0.0008 || inkCount < 10) {
     return { tensor28x28: emptyTensor, contourPoints: [], inkRatio, isBlank: true, isTooDark: false, isTooSmall: false };
   }
 
-  if (inkRatio > 0.82) {
+  if (inkRatio > 0.88) {
     return { tensor28x28: emptyTensor, contourPoints: [], inkRatio, isBlank: false, isTooDark: true, isTooSmall: false };
   }
 
   const bboxW = maxX - minX + 1;
   const bboxH = maxY - minY + 1;
 
-  if (bboxW < 8 || bboxH < 8 || inkCount < 20) {
+  if (bboxW < 4 || bboxH < 4 || inkCount < 14) {
     return { tensor28x28: emptyTensor, contourPoints: [], inkRatio, isBlank: false, isTooDark: false, isTooSmall: true };
   }
 
@@ -354,9 +356,75 @@ function extractStrokeAndTensor(
   };
 }
 
-function decodeBase64ToRgba(base64: string): { width: number; height: number; data: Uint8Array } | null {
+/**
+ * Universal Base64 to RGBA Image Decoder.
+ * On Web/WebView (e.g. Vercel, iOS Safari, Android Chrome), uses HTMLImageElement + 2D Canvas.
+ * This natively handles ANY format (PNG, WebP, JPEG, AVIF, HEIC) reliably.
+ * On Native React Native, falls back to jpeg-js with raw byte parsing.
+ */
+async function decodeBase64ToRgba(base64: string): Promise<{ width: number; height: number; data: Uint8Array } | null> {
+  const cleanB64 = base64.includes(',') ? base64.split(',')[1] : base64;
+
+  // 1. Web & WebView Environment (Hardware accelerated, universal image support)
+  if (typeof window !== 'undefined' && typeof document !== 'undefined' && typeof Image !== 'undefined') {
+    try {
+      const decoded = await new Promise<{ width: number; height: number; data: Uint8Array } | null>((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth || img.width;
+            canvas.height = img.naturalHeight || img.height;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            if (!ctx) {
+              resolve(null);
+              return;
+            }
+            ctx.drawImage(img, 0, 0);
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            resolve({
+              width: canvas.width,
+              height: canvas.height,
+              data: new Uint8Array(imgData.data.buffer),
+            });
+          } catch (canvasErr) {
+            console.warn('Canvas 2D getImageData error:', canvasErr);
+            resolve(null);
+          }
+        };
+        img.onerror = (imgErr) => {
+          console.warn('HTMLImageElement load error:', imgErr);
+          resolve(null);
+        };
+
+        // Determine data URI prefix if not already present
+        if (base64.startsWith('data:image/')) {
+          img.src = base64;
+        } else {
+          try {
+            const previewBytes = new Uint8Array(b64decode(cleanB64.slice(0, 32)));
+            if (previewBytes[0] === 0x89 && previewBytes[1] === 0x50) {
+              img.src = `data:image/png;base64,${cleanB64}`;
+            } else if (previewBytes[0] === 0x52 && previewBytes[1] === 0x49) {
+              img.src = `data:image/webp;base64,${cleanB64}`;
+            } else {
+              img.src = `data:image/jpeg;base64,${cleanB64}`;
+            }
+          } catch {
+            img.src = `data:image/jpeg;base64,${cleanB64}`;
+          }
+        }
+      });
+
+      if (decoded) return decoded;
+    } catch (webErr) {
+      console.warn('Web canvas image decode failed, attempting jpeg-js fallback:', webErr);
+    }
+  }
+
+  // 2. Native Mobile / Node / Fallback Environment (using jpeg-js)
   try {
-    const cleanB64 = base64.includes(',') ? base64.split(',')[1] : base64;
     const arrayBuffer = b64decode(cleanB64);
     const uint8 = new Uint8Array(arrayBuffer);
     const decoded = decodeJpeg(uint8, { useTArray: true });
@@ -379,7 +447,7 @@ export async function classifyKulitanHandwriting(
   targetSyllable?: string | null,
   language: 'EN' | 'FIL' = 'EN'
 ): Promise<ScanResult> {
-  if (!base64 || base64.length < 2500) {
+  if (!base64 || base64.length < 500) {
     return {
       recognized: false,
       character: 'Unknown',
@@ -395,7 +463,7 @@ export async function classifyKulitanHandwriting(
     };
   }
 
-  const bitmap = decodeBase64ToRgba(base64);
+  const bitmap = await decodeBase64ToRgba(base64);
   if (!bitmap) {
     return {
       recognized: false,
