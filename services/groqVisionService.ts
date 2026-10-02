@@ -32,16 +32,16 @@ Carefully compare the drawing against the canonical form of "${targetSyllable.to
 If it matches "${targetSyllable.toUpperCase()}", return recognized: true with high confidence (85-99).
 If the drawing clearly matches a different Kulitan character, identify the character actually drawn.
 If it is unrecognizable or unreadable, return recognized: false.` 
-    : 'Identify which authentic Sulat Kapampangan (Kulitan) character is drawn in the image.';
+    : 'Identify which authentic Sulat Kapampangan (Kulitan) character is drawn or shown in the image.';
 
   return `You are an expert paleographer specializing in authentic Sulat Kapampangan (Kulitan), the indigenous script of Pampanga, Philippines.
 
 ORTHOGRAPHIC SCRIPT CONTEXT:
 Kulitan is STRICTLY INDIGENOUS KAPAMPANGAN and is DIFFERENT from Tagalog Baybayin.
-The authentic Kulitan syllabary consists of 47 standard syllables and their allophones, fully validated from the 93 archival calligraphy screenshot cards:
+The authentic Kulitan syllabary consists of 47 standard syllables and their allophones, validated from archival calligraphy and authentic typography:
 
 1. STANDALONE VOWELS (Indung Patinig):
-- A: Downward sweeping loop on the left curving up into a bottom hook with a prominent flourish.
+- A: Leftward curving downward loop with an upward rising right stroke/hook (resembling a cursive 'v' or lambda shape).
 - I / E: Horizontal wavy double-arch crown resting on a right-hand vertical downward spine.
 - U / O: Three-crested horizontal undulating wave with a curved upward terminal.
 
@@ -49,10 +49,10 @@ The authentic Kulitan syllabary consists of 47 standard syllables and their allo
 - Ka: Two horizontal parallel bars joined on the right by a vertical connector curve.
 - Ga: Smooth inverted U-shaped arch (∩) with open bottom.
 - Nga: Continuous horizontal triple-undulating wave (similar to a flowing W).
-- Ta: Open C-shaped rounded arch or curve with a smooth base (NO interior step or notch).
+- Ta: Open rounded bent curve like a cursive '2' or open trapezoidal hook with a smooth curved base (NO interior step or notch).
 - Da: Angular or box-shaped glyph featuring a distinct INTERIOR NOTCH or step on the inner contour. (Crucial: Ta has NO notch; Da HAS an inner notch).
-- Na: Left downward sweeping curve with an upward hooked tail on the right.
-- La: Vertical downward spine ending in a curved hook pointing down-right.
+- Na: Umbrella arch / canopy curve on top with a vertical stem descending from the center (⌢ with central vertical stem ↓).
+- La: Vertical downward stem with a looped/curved top (resembling a vertical pin with top loop).
 - Sa: Flowing S-shaped vertical wavy line.
 - Ma: Horizontal double loop or spiral.
 - Pa: Vertical descending stem looping up into an OPEN hook (does NOT close into a loop).
@@ -72,27 +72,21 @@ In Kapampangan orthography, /u/ and /o/ share the exact same lower Garlit diacri
 Base consonant directly attached to a trailing horizontal undulating wave on the right representing coda nasal /-ng/:
 - Kang, Gang, Ngang, Tang, Dang, Nang, Lang, Sang, Mang, Pang, Bang.
 
+GUIDE LABELS & REFERENCE CHARTS:
+1. If a printed or written Latin guide label (e.g. 'a', 'ta', 'na', 'la', 'gí/î', etc.) appears beside the glyph, use it as direct confirmation!
+2. If the image contains a reference table or chart showing multiple consonant-vowel combinations (such as the Upper Garlit -i/-e and Lower Garlit -u/-o chart with gí/î, kú/û, etc.), recognize it as:
+   - "character": "Kulitan Chart", "transliteration": "gi", "confidence": 98, "type": "Anak Sulat / Diacritic Chart"
+   - Explain in "feedback" that it is a reference table containing all 22 modified consonant forms (gí/î, kí/î, ngí/î, etc.).
+
 CRITICAL DISAMBIGUATION RULES:
-1. "Ta" vs "Da":
-   - "Ta" is a clean open arch with a smooth, continuous curve.
-   - "Da" has a distinct interior notch, jog, or step in the stroke.
-2. "Pa" vs "Ba":
-   - "Pa" is an open hook.
-   - "Ba" forms a complete closed droplet/circle.
-3. "Ka" vs "Ga":
-   - "Ka" has two distinct parallel horizontal bars.
-   - "Ga" is a single smooth inverted U-arch (∩).
-4. "Nga" vs "Ma":
-   - "Nga" is a horizontal wavy stroke.
-   - "Ma" is a double loop or spiral.
+1. "Ta" vs "Da": "Ta" is a clean open arch/bent curve with a smooth continuous contour; "Da" has a distinct interior notch or step.
+2. "Pa" vs "Ba": "Pa" is an open hook; "Ba" forms a complete closed droplet/circle.
+3. "Na" vs "La": "Na" has an umbrella canopy with a central descending stem; "La" is a vertical stem with a top loop.
 
 TASK:
 ${targetHint}
 
-Evaluate the stroke topology, curvature, and proportions.
-Handwriting may be executed in pencil, ballpen, or marker. Focus on the core ink strokes in the center.
-
-Respond STRICTLY in valid JSON without markdown formatting or code blocks, using this exact schema:
+Respond STRICTLY in valid JSON without markdown formatting or code blocks:
 {
   "recognized": true,
   "character": "Ka",
@@ -194,14 +188,23 @@ export async function callGroqVision(
 
       // Cross-reference with our authentic Kulitan syllabary database for canonical metadata
       if (parsed.recognized) {
-        const rawQuery = (parsed.transliteration || parsed.character || '').trim();
-        const normalized = normalizeKulitanSyllable(rawQuery);
-        const matched = kulitanSyllables.find(s => s.latin.toLowerCase() === normalized || s.id.toLowerCase() === normalized);
-        if (matched) {
-          parsed.kulitanSymbol = matched.kulitanSymbol;
-          parsed.type = matched.classification;
-          parsed.character = matched.latin.toUpperCase();
-          parsed.transliteration = matched.latin;
+        const charLower = (parsed.character || '').toLowerCase();
+        const typeLower = (parsed.type || '').toLowerCase();
+        if (charLower.includes('chart') || typeLower.includes('chart') || charLower.includes('table')) {
+          parsed.character = 'Kulitan Chart';
+          parsed.transliteration = 'gi';
+          parsed.kulitanSymbol = 'g';
+          parsed.type = 'Diacritic Reference Chart (Anak Sulat)';
+        } else {
+          const rawQuery = (parsed.transliteration || parsed.character || '').trim();
+          const normalized = normalizeKulitanSyllable(rawQuery);
+          const matched = kulitanSyllables.find(s => s.latin.toLowerCase() === normalized || s.id.toLowerCase() === normalized);
+          if (matched) {
+            parsed.kulitanSymbol = matched.kulitanSymbol;
+            parsed.type = matched.classification;
+            parsed.character = matched.latin.toUpperCase();
+            parsed.transliteration = matched.latin;
+          }
         }
       }
 

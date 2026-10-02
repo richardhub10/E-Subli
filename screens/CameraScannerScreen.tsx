@@ -207,10 +207,10 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
       const ai = new GoogleGenAI({ apiKey });
       const prompt = getKulitanVisionPrompt(target);
       const candidateModels = [
+        'gemini-flash-lite-latest',
         'gemini-3.5-flash-lite',
-        'gemini-3-flash-preview',
+        'gemini-3.1-flash-lite',
         'gemini-flash-latest',
-        'gemini-3.8-flash',
       ];
 
       for (const modelName of candidateModels) {
@@ -240,16 +240,25 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
               parsed.confidence = Math.round(parsed.confidence * 100);
             }
 
-            const searchLatin = normalizeKulitanSyllable(parsed.transliteration || parsed.character);
-            const matched = kulitanSyllables.find(s => 
-              s.latin.toLowerCase() === searchLatin || 
-              s.id.toLowerCase() === searchLatin
-            );
-            if (matched) {
-              parsed.character = matched.latin.toUpperCase();
-              parsed.transliteration = matched.latin;
-              parsed.kulitanSymbol = matched.kulitanSymbol;
-              parsed.type = matched.classification;
+            const charLower = (parsed.character || '').toLowerCase();
+            const typeLower = (parsed.type || '').toLowerCase();
+            if (charLower.includes('chart') || typeLower.includes('chart') || charLower.includes('table')) {
+              parsed.character = 'Kulitan Chart';
+              parsed.transliteration = 'gi';
+              parsed.kulitanSymbol = 'g';
+              parsed.type = 'Diacritic Reference Chart (Anak Sulat)';
+            } else {
+              const searchLatin = normalizeKulitanSyllable(parsed.transliteration || parsed.character);
+              const matched = kulitanSyllables.find(s => 
+                s.latin.toLowerCase() === searchLatin || 
+                s.id.toLowerCase() === searchLatin
+              );
+              if (matched) {
+                parsed.character = matched.latin.toUpperCase();
+                parsed.transliteration = matched.latin;
+                parsed.kulitanSymbol = matched.kulitanSymbol;
+                parsed.type = matched.classification;
+              }
             }
             return parsed;
           }
@@ -290,8 +299,7 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [1, 1],
+        allowsEditing: false,
         quality: 0.85,
         base64: true,
       });

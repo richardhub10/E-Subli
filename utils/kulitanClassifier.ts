@@ -1,5 +1,6 @@
 import { decode as b64decode, encode as b64encode } from 'base64-arraybuffer';
 import { decode as decodeJpeg, encode as encodeJpeg } from 'jpeg-js';
+import { PNG } from 'pngjs';
 import { kulitanPoints } from '../data/kulitanPoints';
 import { kulitanSyllables, SyllableData } from '../data/kulitanData';
 import { KULITAN_NEURAL_WEIGHTS } from './kulitanNeuralModel';
@@ -49,6 +50,15 @@ export async function cropViewfinderROI(base64: string, cropRatio = 0.68): Promi
           try {
             const w = img.naturalWidth || img.width;
             const h = img.naturalHeight || img.height;
+            const aspect = w / h;
+
+            // If the image is already a cropped screenshot (wide/tall aspect ratio or small dimensions),
+            // blind center cropping cuts off glyphs on the left/top. Keep full image!
+            if (aspect > 1.35 || aspect < 0.75 || Math.min(w, h) < 550) {
+              resolve(cleanB64);
+              return;
+            }
+
             const minDim = Math.min(w, h);
             const cropSize = Math.floor(minDim * cropRatio);
             const startX = Math.floor((w - cropSize) / 2);
@@ -80,11 +90,31 @@ export async function cropViewfinderROI(base64: string, cropRatio = 0.68): Promi
     }
   }
 
-  // 2. Native Mobile / Node Environment (using jpeg-js)
+  // 2. Native Mobile / Node Environment
   try {
     const arrayBuffer = b64decode(cleanB64);
-    const decoded = decodeJpeg(new Uint8Array(arrayBuffer), { useTArray: true });
-    const { width, height, data } = decoded;
+    const uint8 = new Uint8Array(arrayBuffer);
+
+    let width = 0, height = 0;
+    let data: Uint8Array;
+
+    // Check PNG signature: 0x89 0x50 0x4E 0x47
+    if (uint8[0] === 0x89 && uint8[1] === 0x50 && uint8[2] === 0x4E && uint8[3] === 0x47) {
+      const png = PNG.sync.read(Buffer.from(arrayBuffer));
+      width = png.width;
+      height = png.height;
+      data = new Uint8Array(png.data.buffer, png.data.byteOffset, png.data.byteLength);
+    } else {
+      const decoded = decodeJpeg(uint8, { useTArray: true });
+      width = decoded.width;
+      height = decoded.height;
+      data = decoded.data;
+    }
+
+    const aspect = width / height;
+    if (aspect > 1.35 || aspect < 0.75 || Math.min(width, height) < 550) {
+      return cleanB64;
+    }
 
     const minDim = Math.min(width, height);
     const cropSize = Math.floor(minDim * cropRatio);
@@ -369,10 +399,9 @@ function extractStrokeAndTensor(
 
   const avgLuma = totalLuma / (pixelCount || 1);
   // Robust ink threshold: Otsu threshold capped below background average to isolate actual strokes
-  const inkThreshold = Math.min(210, Math.max(65, Math.min(otsuThreshold, avgLuma * 0.86)));
+  const inkThreshold = Math.min(210, Math.max(65, Math.min(otsuThreshold, avgLuma * 0.88)));
 
   let inkCount = 0;
-  let minX = sampleW, maxX = 0, minY = sampleH, maxY = 0;
   const isInk: boolean[][] = Array.from({ length: sampleH }, () => new Array(sampleW).fill(false));
 
   for (let y = 0; y < sampleH; y++) {
@@ -380,10 +409,6 @@ function extractStrokeAndTensor(
       if (lumaGrid[y][x] < inkThreshold) {
         isInk[y][x] = true;
         inkCount++;
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
       }
     }
   }
@@ -392,7 +417,7 @@ function extractStrokeAndTensor(
   const emptyTensor = new Float32Array(28 * 28);
 
   // Sensitive ink detection for fine pencil strokes
-  if (inkRatio < 0.0008 || inkCount < 10) {
+  if (inkRatio < 0.0008 || inkCount < 8) {
     return { tensor28x28: emptyTensor, contourPoints: [], inkRatio, isBlank: true, isTooDark: false, isTooSmall: false };
   }
 
@@ -400,28 +425,87 @@ function extractStrokeAndTensor(
     return { tensor28x28: emptyTensor, contourPoints: [], inkRatio, isBlank: false, isTooDark: true, isTooSmall: false };
   }
 
-  const bboxW = maxX - minX + 1;
-  const bboxH = maxY - minY + 1;
+  // Connected components to separate Kulitan glyph from outer frames or Latin guide labels
+  const visited: boolean[][] = Array.from({ length: sampleH }, () => new Array(sampleW).fill(false));
+  const components: { minX: number; maxX: number; minY: number; maxY: number; pts: Point[]; count: number }[] = [];
 
-  if (bboxW < 4 || bboxH < 4 || inkCount < 14) {
+  for (let y = 0; y < sampleH; y++) {
+    for (let x = 0; x < sampleW; x++) {
+      if (isInk[y][x] && !visited[y][x]) {
+        const queue: [number, number][] = [[x, y]];
+        visited[y][x] = true;
+        let cMinX = x, cMaxX = x, cMinY = y, cMaxY = y;
+        let touchesBorder = false;
+        const pts: Point[] = [];
+
+        while (queue.length > 0) {
+          const [cx, cy] = queue.shift()!;
+          pts.push({ x: cx, y: cy });
+
+          if (cx < cMinX) cMinX = cx;
+          if (cx > cMaxX) cMaxX = cx;
+          if (cy < cMinY) cMinY = cy;
+          if (cy > cMaxY) cMaxY = cy;
+
+          if (cx <= 1 || cx >= sampleW - 2 || cy <= 1 || cy >= sampleH - 2) touchesBorder = true;
+
+          const neighbors: [number, number][] = [
+            [cx - 1, cy], [cx + 1, cy], [cx, cy - 1], [cx, cy + 1]
+          ];
+          for (const [nx, ny] of neighbors) {
+            if (nx >= 0 && nx < sampleW && ny >= 0 && ny < sampleH) {
+              if (isInk[ny][nx] && !visited[ny][nx]) {
+                visited[ny][nx] = true;
+                queue.push([nx, ny]);
+              }
+            }
+          }
+        }
+
+        // Ignore outer frame/border lines that touch the edge and span over 65% of the frame
+        const isFrame = touchesBorder && (cMaxX - cMinX > sampleW * 0.65 || cMaxY - cMinY > sampleH * 0.65);
+        if (!isFrame && pts.length >= 8) {
+          components.push({
+            minX: cMinX, maxX: cMaxX, minY: cMinY, maxY: cMaxY,
+            pts,
+            count: pts.length
+          });
+        }
+      }
+    }
+  }
+
+  // Select primary glyph component (largest interior stroke group)
+  components.sort((a, b) => b.count - a.count);
+  const primaryComp = components[0];
+
+  if (!primaryComp || primaryComp.count < 10) {
     return { tensor28x28: emptyTensor, contourPoints: [], inkRatio, isBlank: false, isTooDark: false, isTooSmall: true };
   }
 
-  // Extract edge contour points
+  const { minX, maxX, minY, maxY, pts } = primaryComp;
+  const bboxW = maxX - minX + 1;
+  const bboxH = maxY - minY + 1;
+
+  if (bboxW < 3 || bboxH < 3) {
+    return { tensor28x28: emptyTensor, contourPoints: [], inkRatio, isBlank: false, isTooDark: false, isTooSmall: true };
+  }
+
+  // Extract edge contour points of primary component
+  const compInkMap = new Set(pts.map(p => `${p.x},${p.y}`));
   const contourPoints: Point[] = [];
-  for (let y = minY; y <= maxY; y++) {
-    for (let x = minX; x <= maxX; x++) {
-      if (isInk[y][x]) {
-        let isEdge = false;
-        if (
-          y === 0 || y === sampleH - 1 || x === 0 || x === sampleW - 1 ||
-          !isInk[y - 1][x] || !isInk[y + 1][x] || !isInk[y][x - 1] || !isInk[y][x + 1]
-        ) {
-          isEdge = true;
-        }
-        if (isEdge) contourPoints.push({ x, y });
+  for (const p of pts) {
+    let isEdge = false;
+    const neighbors: [number, number][] = [
+      [p.x - 1, p.y], [p.x + 1, p.y], [p.x, p.y - 1], [p.x, p.y + 1]
+    ];
+    for (const [nx, ny] of neighbors) {
+      if (!compInkMap.has(`${nx},${ny}`)) {
+        isEdge = true;
+        break;
       }
     }
+    if (isEdge) contourPoints.push(p);
   }
 
   // Render centered 28x28 normalized grayscale tensor for Neural Network
@@ -432,24 +516,20 @@ function extractStrokeAndTensor(
   const midX = (minX + maxX) / 2;
   const midY = (minY + maxY) / 2;
 
-  for (let y = minY; y <= maxY; y++) {
-    for (let x = minX; x <= maxX; x++) {
-      if (isInk[y][x]) {
-        const nx = Math.round(14 + (x - midX) * scale);
-        const ny = Math.round(14 + (y - midY) * scale);
-        if (nx >= 0 && nx < 28 && ny >= 0 && ny < 28) {
-          tensor28x28[ny * 28 + nx] = 1.0;
-          // Soft 3x3 anti-aliasing
-          for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-              const ax = nx + dx;
-              const ay = ny + dy;
-              if (ax >= 0 && ax < 28 && ay >= 0 && ay < 28) {
-                const idx = ay * 28 + ax;
-                const v = 0.5;
-                if (v > tensor28x28[idx]) tensor28x28[idx] = v;
-              }
-            }
+  for (const p of pts) {
+    const nx = Math.round(14 + (p.x - midX) * scale);
+    const ny = Math.round(14 + (p.y - midY) * scale);
+    if (nx >= 0 && nx < 28 && ny >= 0 && ny < 28) {
+      tensor28x28[ny * 28 + nx] = 1.0;
+      // Soft 3x3 anti-aliasing
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const ax = nx + dx;
+          const ay = ny + dy;
+          if (ax >= 0 && ax < 28 && ay >= 0 && ay < 28) {
+            const idx = ay * 28 + ax;
+            const v = 0.5;
+            if (v > tensor28x28[idx]) tensor28x28[idx] = v;
           }
         }
       }
@@ -458,8 +538,8 @@ function extractStrokeAndTensor(
 
   return {
     tensor28x28,
-    contourPoints,
-    inkRatio,
+    contourPoints: contourPoints.length > 0 ? contourPoints : pts,
+    inkRatio: pts.length / (sampleW * sampleH),
     isBlank: false,
     isTooDark: false,
     isTooSmall: false,
@@ -470,7 +550,7 @@ function extractStrokeAndTensor(
  * Universal Base64 to RGBA Image Decoder.
  * On Web/WebView (e.g. Vercel, iOS Safari, Android Chrome), uses HTMLImageElement + 2D Canvas.
  * This natively handles ANY format (PNG, WebP, JPEG, AVIF, HEIC) reliably.
- * On Native React Native, falls back to jpeg-js with raw byte parsing.
+ * On Native React Native / Node, supports both PNG and JPEG automatically.
  */
 async function decodeBase64ToRgba(base64: string): Promise<{ width: number; height: number; data: Uint8Array } | null> {
   const cleanB64 = base64.includes(',') ? base64.split(',')[1] : base64;
@@ -529,14 +609,25 @@ async function decodeBase64ToRgba(base64: string): Promise<{ width: number; heig
 
       if (decoded) return decoded;
     } catch (webErr) {
-      console.warn('Web canvas image decode failed, attempting jpeg-js fallback:', webErr);
+      console.warn('Web canvas image decode failed, attempting fallback:', webErr);
     }
   }
 
-  // 2. Native Mobile / Node / Fallback Environment (using jpeg-js)
+  // 2. Native Mobile / Node / Fallback Environment (using pngjs + jpeg-js)
   try {
     const arrayBuffer = b64decode(cleanB64);
     const uint8 = new Uint8Array(arrayBuffer);
+
+    // Check PNG signature: 0x89 0x50 0x4E 0x47
+    if (uint8[0] === 0x89 && uint8[1] === 0x50 && uint8[2] === 0x4E && uint8[3] === 0x47) {
+      const png = PNG.sync.read(Buffer.from(arrayBuffer));
+      return {
+        width: png.width,
+        height: png.height,
+        data: new Uint8Array(png.data.buffer, png.data.byteOffset, png.data.byteLength),
+      };
+    }
+
     const decoded = decodeJpeg(uint8, { useTArray: true });
     return {
       width: decoded.width,
@@ -544,7 +635,16 @@ async function decodeBase64ToRgba(base64: string): Promise<{ width: number; heig
       data: decoded.data,
     };
   } catch (err) {
-    console.warn('Failed to decode JPEG via jpeg-js:', err);
+    try {
+      const arrayBuffer = b64decode(cleanB64);
+      const png = PNG.sync.read(Buffer.from(arrayBuffer));
+      return {
+        width: png.width,
+        height: png.height,
+        data: new Uint8Array(png.data.buffer, png.data.byteOffset, png.data.byteLength),
+      };
+    } catch {}
+    console.warn('Failed to decode image via jpeg-js/pngjs:', err);
     return null;
   }
 }
@@ -749,15 +849,23 @@ export async function classifyKulitanHandwriting(
   let finalConfidence: number;
   let contourDist: number;
 
-  // Neural prediction is accepted only if physically verified by geometric distance (within 35% of best shape)
-  // This prevents false-positive "DA" bias from overriding the true drawn character
-  if (neuralMatch && neuralMatch.distance <= bestChamfer.distance * 1.35 && top1.prob >= 40) {
+  // 1. High-precision geometric match to authentic Kulitan prototype
+  if (bestChamfer.chamfer <= 0.058) {
+    chosenProto = bestChamfer.proto;
+    contourDist = bestChamfer.chamfer;
+    const geomScore = Math.min(99, Math.max(90, Math.round(100 - contourDist * 140)));
+    const altNeural = neuralPredictions.find(p => p.class.toLowerCase() === chosenProto.key.toLowerCase());
+    const altProb = altNeural ? altNeural.prob : 45;
+    finalConfidence = Math.min(98, Math.max(88, Math.round(0.20 * altProb + 0.80 * geomScore)));
+  } else if (neuralMatch && neuralMatch.distance <= bestChamfer.distance * 1.35 && top1.prob >= 40) {
+    // 2. Neural prediction physically verified by geometric distance (within 35% of best shape)
+    // This prevents false-positive "DA" bias from overriding the true drawn character
     chosenProto = neuralMatch.proto;
     contourDist = neuralMatch.chamfer;
     const geomScore = Math.max(45, Math.round(100 - contourDist * 160));
     finalConfidence = Math.min(96, Math.max(60, Math.round(0.55 * top1.prob + 0.45 * geomScore)));
   } else {
-    // Neural prediction contradicted the drawn strokes (e.g., misclassified DA)
+    // 3. Neural prediction contradicted the drawn strokes (e.g., misclassified DA)
     // Select the true closest geometric prototype from canonical Kulitan orthography
     chosenProto = bestChamfer.proto;
     contourDist = bestChamfer.chamfer;
