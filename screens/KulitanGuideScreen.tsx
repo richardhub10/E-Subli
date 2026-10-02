@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Dimensions, Image, Modal } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { kulitanSyllables } from '../data/kulitanData';
+import { getKulitanExemplar } from '../data/kulitanDatasetExemplars';
 import { useLanguage } from '../context/LanguageContext';
 import { useQuest } from '../context/QuestContext';
 import KulitanGlyph from '../components/KulitanGlyph';
@@ -23,6 +24,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
   const [sandboxRoot, setSandboxRoot] = useState('ka');
   const [sandboxVowel, setSandboxVowel] = useState<'a' | 'i' | 'u'>('a');
   const [gridFilter, setGridFilter] = useState<GridFilterType>('all');
+  const [selectedCardSyllable, setSelectedCardSyllable] = useState<any | null>(null);
 
   const { language } = useLanguage();
   const quest = useQuest();
@@ -63,6 +65,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
   };
 
   const currentModified = getModifiedSyllable();
+  const sandboxExemplar = getKulitanExemplar(currentModified);
 
   return (
     <LinearGradient colors={['#FAF5EE', '#F3E9DD', '#EDE2D3']} style={styles.container}>
@@ -420,6 +423,21 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
                 </TouchableOpacity>
               </View>
 
+              {/* AUTHENTIC DATASET EXEMPLAR PREVIEW IN SANDBOX */}
+              {sandboxExemplar && (
+                <View style={styles.sandboxExemplarCard}>
+                  <View style={styles.sandboxExemplarHeader}>
+                    <Ionicons name="sparkles" size={13} color="#D1582D" />
+                    <Text style={styles.sandboxExemplarTitle}>
+                      {language === 'EN' ? `Authentic Calligraphy Card: "${currentModified.toUpperCase()}"` : `Orihinal na Sulat-Kamay: "${currentModified.toUpperCase()}"`}
+                    </Text>
+                  </View>
+                  <View style={styles.sandboxExemplarImageFrame}>
+                    <Image source={sandboxExemplar} style={styles.sandboxExemplarImage} resizeMode="contain" />
+                  </View>
+                </View>
+              )}
+
               {/* PRACTICE CTA */}
               <TouchableOpacity
                 style={styles.sandboxCtaBtn}
@@ -553,27 +571,121 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
 
               {/* COMPLETE SYLLABARY GRID */}
               <View style={styles.glyphGrid}>
-                {displayedSyllables.map((char) => (
-                  <TouchableOpacity 
-                    key={char.id} 
-                    style={styles.glyphGridItem}
-                    onPress={() => navigation.navigate('WriteTrace', { selectedSyllable: char.latin })}
-                    activeOpacity={0.75}
-                  >
-                    <View style={styles.glyphBox}>
-                      <KulitanGlyph symbol={char.latin} size={34} color="#D1582D" strokeWidth={3.4} />
-                    </View>
-                    <Text style={styles.glyphLatinText} numberOfLines={1}>
-                      {char.latin.toUpperCase()}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                {displayedSyllables.map((char) => {
+                  const hasExemplar = Boolean(getKulitanExemplar(char.latin));
+                  return (
+                    <TouchableOpacity 
+                      key={char.id} 
+                      style={styles.glyphGridItem}
+                      onPress={() => {
+                        if (Platform.OS !== 'web') Haptics.selectionAsync();
+                        setSelectedCardSyllable(char);
+                      }}
+                      activeOpacity={0.75}
+                    >
+                      <View style={styles.glyphBox}>
+                        <KulitanGlyph symbol={char.latin} size={34} color="#D1582D" strokeWidth={3.4} />
+                        {hasExemplar && (
+                          <View style={styles.hasExemplarBadge}>
+                            <Ionicons name="sparkles" size={7} color="#D1582D" />
+                          </View>
+                        )}
+                      </View>
+                      <Text style={styles.glyphLatinText} numberOfLines={1}>
+                        {char.latin.toUpperCase()}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
           </View>
         )}
 
       </ScrollView>
+
+      {/* SYLLABLE & AUTHENTIC EXEMPLAR MODAL */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={Boolean(selectedCardSyllable)}
+        onRequestClose={() => setSelectedCardSyllable(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.detailModalCard}>
+            {selectedCardSyllable && (() => {
+              const char = selectedCardSyllable;
+              const exemplar = getKulitanExemplar(char.latin);
+              return (
+                <>
+                  <View style={styles.modalHeaderRow}>
+                    <View style={styles.modalPillBadge}>
+                      <Ionicons name="sparkles" size={11} color="#D1582D" />
+                      <Text style={styles.modalPillText}>
+                        {char.classification ? char.classification.toUpperCase() : 'SULAT KAPAMPANGAN'}
+                      </Text>
+                    </View>
+                    <TouchableOpacity 
+                      style={styles.modalCloseBtn}
+                      onPress={() => setSelectedCardSyllable(null)}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name="close" size={20} color="#0F172A" />
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={styles.modalLatinTitle}>{char.latin.toUpperCase()}</Text>
+
+                  {/* Authentic Calligraphy Card if available */}
+                  {exemplar ? (
+                    <View style={styles.modalExemplarFrame}>
+                      <Image source={exemplar} style={styles.modalExemplarImg} resizeMode="contain" />
+                      <View style={styles.modalExemplarTag}>
+                        <Ionicons name="ribbon" size={11} color="#D1582D" />
+                        <Text style={styles.modalExemplarTagText}>
+                          {language === 'EN' ? 'Archival Handwritten Exemplar' : 'Orihinal na Sulat-Kamay'}
+                        </Text>
+                      </View>
+                    </View>
+                  ) : (
+                    <View style={styles.modalGlyphOnlyFrame}>
+                      <KulitanGlyph symbol={char.latin} size={80} color="#D1582D" strokeWidth={5} />
+                    </View>
+                  )}
+
+                  {/* Character Pronunciation & Rules */}
+                  <View style={styles.modalRuleBox}>
+                    <Ionicons name="information-circle-outline" size={16} color="#B45309" style={{ marginTop: 1 }} />
+                    <Text style={styles.modalRuleText}>
+                      {char.writingRule || (language === 'EN' ? 'Traditional Kapampangan syllable glyph.' : 'Sinaunang titik ng Sulat Kapampangan.')}
+                    </Text>
+                  </View>
+
+                  {/* Action Buttons */}
+                  <View style={styles.modalActionButtons}>
+                    <TouchableOpacity 
+                      style={styles.modalTraceBtn}
+                      onPress={() => {
+                        const target = char.latin;
+                        setSelectedCardSyllable(null);
+                        navigation.navigate('WriteTrace', { selectedSyllable: target });
+                      }}
+                      activeOpacity={0.85}
+                    >
+                      <LinearGradient colors={['#D1582D', '#B83814']} style={styles.modalTraceGradient}>
+                        <MaterialCommunityIcons name="draw-pen" size={17} color="#FFF" style={{ marginRight: 6 }} />
+                        <Text style={styles.modalTraceBtnText}>
+                          {language === 'EN' ? `Practice Tracing "${char.latin.toUpperCase()}"` : `Sanayin ang Pagsulat`}
+                        </Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              );
+            })()}
+          </View>
+        </View>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -1204,5 +1316,197 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: '#0F172A',
     textAlign: 'center',
+  },
+  hasExemplarBadge: {
+    position: 'absolute',
+    top: 3,
+    right: 3,
+    backgroundColor: '#FEF3C7',
+    borderRadius: 6,
+    padding: 2,
+    borderWidth: 0.5,
+    borderColor: '#FED7AA',
+  },
+  // Sandbox Exemplar Preview Card
+  sandboxExemplarCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 14,
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  sandboxExemplarHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+    justifyContent: 'center',
+  },
+  sandboxExemplarTitle: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11,
+    color: '#D1582D',
+  },
+  sandboxExemplarImageFrame: {
+    width: '100%',
+    height: 140,
+    backgroundColor: '#FAF5EE',
+    borderRadius: 12,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sandboxExemplarImage: {
+    width: '90%',
+    height: '90%',
+  },
+  // Syllable Detail Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  detailModalCard: {
+    backgroundColor: '#FAF5EE',
+    borderRadius: 24,
+    padding: 20,
+    width: '100%',
+    maxWidth: 380,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#E2DACF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 6,
+  },
+  modalPillBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  modalPillText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 9,
+    color: '#B45309',
+    letterSpacing: 0.6,
+  },
+  modalCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EAE1D5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalLatinTitle: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 26,
+    color: '#0F172A',
+    marginBottom: 10,
+  },
+  modalExemplarFrame: {
+    width: '100%',
+    height: 190,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  modalExemplarImg: {
+    width: '88%',
+    height: '80%',
+  },
+  modalExemplarTag: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFF7ED',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 3,
+    gap: 4,
+    borderTopWidth: 1,
+    borderTopColor: '#FED7AA',
+  },
+  modalExemplarTagText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 9,
+    color: '#D1582D',
+  },
+  modalGlyphOnlyFrame: {
+    width: '100%',
+    height: 160,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+  },
+  modalRuleBox: {
+    flexDirection: 'row',
+    backgroundColor: '#FEF3C7',
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 16,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  modalRuleText: {
+    flex: 1,
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 11,
+    color: '#92400E',
+    lineHeight: 16,
+  },
+  modalActionButtons: {
+    width: '100%',
+  },
+  modalTraceBtn: {
+    width: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  modalTraceGradient: {
+    flexDirection: 'row',
+    paddingVertical: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTraceBtnText: {
+    color: '#FFFFFF',
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 14,
   },
 });

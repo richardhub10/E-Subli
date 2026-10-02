@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator, Platform, ScrollView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -9,6 +9,7 @@ import { DrawingCanvas, DrawingCanvasRef } from '../components/DrawingCanvas';
 import { useProfile } from '../context/ProfileContext';
 import { kulitanSyllables } from '../data/kulitanData';
 import { kulitanPoints } from '../data/kulitanPoints';
+import { getKulitanExemplar } from '../data/kulitanDatasetExemplars';
 import { useLanguage } from '../context/LanguageContext';
 import { useQuest } from '../context/QuestContext';
 
@@ -74,6 +75,11 @@ export default function WriteTraceScreen({ navigation, route }: WriteTraceScreen
   const [selectedColor, setSelectedColor] = useState('#0F172A');
   const [selectedSize, setSelectedSize] = useState(8);
   
+  // Authentic Dataset Exemplar State
+  const exemplarSource = getKulitanExemplar(currentSyllable.latin);
+  const [exemplarModalVisible, setExemplarModalVisible] = useState(false);
+  const [showExemplarPip, setShowExemplarPip] = useState(true);
+
   // Modal State
   const [modalVisible, setModalVisible] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -317,6 +323,23 @@ export default function WriteTraceScreen({ navigation, route }: WriteTraceScreen
           </Text>
         </TouchableOpacity>
 
+        {/* Authentic Handwritten Exemplar Card Button */}
+        {exemplarSource && (
+          <TouchableOpacity 
+            style={styles.exemplarHeaderBtn}
+            onPress={() => {
+              if (Platform.OS !== 'web') Haptics.selectionAsync();
+              setExemplarModalVisible(true);
+            }}
+            activeOpacity={0.75}
+          >
+            <Ionicons name="card-outline" size={15} color="#D1582D" />
+            <Text style={styles.exemplarHeaderText}>
+              {language === 'EN' ? 'Card' : 'Kard'}
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {/* Previous & Next Glyph Buttons */}
         <TouchableOpacity 
           style={styles.headerNavBtn} 
@@ -374,6 +397,50 @@ export default function WriteTraceScreen({ navigation, route }: WriteTraceScreen
           canvasWidth={canvasSize.width}
           canvasHeight={canvasSize.height}
         />
+
+        {/* Floating Authentic Handwritten Exemplar PIP (Live Canvas Reference) */}
+        {exemplarSource && showExemplarPip && (
+          <TouchableOpacity 
+            style={styles.floatingExemplarPip}
+            onPress={() => {
+              if (Platform.OS !== 'web') Haptics.selectionAsync();
+              setExemplarModalVisible(true);
+            }}
+            activeOpacity={0.88}
+          >
+            <Image 
+              source={exemplarSource} 
+              style={styles.floatingExemplarImage} 
+              resizeMode="contain"
+            />
+            <View style={styles.floatingExemplarBadge}>
+              <Ionicons name="sparkles" size={9} color="#D1582D" />
+              <Text style={styles.floatingExemplarBadgeText}>Authentic</Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.floatingExemplarClose}
+              onPress={(e) => {
+                e.stopPropagation();
+                setShowExemplarPip(false);
+              }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="close-circle" size={15} color="#64748B" />
+            </TouchableOpacity>
+          </TouchableOpacity>
+        )}
+
+        {/* Restore Card Pill if PIP was closed */}
+        {exemplarSource && !showExemplarPip && (
+          <TouchableOpacity 
+            style={styles.restorePipBtn}
+            onPress={() => setShowExemplarPip(true)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="image-outline" size={12} color="#D1582D" />
+            <Text style={styles.restorePipText}>{language === 'EN' ? 'Show Card' : 'Kard'}</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Studio Tool Palette: Color Swatches & Stroke Width */}
@@ -521,6 +588,19 @@ export default function WriteTraceScreen({ navigation, route }: WriteTraceScreen
                         : `+${earnedXp} XP Nakuha! ${isBlindMode ? '🔥 2x Memory Bonus!' : 'Tumpak at mahusay ang iyong pagsulat.'}`)
                     : (language === 'EN' ? 'Try staying within the guided track lines from top to bottom.' : 'Subukang manatili sa loob ng gabay mula itaas pababa.')}
                 </Text>
+
+                {/* Archival Exemplar Comparison Box */}
+                {exemplarSource && (
+                  <View style={styles.scoreExemplarPreviewCard}>
+                    <View style={styles.scoreExemplarHeader}>
+                      <Ionicons name="sparkles" size={12} color="#D1582D" />
+                      <Text style={styles.scoreExemplarTitle}>
+                        {language === 'EN' ? 'Archival Handwritten Exemplar' : 'Orihinal na Kard ng Titik'}
+                      </Text>
+                    </View>
+                    <Image source={exemplarSource} style={styles.scoreExemplarThumb} resizeMode="contain" />
+                  </View>
+                )}
                 
                 <View style={styles.modalButtons}>
                   {score && score >= 70 ? (
@@ -537,6 +617,73 @@ export default function WriteTraceScreen({ navigation, route }: WriteTraceScreen
                 </View>
               </>
             )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Dedicated Authentic Handwritten Dataset Exemplar Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={exemplarModalVisible}
+        onRequestClose={() => setExemplarModalVisible(false)}
+      >
+        <View style={styles.exemplarModalOverlay}>
+          <View style={styles.exemplarModalCard}>
+            <View style={styles.exemplarModalHeader}>
+              <View style={styles.exemplarTagRow}>
+                <Ionicons name="ribbon" size={15} color="#D1582D" />
+                <Text style={styles.exemplarModalSubtitle}>
+                  {language === 'EN' ? 'AUTHENTIC KULITAN DATASET' : 'ORIHIHAL NA DATASET'}
+                </Text>
+              </View>
+              <TouchableOpacity 
+                style={styles.exemplarModalCloseBtn}
+                onPress={() => setExemplarModalVisible(false)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close" size={20} color="#0F172A" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.exemplarCharacterTitle}>
+              {currentSyllable.latin.toUpperCase()}
+            </Text>
+
+            {/* High-Resolution Handwritten Card from Datasets */}
+            <View style={styles.exemplarImageFrame}>
+              {exemplarSource ? (
+                <Image 
+                  source={exemplarSource} 
+                  style={styles.exemplarFullImage} 
+                  resizeMode="contain"
+                />
+              ) : (
+                <Text style={styles.noExemplarText}>No card available</Text>
+              )}
+            </View>
+
+            <View style={styles.exemplarInfoBox}>
+              <Ionicons name="information-circle-outline" size={16} color="#B45309" style={{ marginTop: 2 }} />
+              <Text style={styles.exemplarInfoText}>
+                {language === 'EN' 
+                  ? `Authentic handwritten calligraphy exemplar for "${currentSyllable.latin.toUpperCase()}". Notice the natural brush/ink stroke taper and traditional vertical flow.`
+                  : `Orihinal na kard ng sulat-kamay para sa "${currentSyllable.latin.toUpperCase()}". Pansinin ang kurbada at patayong daloy ng panulat.`}
+              </Text>
+            </View>
+
+            <TouchableOpacity 
+              style={styles.exemplarTraceCtaBtn}
+              onPress={() => setExemplarModalVisible(false)}
+              activeOpacity={0.85}
+            >
+              <LinearGradient colors={['#D1582D', '#B83814']} style={styles.exemplarTraceCtaGradient}>
+                <Ionicons name="pencil" size={16} color="#FFF" style={{ marginRight: 6 }} />
+                <Text style={styles.exemplarTraceCtaText}>
+                  {language === 'EN' ? 'Trace This Character' : 'Isulat ang Titik na Ito'}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -881,5 +1028,231 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontFamily: 'Poppins_700Bold',
     fontSize: 14,
+  },
+  // Exemplar Floating PIP & Elements
+  exemplarHeaderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF7ED',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+    gap: 4,
+  },
+  exemplarHeaderText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 10,
+    color: '#D1582D',
+  },
+  floatingExemplarPip: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 68,
+    height: 84,
+    backgroundColor: '#FAF5EE',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#D1582D',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 4,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  floatingExemplarImage: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#FDFBF7',
+  },
+  floatingExemplarBadge: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255, 247, 237, 0.92)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 2,
+    gap: 2,
+  },
+  floatingExemplarBadgeText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 8,
+    color: '#D1582D',
+  },
+  floatingExemplarClose: {
+    position: 'absolute',
+    top: 3,
+    right: 3,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+  },
+  restorePipBtn: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF7ED',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+    gap: 4,
+  },
+  restorePipText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 9,
+    color: '#D1582D',
+  },
+  // Dedicated Exemplar Modal Styles
+  exemplarModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  exemplarModalCard: {
+    backgroundColor: '#FAF5EE',
+    borderRadius: 24,
+    padding: 20,
+    width: '100%',
+    maxWidth: 380,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#E2DACF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  exemplarModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 8,
+  },
+  exemplarTagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  exemplarModalSubtitle: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 9,
+    color: '#D1582D',
+    letterSpacing: 0.8,
+  },
+  exemplarModalCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EAE1D5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  exemplarCharacterTitle: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 24,
+    color: '#0F172A',
+    marginBottom: 12,
+  },
+  exemplarImageFrame: {
+    width: '100%',
+    height: 220,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+  },
+  exemplarFullImage: {
+    width: '92%',
+    height: '92%',
+  },
+  noExemplarText: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 12,
+    color: '#94A3B8',
+  },
+  exemplarInfoBox: {
+    flexDirection: 'row',
+    backgroundColor: '#FEF3C7',
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 16,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  exemplarInfoText: {
+    flex: 1,
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 11,
+    color: '#92400E',
+    lineHeight: 16,
+  },
+  exemplarTraceCtaBtn: {
+    width: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  exemplarTraceCtaGradient: {
+    flexDirection: 'row',
+    paddingVertical: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  exemplarTraceCtaText: {
+    color: '#FFFFFF',
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 14,
+  },
+  // Scoring Modal Exemplar Box
+  scoreExemplarPreviewCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 10,
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 16,
+  },
+  scoreExemplarHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 6,
+  },
+  scoreExemplarTitle: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 10,
+    color: '#64748B',
+    letterSpacing: 0.5,
+  },
+  scoreExemplarThumb: {
+    width: 110,
+    height: 110,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
   },
 });

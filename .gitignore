@@ -39,3 +39,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# local scratch and raw dataset uploads
+scratch/
+/Datasets/
+
