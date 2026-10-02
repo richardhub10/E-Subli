@@ -248,16 +248,24 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
               parsed.kulitanSymbol = 'g';
               parsed.type = 'Diacritic Reference Chart (Anak Sulat)';
             } else {
-              const searchLatin = normalizeKulitanSyllable(parsed.transliteration || parsed.character);
+              const rawQuery = (parsed.transliteration || parsed.character || '').trim();
+              const searchLatin = normalizeKulitanSyllable(rawQuery);
               const matched = kulitanSyllables.find(s => 
                 s.latin.toLowerCase() === searchLatin || 
                 s.id.toLowerCase() === searchLatin
               );
               if (matched) {
-                parsed.character = matched.latin.toUpperCase();
-                parsed.transliteration = matched.latin;
                 parsed.kulitanSymbol = matched.kulitanSymbol;
                 parsed.type = matched.classification;
+                const rawLower = rawQuery.toLowerCase();
+                const ALLOPHONES = ['e','o','ke','ko','ge','go','nge','ngo','te','to','de','do','ne','no','le','lo','se','so','me','mo','pe','po','be','bo'];
+                if (ALLOPHONES.includes(rawLower)) {
+                  parsed.transliteration = rawLower;
+                  parsed.character = rawLower.toUpperCase();
+                } else {
+                  parsed.character = matched.latin.toUpperCase();
+                  parsed.transliteration = matched.latin;
+                }
               }
             }
             return parsed;

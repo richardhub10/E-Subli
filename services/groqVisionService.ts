@@ -42,8 +42,8 @@ The authentic Kulitan syllabary consists of 47 standard syllables and their allo
 
 1. STANDALONE VOWELS (Indung Patinig):
 - A: Leftward curving downward loop with an upward rising right stroke/hook (resembling a cursive 'v' or lambda shape).
-- I / E: Horizontal wavy double-arch crown resting on a right-hand vertical downward spine.
-- U / O: Three-crested horizontal undulating wave with a curved upward terminal.
+- I / E: Horizontal wavy double-arch crown resting on a right-hand vertical downward spine. In ligated style, 'e' is written with a stepped rising wave.
+- U / O: Three-crested horizontal undulating wave with a curved upward terminal. In ligated style, 'o' is written with a flowing curved loop.
 
 2. BASE CONSONANTS (Indung Sulat - Inherent /a/ vowel):
 - Ka: Two horizontal parallel bars joined on the right by a vertical connector curve.
@@ -53,8 +53,8 @@ The authentic Kulitan syllabary consists of 47 standard syllables and their allo
 - Da: Angular or box-shaped glyph featuring a distinct INTERIOR NOTCH or step on the inner contour. (Crucial: Ta has NO notch; Da HAS an inner notch).
 - Na: Umbrella arch / canopy curve on top with a vertical stem descending from the center (⌢ with central vertical stem ↓).
 - La: Vertical downward stem with a looped/curved top (resembling a vertical pin with top loop).
-- Sa: Flowing S-shaped vertical wavy line.
-- Ma: Horizontal double loop or spiral.
+- Sa: Flowing S-shaped vertical wavy line (numeral '3' contour).
+- Ma: Horizontal double loop or cursive loop with horizontal cross-stroke.
 - Pa: Vertical descending stem looping up into an OPEN hook (does NOT close into a loop).
 - Ba: Completely CLOSED teardrop or rounded droplet loop (Crucial: Pa is open; Ba is closed).
 
@@ -68,20 +68,31 @@ Base consonant modified with a descending tick, dot, or flourish placed BELOW or
 - Ku/Ko, Gu/Go, Ngu/Ngo, Tu/To, Du/Do, Nu/No, Lu/Lo, Su/So, Mu/Mo, Pu/Po, Bu/Bo.
 In Kapampangan orthography, /u/ and /o/ share the exact same lower Garlit diacritic mark.
 
-5. CODA LIGATURES (Kamulitan / Busal - Trailing -ng):
+5. LIGATED VOWEL ALLOPHONES (-E stepped wave & -O loop wave):
+In authentic Sulat Kapampangan calligraphy and typography, vowels -e and -o are also written via attached calligraphic ligatures:
+- VOWEL -E LIGATURE: Stepped or angular wave attached to the right/base of the consonant:
+  - ke, ge, nge, te, de, ne, le, se, me, pe, be, and standalone 'e'.
+- VOWEL -O LIGATURE: Smooth flowing curved loop / upward trailing wave attached to the right/base of the consonant:
+  - ko, go, ngo, to, do, no, lo, so, mo, po, bo, and standalone 'o'.
+
+6. CODA LIGATURES (Kamulitan / Busal - Trailing -ng):
 Base consonant directly attached to a trailing horizontal undulating wave on the right representing coda nasal /-ng/:
 - Kang, Gang, Ngang, Tang, Dang, Nang, Lang, Sang, Mang, Pang, Bang.
 
 GUIDE LABELS & REFERENCE CHARTS:
-1. If a printed or written Latin guide label (e.g. 'a', 'ta', 'na', 'la', 'gí/î', etc.) appears beside the glyph, use it as direct confirmation!
-2. If the image contains a reference table or chart showing multiple consonant-vowel combinations (such as the Upper Garlit -i/-e and Lower Garlit -u/-o chart with gí/î, kú/û, etc.), recognize it as:
+1. If a printed or written Latin guide label (e.g. 'no', 'lo', 'pe', 'ko', 'ge', 'te', 'to', 'de', 'do', 'bo', 'se', 'so', 'ne', 'me', 'e', 'o', 'po', 'be', 'tu', 'du', 'nu', 'su', 'mu', 'pu', 'gu', 'ku', 'ngu', 'di', 'ni', 'li', 'si', 'mi', 'pi', 'a', 'ta', 'na', 'la', etc.) is visible beside the glyph:
+   - ALWAYS output the EXACT character and transliteration matching that guide label!
+   - For example, if the label is 'no', return character: 'No', transliteration: 'no', type: 'Anak Sulat (-o Ligature)'.
+   - Do NOT misidentify 'no' as 'na', nor 'lo' as 'la'!
+2. If the image contains a reference table or chart showing multiple consonant-vowel combinations, recognize it as:
    - "character": "Kulitan Chart", "transliteration": "gi", "confidence": 98, "type": "Anak Sulat / Diacritic Chart"
    - Explain in "feedback" that it is a reference table containing all 22 modified consonant forms (gí/î, kí/î, ngí/î, etc.).
 
 CRITICAL DISAMBIGUATION RULES:
-1. "Ta" vs "Da": "Ta" is a clean open arch/bent curve with a smooth continuous contour; "Da" has a distinct interior notch or step.
-2. "Pa" vs "Ba": "Pa" is an open hook; "Ba" forms a complete closed droplet/circle.
-3. "Na" vs "La": "Na" has an umbrella canopy with a central descending stem; "La" is a vertical stem with a top loop.
+1. "Na" vs "No" vs "Ne": "Na" has NO trailing ligature; "No" has an attached curved loop; "Ne" has an attached stepped wave!
+2. "La" vs "Lo" vs "Le": "La" has NO trailing ligature; "Lo" has an attached curved loop; "Le" has an attached stepped wave!
+3. "Ta" vs "Da": "Ta" is a clean open arch/bent curve with a smooth continuous contour; "Da" has a distinct interior notch or step.
+4. "Pa" vs "Ba": "Pa" is an open hook; "Ba" forms a complete closed droplet/circle.
 
 TASK:
 ${targetHint}
@@ -202,8 +213,15 @@ export async function callGroqVision(
           if (matched) {
             parsed.kulitanSymbol = matched.kulitanSymbol;
             parsed.type = matched.classification;
-            parsed.character = matched.latin.toUpperCase();
-            parsed.transliteration = matched.latin;
+            const rawLower = rawQuery.toLowerCase();
+            const ALLOPHONES = ['e','o','ke','ko','ge','go','nge','ngo','te','to','de','do','ne','no','le','lo','se','so','me','mo','pe','po','be','bo'];
+            if (ALLOPHONES.includes(rawLower)) {
+              parsed.transliteration = rawLower;
+              parsed.character = rawLower.toUpperCase();
+            } else {
+              parsed.character = matched.latin.toUpperCase();
+              parsed.transliteration = matched.latin;
+            }
           }
         }
       }
