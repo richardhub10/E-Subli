@@ -1,6 +1,6 @@
 import { decode as b64decode, encode as b64encode } from 'base64-arraybuffer';
 import { decode as decodeJpeg, encode as encodeJpeg } from 'jpeg-js';
-import { PNG } from 'pngjs';
+import { decode as decodePng } from 'fast-png';
 import { kulitanPoints } from '../data/kulitanPoints';
 import { kulitanSyllables, SyllableData } from '../data/kulitanData';
 import { KULITAN_NEURAL_WEIGHTS } from './kulitanNeuralModel';
@@ -29,6 +29,51 @@ export type ScanResult = {
     contourFit: number;
   };
 };
+
+/**
+ * Safe PNG decoder that guarantees 4-channel RGBA Uint8Array output without Node.js dependencies.
+ */
+function decodePngSafe(uint8: Uint8Array): { width: number; height: number; data: Uint8Array } {
+  const result = decodePng(uint8);
+  const width = result.width;
+  const height = result.height;
+  const channels = result.channels;
+  const src = result.data;
+
+  if (channels === 4 && src instanceof Uint8Array) {
+    return { width, height, data: src };
+  }
+
+  const rgba = new Uint8Array(width * height * 4);
+  for (let i = 0; i < width * height; i++) {
+    const srcIdx = i * channels;
+    const dstIdx = i * 4;
+    if (channels === 1) {
+      const val = src[srcIdx];
+      rgba[dstIdx] = val;
+      rgba[dstIdx + 1] = val;
+      rgba[dstIdx + 2] = val;
+      rgba[dstIdx + 3] = 255;
+    } else if (channels === 2) {
+      const val = src[srcIdx];
+      rgba[dstIdx] = val;
+      rgba[dstIdx + 1] = val;
+      rgba[dstIdx + 2] = val;
+      rgba[dstIdx + 3] = src[srcIdx + 1];
+    } else if (channels === 3) {
+      rgba[dstIdx] = src[srcIdx];
+      rgba[dstIdx + 1] = src[srcIdx + 1];
+      rgba[dstIdx + 2] = src[srcIdx + 2];
+      rgba[dstIdx + 3] = 255;
+    } else {
+      rgba[dstIdx] = src[srcIdx];
+      rgba[dstIdx + 1] = src[srcIdx + 1];
+      rgba[dstIdx + 2] = src[srcIdx + 2];
+      rgba[dstIdx + 3] = src[srcIdx + 3];
+    }
+  }
+  return { width, height, data: rgba };
+}
 
 /**
  * Universal Region of Interest (ROI) Cropper.
@@ -100,10 +145,10 @@ export async function cropViewfinderROI(base64: string, cropRatio = 0.68): Promi
 
     // Check PNG signature: 0x89 0x50 0x4E 0x47
     if (uint8[0] === 0x89 && uint8[1] === 0x50 && uint8[2] === 0x4E && uint8[3] === 0x47) {
-      const png = PNG.sync.read(Buffer.from(arrayBuffer));
+      const png = decodePngSafe(uint8);
       width = png.width;
       height = png.height;
-      data = new Uint8Array(png.data.buffer, png.data.byteOffset, png.data.byteLength);
+      data = png.data;
     } else {
       const decoded = decodeJpeg(uint8, { useTArray: true });
       width = decoded.width;
@@ -613,19 +658,14 @@ async function decodeBase64ToRgba(base64: string): Promise<{ width: number; heig
     }
   }
 
-  // 2. Native Mobile / Node / Fallback Environment (using pngjs + jpeg-js)
+  // 2. Native Mobile / Node / Fallback Environment (using fast-png + jpeg-js)
   try {
     const arrayBuffer = b64decode(cleanB64);
     const uint8 = new Uint8Array(arrayBuffer);
 
     // Check PNG signature: 0x89 0x50 0x4E 0x47
     if (uint8[0] === 0x89 && uint8[1] === 0x50 && uint8[2] === 0x4E && uint8[3] === 0x47) {
-      const png = PNG.sync.read(Buffer.from(arrayBuffer));
-      return {
-        width: png.width,
-        height: png.height,
-        data: new Uint8Array(png.data.buffer, png.data.byteOffset, png.data.byteLength),
-      };
+      return decodePngSafe(uint8);
     }
 
     const decoded = decodeJpeg(uint8, { useTArray: true });
@@ -637,14 +677,10 @@ async function decodeBase64ToRgba(base64: string): Promise<{ width: number; heig
   } catch (err) {
     try {
       const arrayBuffer = b64decode(cleanB64);
-      const png = PNG.sync.read(Buffer.from(arrayBuffer));
-      return {
-        width: png.width,
-        height: png.height,
-        data: new Uint8Array(png.data.buffer, png.data.byteOffset, png.data.byteLength),
-      };
+      const uint8 = new Uint8Array(arrayBuffer);
+      return decodePngSafe(uint8);
     } catch {}
-    console.warn('Failed to decode image via jpeg-js/pngjs:', err);
+    console.warn('Failed to decode image via jpeg-js/fast-png:', err);
     return null;
   }
 }

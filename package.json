@@ -23,9 +23,9 @@
     "expo-speech": "~57.0.1",
     "expo-status-bar": "~57.0.1",
     "expo-web-browser": "~57.0.2",
+    "fast-png": "^8.0.0",
     "jpeg-js": "^0.4.4",
     "opentype.js": "^2.0.0",
-    "pngjs": "^7.0.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.2",
@@ -38,7 +38,6 @@
     "svg-path-properties": "^2.0.2"
   },
   "devDependencies": {
-    "@types/pngjs": "^6.0.5",
     "@types/react": "~19.2.2",
     "typescript": "~6.0.3"
   },
