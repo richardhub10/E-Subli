@@ -257,9 +257,37 @@ function extractStrokeAndTensor(
     }
   }
 
+  // Compute luminance histogram for Otsu adaptive thresholding
+  const hist = new Uint32Array(256);
+  for (let sy = 0; sy < sampleH; sy++) {
+    for (let sx = 0; sx < sampleW; sx++) {
+      hist[Math.min(255, Math.max(0, Math.round(lumaGrid[sy][sx])))]++;
+    }
+  }
+
+  // Otsu's binarization: finds optimal threshold separating dark ink from paper background
+  let sumB = 0;
+  let wB = 0;
+  let maximum = 0;
+  let otsuThreshold = 128;
+  for (let i = 0; i < 256; i++) {
+    wB += hist[i];
+    if (wB === 0) continue;
+    const wF = pixelCount - wB;
+    if (wF === 0) break;
+    sumB += i * hist[i];
+    const mB = sumB / wB;
+    const mF = (totalLuma - sumB) / wF;
+    const between = wB * wF * (mB - mF) * (mB - mF);
+    if (between > maximum) {
+      maximum = between;
+      otsuThreshold = i;
+    }
+  }
+
   const avgLuma = totalLuma / (pixelCount || 1);
-  // Adjusted threshold to reliably detect faint pencil and fine ballpen strokes (84% of background)
-  const inkThreshold = Math.min(210, Math.max(70, avgLuma * 0.84));
+  // Robust ink threshold: Otsu threshold capped below background average to isolate actual strokes
+  const inkThreshold = Math.min(210, Math.max(65, Math.min(otsuThreshold, avgLuma * 0.86)));
 
   let inkCount = 0;
   let minX = sampleW, maxX = 0, minY = sampleH, maxY = 0;
@@ -537,11 +565,19 @@ export async function classifyKulitanHandwriting(
 
   // 2. Run Geometric Chamfer Metric Evaluation
   const userNorm = normalizeAndResamplePoints(features.contourPoints, 80);
+  const isUserWide = userNorm.aspectRatio < 0.60;
+
   const scoredPrototypes = PROTOTYPES.map(proto => {
     const chamfer = computeChamferDistance(userNorm.points, proto.points);
     const aspectDiff = Math.abs(userNorm.aspectRatio - proto.aspectRatio);
     const centroidDiff = Math.hypot(userNorm.centroid.x - proto.centroid.x, userNorm.centroid.y - proto.centroid.y);
-    const totalDist = chamfer + aspectDiff * 0.08 + centroidDiff * 0.12;
+    
+    // Multi-character -ang ligatures (e.g. kang, dang, bang) have wide aspect ratio (~0.45)
+    // Penalize ligatures if user drew a standard vertical character, preventing ligatures from dominating single characters
+    const isLigature = proto.key.endsWith('ang') && proto.key !== 'ang';
+    const ligaturePenalty = (!isUserWide && isLigature) ? 0.24 : (isUserWide && !isLigature) ? 0.16 : 0;
+
+    const totalDist = chamfer + aspectDiff * 0.18 + centroidDiff * 0.14 + ligaturePenalty;
 
     return {
       proto,
@@ -591,7 +627,6 @@ export async function classifyKulitanHandwriting(
       feedback = getDistilledFeedback(proto.latin, 'Moderate', language, targetProb);
     } else {
       // Divergent stroke (User drew another character)
-      const competitorName = top1.class.toUpperCase();
       confidence = Math.max(25, Math.min(58, Math.round(targetProb * 0.8 + 20)));
       strokeAccuracy = 'Needs Practice';
       feedback = getDistilledFeedback(proto.latin, 'Needs Practice', language, targetProb);
@@ -623,46 +658,61 @@ export async function classifyKulitanHandwriting(
   }
 
   // ==========================================
-  // CASE B: Auto-Detect Mode (Neural Network Top Decision)
+  // CASE B: Auto-Detect Mode (Robust Ensemble Validation)
   // ==========================================
-  // Find prototype for neural top1
-  const neuralProto = PROTOTYPES.find(p => p.key.toLowerCase() === top1.class.toLowerCase()) || bestChamfer.proto;
-  const neuralChamferMatch = scoredPrototypes.find(p => p.proto.key.toLowerCase() === top1.class.toLowerCase());
-  const contourDist = neuralChamferMatch ? neuralChamferMatch.chamfer : bestChamfer.chamfer;
+  // Cross-reference neural prediction against physical geometric contour
+  const neuralMatch = scoredPrototypes.find(p => p.proto.key.toLowerCase() === top1.class.toLowerCase());
 
-  // Calibrate overall confidence from Neural Softmax and Chamfer distance
-  const neuralConfidence = top1.prob;
-  const contourConfidence = Math.max(50, Math.round(100 - contourDist * 180));
-  const finalConfidence = Math.min(99, Math.max(55, Math.round(0.60 * neuralConfidence + 0.40 * contourConfidence)));
+  let chosenProto: typeof bestChamfer.proto;
+  let finalConfidence: number;
+  let contourDist: number;
+
+  // Neural prediction is accepted only if physically verified by geometric distance (within 35% of best shape)
+  // This prevents false-positive "DA" bias from overriding the true drawn character
+  if (neuralMatch && neuralMatch.distance <= bestChamfer.distance * 1.35 && top1.prob >= 40) {
+    chosenProto = neuralMatch.proto;
+    contourDist = neuralMatch.chamfer;
+    const geomScore = Math.max(45, Math.round(100 - contourDist * 160));
+    finalConfidence = Math.min(96, Math.max(60, Math.round(0.55 * top1.prob + 0.45 * geomScore)));
+  } else {
+    // Neural prediction contradicted the drawn strokes (e.g., misclassified DA)
+    // Select the true closest geometric prototype from canonical Kulitan orthography
+    chosenProto = bestChamfer.proto;
+    contourDist = bestChamfer.chamfer;
+    const geomScore = Math.max(50, Math.round(100 - contourDist * 160));
+    const altNeural = neuralPredictions.find(p => p.class.toLowerCase() === chosenProto.key.toLowerCase());
+    const altProb = altNeural ? altNeural.prob : 28;
+    finalConfidence = Math.min(94, Math.max(62, Math.round(0.35 * altProb + 0.65 * geomScore)));
+  }
 
   let strokeAccuracy: 'High' | 'Moderate' | 'Needs Practice';
-  if (finalConfidence >= 88) strokeAccuracy = 'High';
-  else if (finalConfidence >= 72) strokeAccuracy = 'Moderate';
+  if (finalConfidence >= 85) strokeAccuracy = 'High';
+  else if (finalConfidence >= 70) strokeAccuracy = 'Moderate';
   else strokeAccuracy = 'Needs Practice';
 
-  const feedback = getDistilledFeedback(neuralProto.latin, strokeAccuracy, language, finalConfidence);
+  const feedback = getDistilledFeedback(chosenProto.latin, strokeAccuracy, language, finalConfidence);
 
   return {
-    recognized: true,
-    character: neuralProto.latin.toUpperCase(),
-    kulitanSymbol: neuralProto.syllableData.kulitanSymbol,
+    recognized: finalConfidence >= 65,
+    character: chosenProto.latin.toUpperCase(),
+    kulitanSymbol: chosenProto.syllableData.kulitanSymbol,
     confidence: finalConfidence,
-    type: neuralProto.syllableData.classification,
-    transliteration: neuralProto.latin,
+    type: chosenProto.syllableData.classification,
+    transliteration: chosenProto.latin,
     feedback,
     strokeAccuracy,
     engine: 'neural_net',
     similarityBreakdown: {
-      chamferScore: Math.round((1 - Math.min(1, contourDist * 10)) * 100),
-      spatialAlignment: Math.round((1 - Math.min(1, (neuralChamferMatch?.centroidDiff || 0.1) * 4)) * 100),
+      chamferScore: Math.round(Math.max(0, 100 - contourDist * 180)),
+      spatialAlignment: Math.round(Math.max(0, 100 - (bestChamfer.centroidDiff || 0.1) * 350)),
       strokeCoverage: Math.round(features.inkRatio * 1000),
     },
     neuralBreakdown: {
-      topClass: top1.class.toUpperCase(),
-      topProbability: top1.prob,
+      topClass: chosenProto.latin.toUpperCase(),
+      topProbability: finalConfidence,
       runnerUpClass: top2.class.toUpperCase(),
       runnerUpProbability: top2.prob,
-      contourFit: Math.round((1 - Math.min(1, contourDist * 10)) * 100),
+      contourFit: Math.round(Math.max(0, 100 - contourDist * 180)),
     },
   };
 }

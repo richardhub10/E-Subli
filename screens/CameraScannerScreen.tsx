@@ -312,7 +312,12 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
         const prompt = getKulitanVisionPrompt(targetSyllable);
 
         let response: any = null;
-        const candidateModels = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash'];
+        const candidateModels = [
+          'gemini-3.5-flash-lite',
+          'gemini-3-flash-preview',
+          'gemini-flash-latest',
+          'gemini-3.8-flash',
+        ];
 
         for (const modelName of candidateModels) {
           try {
@@ -337,6 +342,18 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
         const jsonMatch = rawText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]) as ScanResult;
+          // Match with official syllable dictionary to ensure consistent kulitanSymbol and naming
+          const searchLatin = (parsed.transliteration || parsed.character || '').toLowerCase().trim();
+          const matched = kulitanSyllables.find(s => 
+            s.latin.toLowerCase() === searchLatin || 
+            s.id.toLowerCase() === searchLatin
+          );
+          if (matched) {
+            parsed.character = matched.latin.toUpperCase();
+            parsed.transliteration = matched.latin;
+            parsed.kulitanSymbol = matched.kulitanSymbol;
+            parsed.type = matched.classification;
+          }
           parsed.engine = 'gemini';
           cloudResult = parsed;
         }
