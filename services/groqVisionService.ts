@@ -27,98 +27,153 @@ export function isValidGroqKey(key?: string): boolean {
 export function getKulitanVisionPrompt(targetSyllable: string | null): string {
   const targetHint = targetSyllable 
     ? `TARGET EXPECTATION:
-The user is specifically attempting to draw the authentic Kulitan character "${targetSyllable.toUpperCase()}".
+The user is specifically attempting to draw or scan the authentic Kulitan character "${targetSyllable.toUpperCase()}".
 Carefully compare the drawing against the canonical form of "${targetSyllable.toUpperCase()}".
-If it matches "${targetSyllable.toUpperCase()}", return recognized: true with high confidence (85-99).
+If it matches "${targetSyllable.toUpperCase()}", return recognized: true with high confidence (88-99).
 If the drawing clearly matches a different Kulitan character, identify the character actually drawn.
 If it is unrecognizable or unreadable, return recognized: false.` 
     : 'Identify which authentic Sulat Kapampangan (Kulitan) character is drawn or shown in the image.';
 
   return `You are an expert paleographer specializing in authentic Sulat Kapampangan (Kulitan), the indigenous script of Pampanga, Philippines.
 
-ORTHOGRAPHIC SCRIPT CONTEXT:
-Kulitan is STRICTLY INDIGENOUS KAPAMPANGAN and is DIFFERENT from Tagalog Baybayin.
-The authentic Kulitan syllabary consists of 47 standard syllables and their allophones, validated from archival calligraphy and authentic typography:
+STRICT INSTRUCTION ON ISOLATED SYMBOL RECOGNITION:
+The image contains an isolated Kulitan character, handwriting sample, or crop.
+There may NOT be any English or Latin text in the image.
+You must identify the character SOLELY and PURELY by analyzing its stroke morphology, curves, stem orientation, and attached ligatures according to the morphology key below.
+Do NOT guess or assume Egyptian hieroglyphs, Chinese, Japanese, or Arabic. This is authentic Sulat Kapampangan (Kulitan).
+
+ORTHOGRAPHIC MORPHOLOGY KEY (Sulat Kapampangan):
 
 1. STANDALONE VOWELS (Indung Patinig):
-- A: Leftward curving downward loop with an upward rising right stroke/hook (resembling a cursive 'v' or lambda shape).
-- I / E: Horizontal wavy double-arch crown resting on a right-hand vertical downward spine. In ligated style, 'e' is written with a stepped rising wave.
-- U / O: Three-crested horizontal undulating wave with a curved upward terminal. In ligated style, 'o' is written with a flowing curved loop.
+- A: Curving downward stroke from top-left, forming an open bottom loop that sweeps upward/rightward with a distinct tail flourish (resembling an open lambda or sweeping cursive hook).
+- I / E (Standalone Vowels):
+  * Canonical I: Horizontal wavy double-arch crown resting on a right-hand vertical downward spine/stem.
+  * Standalone Vowel E (Indûng Súlat E / "E"): A continuous stroke with a distinct C-shaped outer hook/curve on the far left, an internal horizontal crossover bridge / two parallel horizontal dashes (=) in the center, and an attached right-hand tall upright vertical needle flourish (~|) shooting up to the top margin.
+    - Standalone E vs Ke: 'Ke' has two horizontal parallel bars that start on the FAR-LEFT margin with NO enclosing outer C-shaped hook. If there is a distinct outer C-shaped hook enclosing the left side and the parallel dashes are inside the center, it is STANDALONE VOWEL E (character: "E" or "I / E", transliteration: "e", type: "Standalone Vowel (Indûng Patinig)").
+    - Standalone E vs Te: 'Te' has a swan-neck curve with an empty open center (NO inner parallel dashes).
+- U / O: Flowing three-crested horizontal undulating wave (like ~~~) with a curved upward terminal tail.
 
 2. BASE CONSONANTS (Indung Sulat - Inherent /a/ vowel):
-- Ka: Two horizontal parallel bars joined on the right by a vertical connector curve.
+- Ka: Two horizontal parallel bars joined on the right by a vertical/curved connector stroke.
 - Ga: Smooth inverted U-shaped arch (∩) with open bottom.
-- Nga: Continuous horizontal triple-undulating wave (similar to a flowing W).
-- Ta: Open rounded bent curve like a cursive '2' or open trapezoidal hook with a smooth curved base (NO interior step or notch).
-- Da: Angular or box-shaped glyph featuring a distinct INTERIOR NOTCH or step on the inner contour. (Crucial: Ta has NO notch; Da HAS an inner notch).
-- Na: Umbrella arch / canopy curve on top with a vertical stem descending from the center (⌢ with central vertical stem ↓).
-- La: Vertical downward stem with a looped/curved top (resembling a vertical pin with top loop).
-- Sa: Flowing S-shaped vertical wavy line (numeral '3' contour).
-- Ma: Horizontal double loop or cursive loop with horizontal cross-stroke.
-- Pa: Vertical descending stem looping up into an OPEN hook (does NOT close into a loop).
-- Ba: Completely CLOSED teardrop or rounded droplet loop (Crucial: Pa is open; Ba is closed).
+- Nga: Continuous horizontal triple-undulating wave (similar to a flowing W / ~~~), OR in authentic handwriting, an initial sweeping left downward crescent/arc (')') connected to a central undulating wave / double-hump ('m' / 'n').
+- Ta: Characteristic upper-left downward-curling hook/arch (~), dropping down into an elongated horizontal baseline (first valley), which turns up into a medial arch and STOPS.
+  * ABSOLUTE LIMIT FOR PLAIN TA: The character terminates at the first medial arch. It has NOTHING after the first arch. If the line continues past the first arch into ANY second valley, dip, loop, or second upward rise, IT IS NEVER PLAIN TA! It is 'Tú / To' (or 'To') or 'Tí / Te'!
+- Da: Angular box-bracket or cursive 'z'-like contour featuring a distinct INTERIOR NOTCH or central step flourish on inner contour (horizontal top, stepped diagonal waist, and base bar). (Ta has NO notch; Sa is a rounded numeral '3'; Da HAS an inner notch/step like a cursive 'z').
+- Na: Umbrella arch / canopy curve on top with a central vertical stem descending straight down (⌢ with central vertical stem ↓).
+- La: Vertical downward stem with a looped/curved top (looks like a vertical pin, lowercase-rho ρ, or 'T' with looped/curved head).
+- Sa: Flowing '3' shape (numeral 3 with two open curved loops).
+- Ma: Diagonal slash crossed by an intersecting horizontal crossbar (cross-like / slashed).
+- Pa: Checkmark-like 'v' or '√' upward sweep with an upward/right flourish and a horizontal crossbar/tick (open 'v' with a bar).
+- Ba: Completely CLOSED oval circle or droplet loop (O). (Pa is open with crossbar; Ba is a closed circle/droplet).
 
-3. UPPER GARLIT (Anak Sulat - Vowel /i/ or /e/):
-Base consonant modified with an acute tick, dot, or flourish placed ABOVE or near the top:
-- Ki/Ke, Gi/Ge, Ngi/Nge, Ti/Te, Di/De, Ni/Ne, Li/Le, Si/Se, Mi/Me, Pi/Pe, Bi/Be.
-In Kapampangan orthography, /i/ and /e/ share the exact same upper Garlit diacritic mark.
+3. UPPER GARLIT / LIGATED -I/-E (Anak Sulat):
+Base consonant modified for vowel /i/ or /e/. In Kulitan, /i/ and /e/ are vowel allophones:
+- Form A (-i/-e): Base consonant with an UPPER ACUTE TICK (/) hovering above:
+  * Tí / Te (Form A): Base 'Ta' (upper-left downward-curling hook and horizontal baseline, or 'Ć'-like cursive curve) with a distinct separate UPPER ACUTE TICK (/) hovering above it. Character: 'Tí / Te' (or 'Tí'), transliteration: 'ti' (or 'te'). NEVER classify as plain Ta or Ka!
+- Form B (-e and ligated -i/-e): Base consonant connects DIRECTLY into an attached right-hand upright vertical needle flourish (~|) that shoots straight up to the top margin, WITHOUT needing any separate floating tick (commonly labeled as '-e' in reference charts):
+  * Kí / Ke: Base 'Ka' (two horizontal parallel bars starting directly on the FAR LEFT margin, open on the left with NO outer C-shaped hook enclosing them) connected directly into the tall upright vertical needle flourish (~|) on the right. Transliteration: 'ke' (or 'ki'), Character: 'Kí / Ke' (or 'Ke'). (If there is an outer C-shaped hook enclosing the left side, it is STANDALONE VOWEL E, NOT Ke!).
+  * Tí / Te: Base 'Ta' (swan-neck curve / cursive '2' contour dropping into an open horizontal baseline with an empty center and NO internal parallel dashes) connected directly to the tall right upright needle flourish (~|) shooting up to the top. Transliteration: 'te' (or 'ti'), Character: 'Tí / Te' (or 'Te').
+  * Ngí / Nge: Base 'Nga' (continuous horizontal undulating wave ~~~, OR an initial sweeping left crescent ')' connected to a central undulating wave/hump 'm') connected directly on the right into a tall upright vertical needle flourish (~|) that shoots straight UP to the top margin. Transliteration: 'nge' (or 'ngi'), Character: 'Ngí / Nge' (or 'Nge'). NEVER classify as Tú / To, Tang, or Ngang!
+  * Gí / Ge: Base 'Ga' (single smooth inverted U-shaped arch ∩ with open bottom, NO second hump and NO 'm'-wave) connected directly into the upright vertical needle flourish (~|). Character: 'Gí / Ge' (or 'Ge'), transliteration: 'ge' (or 'gi').
+  * Dí / De: Base 'Da' (angular 'z' / box bracket with rigid flat roof and sharp interior notch) with an upper wavy diacritic mark/tilde hovering above, OR connected directly to the upright needle flourish (~|). Character: 'Dí / De' (or 'De'), transliteration: 'de' (or 'di').
+  * Sí / Se: Base 'Sa' (numeral '3') connected directly to the upright needle flourish (~|).
+  * Bí / Be: Base 'Ba' (closed oval 'O') connected directly to the upright needle flourish (~|).
+  * Lí / Le: Base 'La' (vertical pin with looped top) connected directly to the upright needle flourish (~|).
+  * Mí / Me: Base 'Ma' (crossed diagonal loop) connected directly to the upright needle flourish (~|).
+  * Ní / Ne: Base 'Na' (umbrella canopy with central stem) connected directly to the upright needle flourish (~|).
+  * Pí / Pe: Base 'Pa' (open checkmark 'v' with crossbar) connected directly to the upright needle flourish (~|).
 
-4. LOWER GARLIT (Anak Sulat - Vowel /u/ or /o/):
-Base consonant modified with a descending tick, dot, or flourish placed BELOW or near the bottom:
-- Ku/Ko, Gu/Go, Ngu/Ngo, Tu/To, Du/Do, Nu/No, Lu/Lo, Su/So, Mu/Mo, Pu/Po, Bu/Bo.
-In Kapampangan orthography, /u/ and /o/ share the exact same lower Garlit diacritic mark.
+4. LOWER GARLIT / LIGATED -U/-O (Anak Sulat):
+Base consonant modified by a lower comma-like tick (,) placed at bottom-left AND/OR an attached right-hand trailing upward-curving wing/wave (~v):
+- Tú / To / Tû: Base 'Ta' (upper-left downward-curling hook and horizontal baseline) modified by the -u/-o ligature.
+  * TWO-VALLEY / EXTENDED TA RULE:
+    - Look at the right side after the initial Ta baseline and central arch:
+    - If the stroke continues to the right, descending into a second downward valley / loop and sweeping up into a second terminal rise/tail, it is ALWAYS TÚ / TO (or To), transliteration: 'to' (or 'tu')!
+    - Plain 'Ta' NEVER has a second valley or second right-hand rise. If there is a second valley and second rise to the right of the central arch, IT IS ALWAYS TÚ / TO (or To), NEVER plain Ta!
+- Gú / Go: Base 'Ga' (single smooth inverted U arch ∩) followed on the right by an attached or adjacent downward dip and upward-curving trailing wing/flourish (~v) (or lower-left comma tick). If an inverted U arch is followed by this trailing upward wing, it is 100% ALWAYS GÚ / GO (character: 'Gú / Go' or 'Go', transliteration: 'go' or 'gu'), NEVER plain Ga and NEVER Ngú / Ngo!
+- Ngú / Ngo: Base 'Nga' (sweeping left crescent ')' + central undulating 'm'-wave) concluding on the right with an attached downward dip and upward-curving trailing wing/flourish (~v). Character: 'Ngú / Ngo' (or 'Ngo'), transliteration: 'ngo' (or 'ngu'), NEVER plain Nga!
+- Bú / Bo: Base 'Ba' (closed oval circle 'O') with lower comma tick and trailing wing (~v).
+- Pú / Po: Base 'Pa' (checkmark 'v' with crossbar) with lower comma tick and/or trailing wing.
+- Mú / Mo: Base 'Ma' (crossed loop) with lower comma tick (,) and trailing wing (~v).
+- Lú / Lo: Base 'La' (vertical pin with looped top) with lower comma tick and trailing wing.
+- Nú / No: Base 'Na' (umbrella canopy) with lower comma tick and trailing wing.
+- Sú / So: Base 'Sa' (numeral '3') with lower comma tick and trailing wing.
+- Kú / Ko: Base 'Ka' (two parallel bars) with lower comma tick and trailing wing.
+- Dú / Do: Base 'Da' (angular 'z' with interior notch) with lower comma tick and trailing wing.
 
-5. LIGATED VOWEL ALLOPHONES (-E stepped wave & -O loop wave):
-In authentic Sulat Kapampangan calligraphy and typography, vowels -e and -o are also written via attached calligraphic ligatures:
-- VOWEL -E LIGATURE: Stepped or angular wave attached to the right/base of the consonant:
-  - ke, ge, nge, te, de, ne, le, se, me, pe, be, and standalone 'e'.
-- VOWEL -O LIGATURE: Smooth flowing curved loop / upward trailing wave attached to the right/base of the consonant:
-  - ko, go, ngo, to, do, no, lo, so, mo, po, bo, and standalone 'o'.
+5. CODA NASAL LIGATURES -NG (Kamulitan / Busal):
+Base consonant paired strictly with the trailing coda nasal ligature on the right (a separate detached arc ')' followed by a horizontal two-crested wave 'm'):
+* ABSOLUTE BOUNDARY RULE FOR CODA NASAL -NG:
+  - A character is ONLY a Coda Nasal -NG ligature (Tang, Mang, Ngang, Pang, Dang, etc.) if it clearly terminates on the right in a low horizontal coda nasal wave ('m') resting near the baseline.
+  - IT NEVER TERMINATES IN A TALL VERTICAL UPRIGHT NEEDLE (~|)! Any glyph terminating in a tall vertical upright needle (~|) is a LIGATED -I/-E form (Nge, Ke, Te, Ge, De, Se, Be, Le, Me, Ne, Pe) or STANDALONE VOWEL E, NEVER Tang, Mang, or Ngang!
+  - It NEVER terminates in a continuous second valley / trailing wing!
+- Tang: Base 'Ta' followed specifically by the trailing coda nasal pair (detached arc ')' + horizontal two-crested wave 'm'). Tang has NO upright vertical needle (~|) and NO lower comma tick.
+- Ngang: Base 'Nga' doubled with coda nasal ligature, forming an interlocked undulating double-wave glyph without any tall vertical upright needle. (If it has a tall upright needle on the far right, it is NGÍ / NGE, NOT Ngang!)
+- Mang: Base 'Ma' + trailing coda nasal pair.
+- Pang: Base 'Pa' + trailing coda nasal pair.
+- Lang: Base 'La' + trailing coda nasal pair.
+- Nang: Base 'Na' + trailing coda nasal pair.
+- Sang: Base 'Sa' + trailing coda nasal pair.
+- Dang: Base 'Da' + trailing coda nasal pair.
+- Kang: Base 'Ka' + trailing coda nasal pair.
+- Gang: Base 'Ga' + trailing coda nasal pair.
+- Bang: Base 'Ba' + trailing coda nasal pair.
 
-6. CODA LIGATURES (Kamulitan / Busal - Trailing -ng):
-Base consonant directly attached to a trailing horizontal undulating wave on the right representing coda nasal /-ng/:
-- Kang, Gang, Ngang, Tang, Dang, Nang, Lang, Sang, Mang, Pang, Bang.
-
-GUIDE LABELS & REFERENCE CHARTS:
-1. If a printed or written Latin guide label (e.g. 'no', 'lo', 'pe', 'ko', 'ge', 'te', 'to', 'de', 'do', 'bo', 'se', 'so', 'ne', 'me', 'e', 'o', 'po', 'be', 'tu', 'du', 'nu', 'su', 'mu', 'pu', 'gu', 'ku', 'ngu', 'di', 'ni', 'li', 'si', 'mi', 'pi', 'a', 'ta', 'na', 'la', etc.) is visible beside the glyph:
-   - ALWAYS output the EXACT character and transliteration matching that guide label!
-   - For example, if the label is 'no', return character: 'No', transliteration: 'no', type: 'Anak Sulat (-o Ligature)'.
-   - Do NOT misidentify 'no' as 'na', nor 'lo' as 'la'!
-2. If the image contains a reference table or chart showing multiple consonant-vowel combinations, recognize it as:
-   - "character": "Kulitan Chart", "transliteration": "gi", "confidence": 98, "type": "Anak Sulat / Diacritic Chart"
-   - Explain in "feedback" that it is a reference table containing all 22 modified consonant forms (gí/î, kí/î, ngí/î, etc.).
+6. REFERENCE CHARTS & TABLES:
+If the image shows a multi-character grid or reference chart with multiple glyph rows, identify as:
+"character": "Kulitan Chart", "transliteration": "gi", "confidence": 98, "type": "Diacritic Reference Chart (Anak Sulat)"
 
 CRITICAL DISAMBIGUATION RULES:
-1. "Na" vs "No" vs "Ne": "Na" has NO trailing ligature; "No" has an attached curved loop; "Ne" has an attached stepped wave!
-2. "La" vs "Lo" vs "Le": "La" has NO trailing ligature; "Lo" has an attached curved loop; "Le" has an attached stepped wave!
-3. "Ta" vs "Da": "Ta" is a clean open arch/bent curve with a smooth continuous contour; "Da" has a distinct interior notch or step.
-4. "Pa" vs "Ba": "Pa" is an open hook; "Ba" forms a complete closed droplet/circle.
+1. Arch (Ga) vs Wave (Nga) vs Angular Notch (Da) vs Swan-Neck (Ta):
+   - Inverted U Arch (∩) (Base 'Ga'):
+     * Single smooth inverted U arch (∩) with open bottom (resembling lowercase 'n' or '∩').
+     * Connected on right to upright vertical needle (~|) -> 100% ALWAYS GÍ / GE (transliteration: 'ge' or 'gi'), NEVER Ngí / Nge!
+     * Followed on right by downward dip and upward trailing wing (~v) -> 100% ALWAYS GÚ / GO (transliteration: 'go' or 'gu'), NEVER plain Ga and NEVER Ngú / Ngo!
+   - Sweeping Crescent + Undulating Wave (Base 'Nga'):
+     * Initial left crescent ')' + central undulating 'm'-wave (TWO crests, NOT a single arch).
+     * Connected on right to upright vertical needle (~|) -> NGÍ / NGE (transliteration: 'nge' or 'ngi').
+     * Concluding on right in downward dip and upward trailing wing (~v) -> 100% ALWAYS NGÚ / NGO (transliteration: 'ngo' or 'ngu'), NEVER plain Nga and NEVER Gú / Go!
+   - Angular Box-Bracket with Interior Notch (Base 'Da'):
+     * Rigid flat horizontal top roof bar + interior notch/step flourish on diagonal spine (like cursive 'z').
+     * Has upper wavy diacritic tilde or connects to needle flourish -> 100% ALWAYS DÍ / DE (transliteration: 'de' or 'di'), NEVER Tí / Te and NEVER plain Da!
+   - Swan-Neck Hook with Upper Acute Tick (Base 'Ta' + kudlit):
+     * Upper-left hook with rounded baseline + separate detached UPPER ACUTE TICK (/) hovering above -> 100% ALWAYS TÍ / TE (transliteration: 'ti' or 'te'), NEVER plain Ta!
+2. Ke vs Standalone Vowel E vs Te:
+   - Ke: TWO HORIZONTAL PARALLEL BARS on the FAR-LEFT margin (completely open on left, no outer C-curve) + tall right upright needle (~|). Character: 'Kí / Ke' or 'Ke', transliteration: 'ke'.
+   - Standalone Vowel E: Left C-shaped outer hook/curve enclosing the left side + INTERNAL HORIZONTAL CROSSOVER BRIDGE / DASHES (=) in the center + tall right upright needle (~|). Character: 'E' or 'I / E', transliteration: 'e'.
+   - Te: Left swan-neck curve 'Ta' + empty center (NO internal parallel dashes) + tall right upright needle (~|). Character: 'Tí / Te' or 'Te', transliteration: 'te'.
+3. Ngí / Nge vs Tí / Te vs Tú / To vs Tang vs Ngang:
+   - Tí / Te: Look at the left side: begins with the upper-left downward-curling hook of 'Ta' dropping into an elongated horizontal bottom baseline, which turns up into ONE SINGLE medial arch before connecting to the tall upright vertical needle (~|). Even if the horizontal baseline has a minor cursive ink step or hitch, it is clearly Base 'Ta' with its flat elongated bottom baseline and single arch (NO second arch, NO 'm'-wave). Transliteration: 'te' (or 'ti'), Character: 'Tí / Te' or 'Te'.
+   - Ngí / Nge: Base 'Nga' has TWO distinct rounded upward crests / arches (a true undulating double-hump 'm'-wave) in the center before connecting into the tall upright vertical needle (~|). It lacks the elongated flat bottom baseline of 'Ta'. Transliteration: 'nge' (or 'ngi'), Character: 'Ngí / Nge' or 'Nge'.
+   - CRITICAL: If a glyph has an elongated bottom baseline and only ONE single arch before the upright needle, it is 100% ALWAYS TÍ / TE, NEVER Ngí / Nge! If it has TWO upward crests ('m'-wave), it is NGÍ / NGE!
+   - Tú / To: Begins with Base 'Ta' (smooth swan-neck curve with NO 'm'-wave) and continues into a trailing wing/second valley that curves upward softly. Tú/To NEVER has a central 'm'-wave and NEVER ends in a tall upright vertical needle flourish (~|)!
+   - Tang: Ends in a low horizontal coda nasal wave ('m') resting near the baseline with NO upright needle.
+   - Ngang: Low repeating horizontal waves without any tall upright needle.
+4. Tú / To vs Ta vs Tang:
+   - Tú / To: Base 'Ta' modified by the -u/-o ligature. Look at the right side: after the central arch, the line dips down into a second trough/valley and curves upward into a distinct trailing wing or upward tail (~w). If there is any trailing upward tail or second dip attached to the right of the arch, it is ALWAYS TÚ / TO (character: 'Tú / To' or 'To', transliteration: 'to' or 'tu'), NEVER plain Ta!
+   - Plain Ta: Has ONLY ONE bottom curve and ONE single arch (swan-neck curve). It STOPS immediately at the peak of the first arch and has NO trailing wing, NO second dip, and NO upward tail to the right. If there is a trailing upward tail to the right of the arch, IT IS NEVER PLAIN TA!
+   - Tang: Base 'Ta' followed by detached arc ')' and low horizontal wave 'm'.
+5. Vertical Rising Needle (~|) vs Coda Nasal Pair (')' + wave):
+   - Ligated -I/-E characters (Ke, Te, Nge, Ge, De, Se, Be, Le, Me, Ne, Pe) and Standalone E terminate on the far right in a TALL VERTICAL UPRIGHT NEEDLE (~|). They are NEVER coda nasal -NG ligatures!
+6. La vs Na (Lí vs Ní, Lú vs Nú, Lang vs Nang):
+   - La (Base pin): A long straight vertical downward stem/pin topped with a loop or ribbon curl ('ρ'). Any glyph whose base is a straight vertical pin with a top loop is ALWAYS LA / LÍ / LÚ / LANG, NEVER Na!
+   - Na (Umbrella canopy): Has a rounded umbrella arch '⌢' that curves downward symmetrically on both sides with a central stem.
+7. Da vs Pa (Dí vs Pí, Dú vs Pú, Dang vs Pang):
+   - Da: Rigid flat horizontal top roof bar ('┌' or 'Z'), stepped diagonal spine with an interior notch, and flat base bar.
+   - Pa: Open checkmark 'v' or '√' cup with a distinct HORIZONTAL CROSSBAR / TICK intersecting the right arm.
 
 TASK:
 ${targetHint}
 
-Respond STRICTLY in valid JSON without markdown formatting or code blocks:
+Return a JSON object in this exact schema:
 {
   "recognized": true,
-  "character": "Ka",
-  "kulitanSymbol": "k",
-  "confidence": 95,
-  "type": "Indung Sulat",
-  "transliteration": "ka",
-  "feedback": "Clear horizontal parallel bars and right connector accurately form 'Ka'.",
-  "strokeAccuracy": "High"
-}
-
-If unreadable, blank, or not Kulitan handwriting:
-{
-  "recognized": false,
-  "character": "Unknown",
-  "kulitanSymbol": "?",
-  "confidence": 15,
-  "type": "Unrecognized",
-  "transliteration": "None",
-  "feedback": "Could not recognize a clear Kulitan character. Write the character boldly inside the reticle frame.",
-  "strokeAccuracy": "Needs Practice"
+  "character": "Transliterated syllable name, e.g., 'E', 'Tí / Te', 'Ngí / Nge', 'Tú / To', 'Kí / Ke'",
+  "transliteration": "Exact lowercase Latin syllable, e.g., 'e', 'te', 'nge', 'to', 'ke'",
+  "confidence": 98,
+  "feedback": "Concise morphological explanation citing the key strokes observed.",
+  "type": "Standalone Vowel (Indûng Patinig) | Inherent Consonant (Indûng Súlat) | Diacritic Vowel Form (Anak Súlat) | Coda Nasal Ligature (Kamulitan)"
 }`;
 }
 
@@ -153,6 +208,7 @@ export async function callGroqVision(
         },
         body: JSON.stringify({
           model,
+          max_tokens: 350,
           messages: [
             {
               role: 'user',

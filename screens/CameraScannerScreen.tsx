@@ -700,6 +700,50 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
                     </View>
                   )}
 
+                  {/* Kapampangan Meaning & Cultural Usage Card */}
+                  {scanResult.recognized && (() => {
+                    const canonicalLatin = normalizeKulitanSyllable(scanResult.transliteration || scanResult.character);
+                    const matched = kulitanSyllables.find(s => 
+                      s.latin.toLowerCase() === canonicalLatin || 
+                      s.id.toLowerCase() === canonicalLatin ||
+                      s.latin.toLowerCase() === (scanResult.transliteration || '').toLowerCase()
+                    );
+                    if (!matched) return null;
+                    return (
+                      <View style={styles.meaningCard}>
+                        <View style={styles.meaningHeader}>
+                          <Ionicons name="book" size={16} color="#D1582D" />
+                          <Text style={styles.meaningHeaderTitle}>
+                            {language === 'EN' ? 'Meaning & Cultural Usage' : 'Kahulugan at Gamit'}
+                          </Text>
+                        </View>
+                        
+                        <View style={styles.meaningRow}>
+                          <Text style={styles.meaningLabel}>{language === 'EN' ? 'Pronunciation' : 'Pagbigkas'}:</Text>
+                          <Text style={styles.meaningPronunciation}>{matched.pronunciation}</Text>
+                        </View>
+
+                        <Text style={styles.meaningDefinition}>{matched.definition}</Text>
+
+                        {matched.exampleWord && (
+                          <View style={styles.exampleWordBox}>
+                            <View style={styles.exampleWordHeader}>
+                              <Ionicons name="chatbubbles-outline" size={13} color="#9A3A17" />
+                              <Text style={styles.exampleWordLabel}>
+                                {language === 'EN' ? 'Example Vocabulary' : 'Halimbawang Salita'}
+                              </Text>
+                            </View>
+                            <Text style={styles.exampleWordText}>
+                              <Text style={styles.exampleWordBold}>{matched.exampleWord}</Text>
+                              {'  —  '}
+                              <Text style={styles.exampleWordMeaning}>{matched.exampleMeaning}</Text>
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    );
+                  })()}
+
                   {/* Similarity Metrics Breakdown (Calibrated ML) */}
                   {scanResult.recognized && scanResult.similarityBreakdown && (
                     <View style={styles.metricsCard}>
@@ -1355,6 +1399,80 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#0F172A',
     marginTop: 2,
+  },
+  meaningCard: {
+    backgroundColor: '#FFF7ED',
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+    marginBottom: 14,
+  },
+  meaningHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  meaningHeaderTitle: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 12,
+    color: '#9A3A17',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  meaningRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 6,
+    marginBottom: 6,
+  },
+  meaningLabel: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 11,
+    color: '#7C2D12',
+  },
+  meaningPronunciation: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 12,
+    color: '#C2410C',
+  },
+  meaningDefinition: {
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 12,
+    color: '#431407',
+    lineHeight: 18,
+    marginBottom: 10,
+  },
+  exampleWordBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#FDBA74',
+  },
+  exampleWordHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 3,
+  },
+  exampleWordLabel: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 10,
+    color: '#9A3A17',
+    textTransform: 'uppercase',
+  },
+  exampleWordText: {
+    fontSize: 12,
+  },
+  exampleWordBold: {
+    fontFamily: 'Poppins_700Bold',
+    color: '#9A3A17',
+  },
+  exampleWordMeaning: {
+    fontFamily: 'Poppins_400Regular',
+    color: '#475569',
   },
   metricsCard: {
     backgroundColor: '#F8FAFC',
