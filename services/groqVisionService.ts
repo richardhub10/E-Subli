@@ -85,22 +85,19 @@ Base consonant modified for vowel /i/ or /e/. In Kulitan, /i/ and /e/ are vowel 
   * Pí / Pe: Base 'Pa' (open checkmark 'v' with crossbar) connected directly to the upright needle flourish (~|).
 
 4. LOWER GARLIT / LIGATED -U/-O (Anak Sulat):
-Base consonant modified by a lower comma-like tick (,) placed at bottom-left AND/OR an attached right-hand trailing upward-curving wing/wave (~v):
-- Tú / To / Tû: Base 'Ta' (upper-left downward-curling hook and horizontal baseline) modified by the -u/-o ligature.
-  * TWO-VALLEY / EXTENDED TA RULE:
-    - Look at the right side after the initial Ta baseline and central arch:
-    - If the stroke continues to the right, descending into a second downward valley / loop and sweeping up into a second terminal rise/tail, it is ALWAYS TÚ / TO (or To), transliteration: 'to' (or 'tu')!
-    - Plain 'Ta' NEVER has a second valley or second right-hand rise. If there is a second valley and second rise to the right of the central arch, IT IS ALWAYS TÚ / TO (or To), NEVER plain Ta!
-- Gú / Go: Base 'Ga' (single smooth inverted U arch ∩) followed on the right by an attached or adjacent downward dip and upward-curving trailing wing/flourish (~v) (or lower-left comma tick). If an inverted U arch is followed by this trailing upward wing, it is 100% ALWAYS GÚ / GO (character: 'Gú / Go' or 'Go', transliteration: 'go' or 'gu'), NEVER plain Ga and NEVER Ngú / Ngo!
-- Ngú / Ngo: Base 'Nga' (sweeping left crescent ')' + central undulating 'm'-wave) concluding on the right with an attached downward dip and upward-curving trailing wing/flourish (~v). Character: 'Ngú / Ngo' (or 'Ngo'), transliteration: 'ngo' (or 'ngu'), NEVER plain Nga!
+Base consonant modified by a lower comma-like tick (,) placed directly below the glyph AND/OR an attached right-hand trailing upward-curving wing/wave (~v):
+- Tú / To / Tû: Base 'Ta' (upper-left downward-curling hook and horizontal baseline) modified by the -u/-o diacritic:
+  * Look below the horizontal baseline: has a distinct LOWER COMMA TICK (,) positioned directly below, OR continues past the first arch into a second downward valley and upward-curving trailing wing (~v). If you see the lower comma tick below 'Ta' or the second valley wing, it is 100% ALWAYS TÚ / TO (character: 'Tú / To' or 'To', transliteration: 'to' or 'tu'), NEVER plain Ta!
+- Ngú / Ngo: Base 'Nga' (sweeping left crescent ')' + central undulating wave) with a distinct LOWER COMMA TICK (,) placed beneath it, OR concluding on the right with an attached downward dip and upward-curving trailing wing/flourish (~v). Character: 'Ngú / Ngo' (or 'Ngo'), transliteration: 'ngo' or 'ngu', NEVER plain Nga!
+- Kú / Ko: Base 'Ka' (two horizontal parallel bars) with a distinct LOWER COMMA TICK (,) or third horizontal bar/dash placed directly beneath it, OR an attached trailing wing (~v). Character: 'Kú / Ko' (or 'Ko'), transliteration: 'ko' or 'ku', NEVER plain Ka!
+- Dú / Do: Base 'Da' (angular 'z' with interior notch) with a distinct LOWER COMMA TICK (,) placed directly below it, OR an attached trailing wing (~v). Character: 'Dú / Do' (or 'Do'), transliteration: 'do' or 'du', NEVER plain Da!
+- Gú / Go: Base 'Ga' (single smooth inverted U arch ∩) with a LOWER COMMA TICK (,) below, OR followed on the right by an attached or adjacent downward dip and upward-curving trailing wing/flourish (~v). Character: 'Gú / Go' (or 'Go'), transliteration: 'go' or 'gu'), NEVER plain Ga and NEVER Ngú / Ngo!
 - Bú / Bo: Base 'Ba' (closed oval circle 'O') with lower comma tick and trailing wing (~v).
 - Pú / Po: Base 'Pa' (checkmark 'v' with crossbar) with lower comma tick and/or trailing wing.
 - Mú / Mo: Base 'Ma' (crossed loop) with lower comma tick (,) and trailing wing (~v).
 - Lú / Lo: Base 'La' (vertical pin with looped top) with lower comma tick and trailing wing.
 - Nú / No: Base 'Na' (umbrella canopy) with lower comma tick and trailing wing.
 - Sú / So: Base 'Sa' (numeral '3') with lower comma tick and trailing wing.
-- Kú / Ko: Base 'Ka' (two parallel bars) with lower comma tick and trailing wing.
-- Dú / Do: Base 'Da' (angular 'z' with interior notch) with lower comma tick and trailing wing.
 
 5. CODA NASAL LIGATURES -NG (Kamulitan / Busal):
 Base consonant paired strictly with the trailing coda nasal ligature on the right (a separate detached arc ')' followed by a horizontal two-crested wave 'm'):
