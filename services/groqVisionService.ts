@@ -69,8 +69,18 @@ ORTHOGRAPHIC MORPHOLOGY KEY (Sulat Kapampangan):
 
 3. UPPER GARLIT / LIGATED -I/-E (Anak Sulat):
 Base consonant modified for vowel /i/ or /e/. In Kulitan, /i/ and /e/ are vowel allophones:
-- Form A (-i/-e): Base consonant with an UPPER ACUTE TICK (/) hovering above:
-  * Tí / Te (Form A): Base 'Ta' (upper-left downward-curling hook and horizontal baseline, or 'Ć'-like cursive curve) with a distinct separate UPPER ACUTE TICK (/) hovering above it. Character: 'Tí / Te' (or 'Tí'), transliteration: 'ti' (or 'te'). NEVER classify as plain Ta or Ka!
+- Form A (-i/-e diacritic tick / garlit): Base consonant with a distinct separate UPPER ACUTE TICK (/) hovering above it:
+  * Kí / Ke (Form A): Base 'Ka' (two horizontal parallel bars) with an UPPER ACUTE TICK (/) hovering above. Character: 'Kí / Ke' (or 'Ki'), transliteration: 'ki' (or 'ke'). NEVER plain Ka!
+  * Dí / De (Form A): Base 'Da' (angular 'z' / box bracket with interior notch) with an UPPER ACUTE TICK (/) or wavy tilde hovering above. Character: 'Dí / De' (or 'Di'), transliteration: 'di' (or 'de'). NEVER plain Da!
+  * Ngí / Nge (Form A): Base 'Nga' (sweeping crescent + wave) with an UPPER ACUTE TICK (/) hovering above. Character: 'Ngí / Nge' (or 'Ngi'), transliteration: 'ngi' (or 'nge'). NEVER plain Nga!
+  * Tí / Te (Form A): Base 'Ta' (swan-neck curve / cursive 'Ć'-like hook) with an UPPER ACUTE TICK (/) hovering above. Character: 'Tí / Te' (or 'Ti'), transliteration: 'ti' (or 'te'). NEVER plain Ta!
+  * Gí / Ge (Form A): Base 'Ga' (inverted U arch ∩) with an UPPER ACUTE TICK (/) hovering above. Character: 'Gí / Ge' (or 'Gi'), transliteration: 'gi' (or 'ge'). NEVER plain Ga!
+  * Sí / Se (Form A): Base 'Sa' (numeral '3') with an UPPER ACUTE TICK (/) hovering above.
+  * Bí / Be (Form A): Base 'Ba' (closed oval 'O') with an UPPER ACUTE TICK (/) hovering above.
+  * Lí / Le (Form A): Base 'La' (vertical pin) with an UPPER ACUTE TICK (/) hovering above.
+  * Mí / Me (Form A): Base 'Ma' (crossed loop) with an UPPER ACUTE TICK (/) hovering above.
+  * Ní / Ne (Form A): Base 'Na' (umbrella canopy) with an UPPER ACUTE TICK (/) hovering above.
+  * Pí / Pe (Form A): Base 'Pa' (open checkmark 'v' with crossbar) with an UPPER ACUTE TICK (/) hovering above.
 - Form B (-e and ligated -i/-e): Base consonant connects DIRECTLY into an attached right-hand upright vertical needle flourish (~|) that shoots straight up to the top margin, WITHOUT needing any separate floating tick (commonly labeled as '-e' in reference charts):
   * Kí / Ke: Base 'Ka' (two horizontal parallel bars starting directly on the FAR LEFT margin, open on the left with NO outer C-shaped hook enclosing them) connected directly into the tall upright vertical needle flourish (~|) on the right. Transliteration: 'ke' (or 'ki'), Character: 'Kí / Ke' (or 'Ke'). (If there is an outer C-shaped hook enclosing the left side, it is STANDALONE VOWEL E, NOT Ke!).
   * Tí / Te: Base 'Ta' (swan-neck curve / cursive '2' contour dropping into an open horizontal baseline with an empty center and NO internal parallel dashes) connected directly to the tall right upright needle flourish (~|) shooting up to the top. Transliteration: 'te' (or 'ti'), Character: 'Tí / Te' (or 'Te').
