@@ -97,9 +97,8 @@ export async function cropViewfinderROI(base64: string, cropRatio = 0.68): Promi
             const h = img.naturalHeight || img.height;
             const aspect = w / h;
 
-            // If the image is already a cropped screenshot (wide/tall aspect ratio or small dimensions),
-            // blind center cropping cuts off glyphs on the left/top. Keep full image!
-            if (aspect > 1.35 || aspect < 0.75 || Math.min(w, h) < 550) {
+            // If cropRatio is 1.0 or image is already a small thumbnail, skip cropping
+            if (cropRatio >= 0.98 || Math.min(w, h) < 280) {
               resolve(cleanB64);
               return;
             }
@@ -156,8 +155,8 @@ export async function cropViewfinderROI(base64: string, cropRatio = 0.68): Promi
       data = decoded.data;
     }
 
-    const aspect = width / height;
-    if (aspect > 1.35 || aspect < 0.75 || Math.min(width, height) < 550) {
+    // If cropRatio is 1.0 or image is already a small thumbnail, skip cropping
+    if (cropRatio >= 0.98 || Math.min(width, height) < 280) {
       return cleanB64;
     }
 
@@ -166,20 +165,23 @@ export async function cropViewfinderROI(base64: string, cropRatio = 0.68): Promi
     const startX = Math.floor((width - cropSize) / 2);
     const startY = Math.floor((height - cropSize) / 2);
 
-    const outBuf = new Uint8Array(cropSize * cropSize * 4);
-    for (let y = 0; y < cropSize; y++) {
-      const srcY = startY + y;
-      for (let x = 0; x < cropSize; x++) {
-        const srcX = startX + x;
+    // Resample to max 512x512 for optimal AI inference speed and memory efficiency
+    const targetDim = Math.min(cropSize, 512);
+    const step = cropSize / targetDim;
+    const outBuf = new Uint8Array(targetDim * targetDim * 4);
+    for (let y = 0; y < targetDim; y++) {
+      const srcY = startY + Math.floor(y * step);
+      for (let x = 0; x < targetDim; x++) {
+        const srcX = startX + Math.floor(x * step);
         const srcIdx = (srcY * width + srcX) * 4;
-        const dstIdx = (y * cropSize + x) * 4;
+        const dstIdx = (y * targetDim + x) * 4;
         outBuf[dstIdx] = data[srcIdx];
         outBuf[dstIdx + 1] = data[srcIdx + 1];
         outBuf[dstIdx + 2] = data[srcIdx + 2];
         outBuf[dstIdx + 3] = data[srcIdx + 3];
       }
     }
-    const encoded = encodeJpeg({ data: outBuf, width: cropSize, height: cropSize }, 85);
+    const encoded = encodeJpeg({ data: outBuf, width: targetDim, height: targetDim }, 85);
     return b64encode(encoded.data.buffer as ArrayBuffer);
   } catch {
     return cleanB64;
@@ -524,13 +526,44 @@ function extractStrokeAndTensor(
   components.sort((a, b) => b.count - a.count);
   const primaryComp = components[0];
 
-  if (!primaryComp || primaryComp.count < 10) {
+  if (!primaryComp || primaryComp.count < 8) {
     return { tensor28x28: emptyTensor, contourPoints: [], inkRatio, isBlank: false, isTooDark: false, isTooSmall: true };
   }
 
-  const { minX, maxX, minY, maxY, pts } = primaryComp;
-  const bboxW = maxX - minX + 1;
-  const bboxH = maxY - minY + 1;
+  // Merge nearby secondary components that form part of the same glyph
+  // (e.g. Ka's twin bars, I's twin upright strokes, Ma's crossbar, Da's crown, or diacritic strokes)
+  let gMinX = primaryComp.minX;
+  let gMaxX = primaryComp.maxX;
+  let gMinY = primaryComp.minY;
+  let gMaxY = primaryComp.maxY;
+  const mergedPts = [...primaryComp.pts];
+
+  const primaryDim = Math.max(primaryComp.maxX - primaryComp.minX + 1, primaryComp.maxY - primaryComp.minY + 1);
+  const proximityThreshold = Math.max(14, Math.round(primaryDim * 0.45));
+
+  for (let i = 1; i < components.length; i++) {
+    const comp = components[i];
+    if (comp.count < 4) continue; // ignore single-pixel speckles
+
+    const xDist = comp.minX > gMaxX ? comp.minX - gMaxX : comp.maxX < gMinX ? gMinX - comp.maxX : 0;
+    const yDist = comp.minY > gMaxY ? comp.minY - gMaxY : comp.maxY < gMinY ? gMinY - comp.maxY : 0;
+
+    if (xDist <= proximityThreshold && yDist <= proximityThreshold) {
+      mergedPts.push(...comp.pts);
+      gMinX = Math.min(gMinX, comp.minX);
+      gMaxX = Math.max(gMaxX, comp.maxX);
+      gMinY = Math.min(gMinY, comp.minY);
+      gMaxY = Math.max(gMaxY, comp.maxY);
+    }
+  }
+
+  const bboxW = gMaxX - gMinX + 1;
+  const bboxH = gMaxY - gMinY + 1;
+  const pts = mergedPts;
+  const minX = gMinX;
+  const maxX = gMaxX;
+  const minY = gMinY;
+  const maxY = gMaxY;
 
   if (bboxW < 3 || bboxH < 3) {
     return { tensor28x28: emptyTensor, contourPoints: [], inkRatio, isBlank: false, isTooDark: false, isTooSmall: true };
