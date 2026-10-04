@@ -454,7 +454,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 154549.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "g",
+    "syllable": "gu",
     "rawLabel": "gú/û",
     "description": "A cursive Kulitan consonant-vowel character featuring an upward initial loop/arc on the left, connected to a wavy, serpent-like downward and upward curved stroke ending in a tall right terminal.",
     "source": "Datasets/Screenshot 2026-10-02 154549.png"
@@ -477,7 +477,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 154651.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "k",
+    "syllable": "ku",
     "rawLabel": "kú/û",
     "description": "The Kulitan glyph on the left features a curved base consonant symbol accompanied by diacritics consisting of three short horizontal or slanting strokes above it and a small comma-like tick below.",
     "source": "Datasets/Screenshot 2026-10-02 154651.png"
@@ -500,7 +500,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 154757.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "ng",
+    "syllable": "ngu",
     "rawLabel": "ngú/û",
     "description": "A cursive Kulitan ligature or character featuring a left-facing curved stroke, a central component with small loops or m-like waves, a dot/diacritic mark underneath, and a trailing upward-sweeping curve on the right.",
     "source": "Datasets/Screenshot 2026-10-02 154757.png"
@@ -523,7 +523,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 154926.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "t",
+    "syllable": "tu",
     "rawLabel": "tú/û",
     "description": "A cursive Kulitan ligature or character combining a consonant glyph with vowel modifiers, featuring a wavy horizontal stroke with a leading hook on the left and a sweeping upward stroke on the right.",
     "source": "Datasets/Screenshot 2026-10-02 154926.png"
@@ -538,7 +538,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 155052.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "d",
+    "syllable": "di",
     "rawLabel": "dí/î",
     "description": "A cursive Kulitan glyph representing 'dí' or 'î', consisting of a complex undulating stroke with a superscript diacritic mark above it.",
     "source": "Datasets/Screenshot 2026-10-02 155052.png"
@@ -546,7 +546,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 155110.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "d",
+    "syllable": "du",
     "rawLabel": "dú/û",
     "description": "A Kulitan consonant glyph with multiple diacritics, showing a main curved stroke with a small loop/hook on top and a subscript dot below.",
     "source": "Datasets/Screenshot 2026-10-02 155110.png"
@@ -569,7 +569,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 155325.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "n",
+    "syllable": "nu",
     "rawLabel": "nú/û",
     "description": "A Kulitan glyph featuring a vertical stem with a curved upper arch spanning to the right, ending in a wavy, upward-curving stroke, accompanied by a small diacritic mark below and to the left of the stem.",
     "source": "Datasets/Screenshot 2026-10-02 155325.png"
@@ -584,7 +584,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 155424.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "lii",
+    "syllable": "li",
     "rawLabel": "li/i",
     "description": "A Kulitan consonant glyph with a vertical stem intersected by a curved horizontal stroke, accompanied by a looped or wavy secondary component attached to the right.",
     "source": "Datasets/Screenshot 2026-10-02 155424.png"
@@ -592,7 +592,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 155450.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "l",
+    "syllable": "lu",
     "rawLabel": "lú/û",
     "description": "The Kulitan glyph consists of a vertical main stem crossed near the top by a curved loop extending to the left, accompanied by a small detached comma-like diacritic mark at the lower left, and a connected or adjacent curved stroke on the right side.",
     "source": "Datasets/Screenshot 2026-10-02 155450.png"
@@ -607,7 +607,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 155617.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "s",
+    "syllable": "si",
     "rawLabel": "sí/í",
     "description": "The Kulitan glyph on the left features a curved base character resembling the consonant 'si' with a diacritic mark (an acute accent-like stroke) placed above it to modify its vowel sound to 'i'.",
     "source": "Datasets/Screenshot 2026-10-02 155617.png"
@@ -615,7 +615,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 155632.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "s",
+    "syllable": "su",
     "rawLabel": "sú/û",
     "description": "A cursive Kulitan consonant character resembling a stylized '3' or looping wave combined with an upward sweeping stroke and a small diacritic comma-like mark below.",
     "source": "Datasets/Screenshot 2026-10-02 155632.png"
@@ -638,7 +638,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 155710.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "m",
+    "syllable": "mu",
     "rawLabel": "mú/û",
     "description": "A cursive Kulitan glyph featuring a base consonant crossed by a horizontal slash with a wavy looping stroke on the right and a diacritic dot or stroke below.",
     "source": "Datasets/Screenshot 2026-10-02 155710.png"
@@ -653,7 +653,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 155748.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "p",
+    "syllable": "pi",
     "rawLabel": "pí/í",
     "description": "A Kulitan consonant glyph representing 'pa' (or a similar consonant) with a superscript diacritic (pamudtod/kudlit) above it to modify the inherent vowel sound to 'i', corresponding to the transliteration 'pí/í'.",
     "source": "Datasets/Screenshot 2026-10-02 155748.png"
@@ -661,7 +661,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 155759.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "p",
+    "syllable": "pu",
     "rawLabel": "pú/û",
     "description": "A cursive Kulitan glyph representing the consonant 'pa' with a superscript vowel diacritic (kulis) indicating the vowel 'u' / 'o', forming 'pú' or 'pû'.",
     "source": "Datasets/Screenshot 2026-10-02 155759.png"
@@ -676,7 +676,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 155828.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "b",
+    "syllable": "bi",
     "rawLabel": "bí/î",
     "description": "A Kulitan consonant glyph resembling a loop connected to a wavy horizontal stroke with an upward-curving terminal on the right, accompanied by a superscript diacritic mark above the left loop.",
     "source": "Datasets/Screenshot 2026-10-02 155828.png"
@@ -684,7 +684,7 @@
   {
     "datasetFilename": "Screenshot 2026-10-02 155842.png",
     "type": "Extended Allophone/Variant Card",
-    "syllable": "b",
+    "syllable": "bu",
     "rawLabel": "bú/û",
     "description": "A cursive Kulitan character consisting of a small diagonal tick or stroke at the bottom left, connected to a rounded loop, followed by a wavy or S-like curve extending upwards and to the right.",
     "source": "Datasets/Screenshot 2026-10-02 155842.png"
