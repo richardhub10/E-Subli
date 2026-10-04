@@ -27,7 +27,7 @@ import { kulitanSyllables } from '../data/kulitanData';
 import { getKulitanExemplar, normalizeKulitanSyllable } from '../data/kulitanDatasetExemplars';
 import KulitanGlyph from '../components/KulitanGlyph';
 import { classifyKulitanHandwriting, cropViewfinderROI, ScanResult } from '../utils/kulitanClassifier';
-import { callGroqVision, getKulitanVisionPrompt, isValidGroqKey } from '../services/groqVisionService';
+import { callGroqVision, getKulitanVisionPrompt } from '../services/groqVisionService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -52,17 +52,17 @@ const PRIMARY_KULITAN_LIST = [
   { latin: 'U', name: 'U', symbol: 'u' },
 ];
 
-const GEMINI_BYTES = [76,95,33,81,115,42,65,67,56,67,122,32,72,91,125,87,73,127,73,117,89,56,73,89,39,97,65,84,52,72,80,67,124,98,71,72,65,85,106,33,72,66,32,54,75,116,102,120,82,108,99,56,119];
-const GROQ_BYTES = [106,125,100,79,80,99,66,90,90,66,127,41,99,119,62,69,126,71,80,65,124,68,118,122,71,86,118,106,111,61,73,73,104,126,114,56,122,94,125,37,38,122,99,60,56,91,92,92,119,119,105,55,66,82,123,97];
+import {
+  getEffectiveGeminiKeys,
+  getEffectiveGroqKeys,
+  isValidGeminiKey,
+  isValidGroqKey,
+  PRIMARY_GEMINI_KEY,
+  PRIMARY_GROQ_KEY,
+} from '../services/apiKeyPool';
 
-const DEFAULT_GEMINI_KEY = GEMINI_BYTES.map((b, i) => String.fromCharCode(b ^ ((i % 7) + 13))).join('');
-const DEFAULT_GROQ_KEY = GROQ_BYTES.map((b, i) => String.fromCharCode(b ^ ((i % 7) + 13))).join('');
-
-function isValidGeminiKey(key?: string): boolean {
-  if (!key) return false;
-  const trimmed = key.trim();
-  return (trimmed.startsWith('AIza') || trimmed.startsWith('AQ.')) && trimmed.length >= 35;
-}
+const DEFAULT_GEMINI_KEY = PRIMARY_GEMINI_KEY;
+const DEFAULT_GROQ_KEY = PRIMARY_GROQ_KEY;
 
 export default function CameraScannerScreen({ navigation }: CameraScannerScreenProps) {
   const [permission, requestPermission] = useCameraPermissions();
@@ -203,83 +203,91 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
     apiKey: string,
     mime: string
   ): Promise<ScanResult | null> => {
-    try {
-      const ai = new GoogleGenAI({ apiKey });
-      const prompt = getKulitanVisionPrompt(target);
-      const candidateModels = [
-        'gemini-3.1-flash-lite',
-        'gemini-3.6-flash',
-        'gemini-3.5-flash-lite',
-        'gemini-3.5-flash',
-        'gemini-3.7-flash',
-        'gemini-3-flash-preview',
-        'gemini-3.8-flash',
-        'gemini-flash-latest',
-      ];
+    const candidateKeys = getEffectiveGeminiKeys(apiKey);
+    const prompt = getKulitanVisionPrompt(target);
+    const candidateModels = [
+      'gemini-3.1-flash-lite',
+      'gemini-3.6-flash',
+      'gemini-3.5-flash-lite',
+      'gemini-3.5-flash',
+      'gemini-3.7-flash',
+      'gemini-3-flash-preview',
+      'gemini-3.8-flash',
+      'gemini-flash-latest',
+    ];
 
-      for (const modelName of candidateModels) {
-        try {
-          const response = await ai.models.generateContent({
-            model: modelName,
-            contents: [
-              prompt,
-              { inlineData: { data: cleanB64, mimeType: mime } }
-            ],
-            config: {
-              temperature: 0.1,
-              responseMimeType: 'application/json',
-            } as any
-          });
+    for (const currentKey of candidateKeys) {
+      try {
+        const ai = new GoogleGenAI({ apiKey: currentKey });
 
-          const rawText = response?.text?.trim() || '';
-          if (!rawText) continue;
+        for (const modelName of candidateModels) {
+          try {
+            const response = await ai.models.generateContent({
+              model: modelName,
+              contents: [
+                prompt,
+                { inlineData: { data: cleanB64, mimeType: mime } }
+              ],
+              config: {
+                temperature: 0.1,
+                responseMimeType: 'application/json',
+              } as any
+            });
 
-          const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]) as ScanResult;
-            parsed.engine = 'gemini';
+            const rawText = response?.text?.trim() || '';
+            if (!rawText) continue;
 
-            // Normalize decimal confidence (e.g. 0.98 -> 98)
-            if (typeof parsed.confidence === 'number' && parsed.confidence <= 1 && parsed.confidence > 0) {
-              parsed.confidence = Math.round(parsed.confidence * 100);
-            }
+            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const parsed = JSON.parse(jsonMatch[0]) as ScanResult;
+              parsed.engine = 'gemini';
 
-            const charLower = (parsed.character || '').toLowerCase();
-            const typeLower = (parsed.type || '').toLowerCase();
-            if (charLower.includes('chart') || typeLower.includes('chart') || charLower.includes('table')) {
-              parsed.character = 'Kulitan Chart';
-              parsed.transliteration = 'gi';
-              parsed.kulitanSymbol = 'g';
-              parsed.type = 'Diacritic Reference Chart (Anak Sulat)';
-            } else {
-              const rawQuery = (parsed.transliteration || parsed.character || '').trim();
-              const searchLatin = normalizeKulitanSyllable(rawQuery);
-              const matched = kulitanSyllables.find(s => 
-                s.latin.toLowerCase() === searchLatin || 
-                s.id.toLowerCase() === searchLatin
-              );
-              if (matched) {
-                parsed.kulitanSymbol = matched.kulitanSymbol;
-                parsed.type = matched.classification;
-                const rawLower = rawQuery.toLowerCase();
-                const ALLOPHONES = ['e','o','ke','ko','ge','go','nge','ngo','te','to','de','do','ne','no','le','lo','se','so','me','mo','pe','po','be','bo'];
-                if (ALLOPHONES.includes(rawLower)) {
-                  parsed.transliteration = rawLower;
-                  parsed.character = rawLower.toUpperCase();
-                } else {
-                  parsed.character = matched.latin.toUpperCase();
-                  parsed.transliteration = matched.latin;
+              // Normalize decimal confidence (e.g. 0.98 -> 98)
+              if (typeof parsed.confidence === 'number' && parsed.confidence <= 1 && parsed.confidence > 0) {
+                parsed.confidence = Math.round(parsed.confidence * 100);
+              }
+
+              const charLower = (parsed.character || '').toLowerCase();
+              const typeLower = (parsed.type || '').toLowerCase();
+              if (charLower.includes('chart') || typeLower.includes('chart') || charLower.includes('table')) {
+                parsed.character = 'Kulitan Chart';
+                parsed.transliteration = 'gi';
+                parsed.kulitanSymbol = 'g';
+                parsed.type = 'Diacritic Reference Chart (Anak Sulat)';
+              } else {
+                const rawQuery = (parsed.transliteration || parsed.character || '').trim();
+                const searchLatin = normalizeKulitanSyllable(rawQuery);
+                const matched = kulitanSyllables.find(s => 
+                  s.latin.toLowerCase() === searchLatin || 
+                  s.id.toLowerCase() === searchLatin
+                );
+                if (matched) {
+                  parsed.kulitanSymbol = matched.kulitanSymbol;
+                  parsed.type = matched.classification;
+                  const rawLower = rawQuery.toLowerCase();
+                  const ALLOPHONES = ['e','o','ke','ko','ge','go','nge','ngo','te','to','de','do','ne','no','le','lo','se','so','me','mo','pe','po','be','bo'];
+                  if (ALLOPHONES.includes(rawLower)) {
+                    parsed.transliteration = rawLower;
+                    parsed.character = rawLower.toUpperCase();
+                  } else {
+                    parsed.character = matched.latin.toUpperCase();
+                    parsed.transliteration = matched.latin;
+                  }
                 }
               }
+              return parsed;
             }
-            return parsed;
+          } catch (mErr: any) {
+            console.warn(`Gemini model ${modelName} on key ${currentKey.slice(0, 10)}... failed:`, mErr?.message || mErr);
+            if (mErr?.message?.includes('429') || mErr?.message?.includes('RESOURCE_EXHAUSTED')) {
+              // Rate limit on this key, try next key in pool
+              break;
+            }
           }
-        } catch (mErr) {
-          console.warn(`Gemini model ${modelName} failed, trying next candidate...`, mErr);
         }
+      } catch (gErr) {
+        console.warn(`Gemini Vision key ${currentKey.slice(0, 10)}... error:`, gErr);
       }
-    } catch (gErr) {
-      console.warn("Gemini Vision execution error:", gErr);
     }
     return null;
   };

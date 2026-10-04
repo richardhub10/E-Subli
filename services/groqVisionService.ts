@@ -7,18 +7,9 @@ const GROQ_VISION_MODELS = [
   'qwen/qwen3.8-27b',
 ];
 
-const GROQ_BYTES = [106,125,100,79,80,99,66,90,90,66,127,41,99,119,62,69,126,71,80,65,124,68,118,122,71,86,118,106,111,61,73,73,104,126,114,56,122,94,125,37,38,122,99,60,56,91,92,92,119,119,105,55,66,82,123,97];
-export const DEFAULT_GROQ_KEY = GROQ_BYTES.map((b, i) => String.fromCharCode(b ^ ((i % 7) + 13))).join('');
-
-/**
- * Validates if the key matches the official Groq API key format.
- * Official Groq keys start with 'gsk_' and are usually 50+ characters long.
- */
-export function isValidGroqKey(key?: string): boolean {
-  if (!key) return false;
-  const trimmed = key.trim();
-  return trimmed.startsWith('gsk_') && trimmed.length >= 30;
-}
+import { getEffectiveGroqKeys, isValidGroqKey, PRIMARY_GROQ_KEY } from './apiKeyPool';
+export { isValidGroqKey };
+export const DEFAULT_GROQ_KEY = PRIMARY_GROQ_KEY;
 
 /**
  * Generates the standardized Kulitan paleography prompt for Vision models.
@@ -187,54 +178,59 @@ export async function callGroqVision(
   language: 'EN' | 'FIL' = 'EN',
   mimeType: string = 'image/jpeg'
 ): Promise<ScanResult | null> {
-  const trimmedKey = (apiKey || process.env.EXPO_PUBLIC_GROQ_API_KEY || DEFAULT_GROQ_KEY || '').trim();
-  if (!isValidGroqKey(trimmedKey)) {
+  const candidateKeys = getEffectiveGroqKeys(apiKey);
+  if (candidateKeys.length === 0) {
     return null;
   }
 
   const prompt = getKulitanVisionPrompt(targetSyllable);
 
-  for (const model of GROQ_VISION_MODELS) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12-second timeout
+  for (const currentKey of candidateKeys) {
+    for (const model of GROQ_VISION_MODELS) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000); // 12-second timeout
 
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${trimmedKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: 350,
-          messages: [
-            {
-              role: 'user',
-              content: [
-                { type: 'text', text: prompt },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: `data:${mimeType || 'image/jpeg'};base64,${cleanB64}`,
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${currentKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            max_tokens: 350,
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  { type: 'text', text: prompt },
+                  {
+                    type: 'image_url',
+                    image_url: {
+                      url: `data:${mimeType || 'image/jpeg'};base64,${cleanB64}`,
+                    },
                   },
-                },
-              ],
-            },
-          ],
-          temperature: 0.1,
-          response_format: { type: 'json_object' },
-        }),
-        signal: controller.signal,
-      });
+                ],
+              },
+            ],
+            temperature: 0.1,
+            response_format: { type: 'json_object' },
+          }),
+          signal: controller.signal,
+        });
 
-      clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => '');
-        console.warn(`Groq Vision API model ${model} returned error status ${response.status}:`, errorText);
-        continue;
-      }
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => '');
+          console.warn(`Groq Vision API model ${model} with key ${currentKey.slice(0, 10)}... returned error status ${response.status}:`, errorText);
+          if (response.status === 429) {
+            // Hit rate limit on this key, try next key in pool
+            break;
+          }
+          continue;
+        }
 
       const data = await response.json();
       const rawContent = data?.choices?.[0]?.message?.content;
@@ -289,6 +285,7 @@ export async function callGroqVision(
         console.warn(`Groq Vision request failed on model ${model}:`, err);
       }
     }
+  }
   }
 
   return null;

@@ -21,16 +21,7 @@ interface DictEntry {
   eng: string;
 }
 
-/**
- * Validates if the key matches the official Google Gemini API key format.
- * Real Google AI Studio keys start with 'AIzaSy' and are at least 35 characters long.
- * Non-Google keys (such as Vercel JWTs, project IDs, or invalid tokens) will 404/400.
- */
-function isValidGeminiKey(key?: string): boolean {
-  if (!key) return false;
-  const trimmed = key.trim();
-  return (trimmed.startsWith('AIza') || trimmed.startsWith('AQ.')) && trimmed.length >= 35;
-}
+import { getEffectiveGeminiKeys, isValidGeminiKey } from './apiKeyPool';
 
 // Comprehensive authentic Kapampangan, Tagalog, and English dictionary
 const DICTIONARY_ENTRIES: DictEntry[] = [
@@ -380,40 +371,46 @@ export async function geminiTranslate(
   text: string,
   sourceLang: string,
   targetLang: string,
-  apiKey: string
+  apiKey?: string
 ): Promise<string | null> {
-  if (!isValidGeminiKey(apiKey)) {
+  const candidateKeys = getEffectiveGeminiKeys(apiKey);
+  if (candidateKeys.length === 0) {
     return null;
   }
 
   const prompt = `You are an expert linguist specializing in authentic Kapampangan (Amanung Sisuan), Tagalog, and English. Translate the following text from ${sourceLang} to natural, fluent ${targetLang}. Output ONLY the translated ${targetLang} text with no commentary, no markdown, and no quotes. Text to translate: "${text.trim()}"`;
 
-  for (const model of GEMINI_MODELS) {
-    try {
-      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      const timeoutId = controller ? setTimeout(() => controller.abort(), 4000) : null;
+  for (const currentKey of candidateKeys) {
+    for (const model of GEMINI_MODELS) {
+      try {
+        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timeoutId = controller ? setTimeout(() => controller.abort(), 4000) : null;
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-        }),
-        signal: controller ? controller.signal : undefined,
-      });
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${currentKey.trim()}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+          }),
+          signal: controller ? controller.signal : undefined,
+        });
 
-      if (timeoutId) clearTimeout(timeoutId);
+        if (timeoutId) clearTimeout(timeoutId);
 
-      if (response.ok) {
-        const data = await response.json();
-        const candidate = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-        if (candidate) {
-          return cleanTranslationText(candidate);
+        if (response.ok) {
+          const data = await response.json();
+          const candidate = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (candidate) {
+            return cleanTranslationText(candidate);
+          }
+        } else if (response.status === 429) {
+          // Rate limit on this key, try next key in pool
+          break;
         }
+      } catch {
+        // Fall through to next model
       }
-    } catch {
-      // Fall through to next model
     }
   }
 
@@ -424,7 +421,7 @@ export async function geminiTranslate(
  * Robust Multi-Tier Translator Orchestrator
  * Pipeline:
  * 1. Zero-latency exact dictionary / phrasebook match (Offline)
- * 2. Gemini AI REST API (if valid Google AI Studio key starting with 'AIza' is configured)
+ * 2. Gemini AI REST API (multi-key failover pool)
  * 3. High-Accuracy Neural Translation Engine (MyMemory - Free, Zero Config, with English bridge)
  * 4. Word-by-word token substitution (Offline)
  * 5. Original text fallback
@@ -446,9 +443,10 @@ export async function translateText(
     return { text: exactLocal, source: 'local' };
   }
 
-  // 2. Gemini AI (only if key starts with AIza)
-  if (isValidGeminiKey(apiKey)) {
-    const geminiResult = await geminiTranslate(trimmed, sourceLang, targetLang, apiKey!);
+  // 2. Gemini AI (multi-key pool with automatic failover)
+  const effectiveKeys = getEffectiveGeminiKeys(apiKey);
+  if (effectiveKeys.length > 0) {
+    const geminiResult = await geminiTranslate(trimmed, sourceLang, targetLang, apiKey);
     if (geminiResult) {
       return { text: geminiResult, source: 'gemini' };
     }
