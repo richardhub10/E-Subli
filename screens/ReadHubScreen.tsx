@@ -26,8 +26,15 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
 
   const filteredData = useMemo(() => {
     let data = [...kulitanSyllables];
-    if (category === 'Vowels') data = kulitanSyllables.slice(0, 5);
-    if (category === 'Consonants') data = kulitanSyllables.slice(5);
+    if (category === 'Vowels') {
+      data = kulitanSyllables.filter(
+        s => s.classification.toLowerCase().includes('patinig') || ['a', 'i', 'u', 'e', 'o'].includes(s.latin.toLowerCase())
+      );
+    } else if (category === 'Consonants') {
+      data = kulitanSyllables.filter(
+        s => !s.classification.toLowerCase().includes('patinig') && !['a', 'i', 'u', 'e', 'o'].includes(s.latin.toLowerCase())
+      );
+    }
 
     if (isPracticeMode) {
       data.sort((a, b) => {
@@ -73,8 +80,8 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
     }
   };
 
-  const currentSyllable = filteredData[currentIndex];
-  const progressPercentage = ((currentIndex + 1) / filteredData.length) * 100;
+  const currentSyllable = filteredData[currentIndex] || filteredData[0];
+  const progressPercentage = filteredData.length > 0 ? ((currentIndex + 1) / filteredData.length) * 100 : 0;
 
   const handleCategoryChange = (newCategory: 'All' | 'Vowels' | 'Consonants') => {
     setCategory(newCategory);

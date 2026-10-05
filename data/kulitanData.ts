@@ -10,7 +10,11 @@ export type SyllableData = {
   exampleMeaning: string;
 };
 
-// Authentic Sulat Kapampangan (Kulitan) Syllabary and Orthography
+// Authentic Sulat Kapampangan (Kulitan) Syllabary and Orthography (Full 93 Dataset)
+// Consisting of:
+// - 47 Canonical Syllables (Mother Consonants, Standalone Vowels, Diacritics, Ligatures)
+// - 24 Extended Allophone Cards (-E and -O pairs)
+// - 22 Archival Calligraphy Variants
 export const kulitanSyllables: SyllableData[] = [
   {
     "id": "1",
@@ -528,5 +532,511 @@ export const kulitanSyllables: SyllableData[] = [
     "writingRule": "Base \"Ba\" connected to trailing \"Nga\" glyph.",
     "exampleWord": "Bangan",
     "exampleMeaning": "Storehouse / Granary"
+  },
+  {
+    "id": "48",
+    "latin": "e",
+    "kulitanSymbol": "e",
+    "classification": "Indung Patinig Allophone (Standalone E)",
+    "pronunciation": "/e/ as in \"ebun\" (egg)",
+    "definition": "Independent vowel \"E\" in Sulat Kapampangan, traditionally written with the same glyph as \"I\" or cursive loop variant.",
+    "writingRule": "Single flowing cursive loop sweeping into an upward right terminal.",
+    "exampleWord": "Ebun",
+    "exampleMeaning": "Egg"
+  },
+  {
+    "id": "49",
+    "latin": "o",
+    "kulitanSymbol": "o",
+    "classification": "Indung Patinig Allophone (Standalone O)",
+    "pronunciation": "/o/ as in \"oyon\" (agree)",
+    "definition": "Independent vowel \"O\" in Sulat Kapampangan, traditionally written with the same glyph as \"U\" (flowing double-valley wave).",
+    "writingRule": "Double-valley flowing wave sweeping upward along the baseline.",
+    "exampleWord": "Oyon",
+    "exampleMeaning": "Agree / Concur"
+  },
+  {
+    "id": "50",
+    "latin": "ke",
+    "kulitanSymbol": "ke",
+    "classification": "Anak Sulat Allophone (Upper Garlit -E)",
+    "pronunciation": "/ke/ as in \"keraklan\" (mostly)",
+    "definition": "Consonant \"Ka\" modified with upper diacritic for /e/. Shares the upper mark with /i/.",
+    "writingRule": "Two horizontal parallel bars with an acute tick hovering above.",
+    "exampleWord": "Keraklan",
+    "exampleMeaning": "Majority / Mostly"
+  },
+  {
+    "id": "51",
+    "latin": "ko",
+    "kulitanSymbol": "ko",
+    "classification": "Anak Sulat Allophone (Lower Garlit -O)",
+    "pronunciation": "/ko/ as in \"kotsi\" (car)",
+    "definition": "Consonant \"Ka\" modified with lower diacritic for /o/. Shares the lower mark with /u/.",
+    "writingRule": "Two horizontal parallel bars with a descending tick below.",
+    "exampleWord": "Kotsi",
+    "exampleMeaning": "Car / Vehicle"
+  },
+  {
+    "id": "52",
+    "latin": "ge",
+    "kulitanSymbol": "ge",
+    "classification": "Anak Sulat Allophone (Upper Garlit -E)",
+    "pronunciation": "/ge/ as in \"geli\" (shaken)",
+    "definition": "Consonant \"Ga\" (inverted arch) with upper diacritic for /e/.",
+    "writingRule": "Inverted U-arch dome with an acute tick placed above.",
+    "exampleWord": "Geli",
+    "exampleMeaning": "Shaken / Rattled"
+  },
+  {
+    "id": "53",
+    "latin": "go",
+    "kulitanSymbol": "go",
+    "classification": "Anak Sulat Allophone (Lower Garlit -O)",
+    "pronunciation": "/go/ as in \"gora\" (hat)",
+    "definition": "Consonant \"Ga\" (inverted arch) with lower diacritic for /o/.",
+    "writingRule": "Inverted U-arch dome with a descending comma tick below.",
+    "exampleWord": "Gora",
+    "exampleMeaning": "Cap / Hat"
+  },
+  {
+    "id": "54",
+    "latin": "nge",
+    "kulitanSymbol": "nge",
+    "classification": "Anak Sulat Allophone (Upper Garlit -E)",
+    "pronunciation": "/ŋe/ as in \"ngeni\" (now)",
+    "definition": "Consonant \"Nga\" with upper diacritic for /e/. Essential in Kapampangan orthography.",
+    "writingRule": "Left downward crescent with \"m\" wave arch and upper acute tick.",
+    "exampleWord": "Ngeni",
+    "exampleMeaning": "Now / Today"
+  },
+  {
+    "id": "55",
+    "latin": "ngo",
+    "kulitanSymbol": "ngo",
+    "classification": "Anak Sulat Allophone (Lower Garlit -O)",
+    "pronunciation": "/ŋo/ as in \"ngongo\" (nasalized speech)",
+    "definition": "Consonant \"Nga\" with lower diacritic for /o/.",
+    "writingRule": "Left downward crescent with \"m\" wave arch and descending lower comma tick.",
+    "exampleWord": "Ngongo",
+    "exampleMeaning": "Nasal speech"
+  },
+  {
+    "id": "56",
+    "latin": "te",
+    "kulitanSymbol": "te",
+    "classification": "Anak Sulat Allophone (Upper Garlit -E)",
+    "pronunciation": "/te/ as in \"tete\" (bridge)",
+    "definition": "Consonant \"Ta\" (hook + flat floor) with upper diacritic for /e/.",
+    "writingRule": "Upper-left hook with horizontal baseline floor and top acute tick.",
+    "exampleWord": "Tete",
+    "exampleMeaning": "Bridge"
+  },
+  {
+    "id": "57",
+    "latin": "to",
+    "kulitanSymbol": "to",
+    "classification": "Anak Sulat Allophone (Lower Garlit -O)",
+    "pronunciation": "/to/ as in \"totoo\" (truth)",
+    "definition": "Consonant \"Ta\" with lower diacritic or attached valley hook for /o/.",
+    "writingRule": "Upper-left hook with horizontal baseline floor and bottom valley hook.",
+    "exampleWord": "Tutu / Toto",
+    "exampleMeaning": "True / Real"
+  },
+  {
+    "id": "58",
+    "latin": "de",
+    "kulitanSymbol": "de",
+    "classification": "Anak Sulat Allophone (Upper Garlit -E)",
+    "pronunciation": "/de/ as in \"dela\" (brought)",
+    "definition": "Consonant \"Da\" (wavy crown over box) with upper diacritic for /e/.",
+    "writingRule": "Bracket body with wavy tilde crown above and top acute tick.",
+    "exampleWord": "Dela",
+    "exampleMeaning": "Brought / Carried"
+  },
+  {
+    "id": "59",
+    "latin": "do",
+    "kulitanSymbol": "do",
+    "classification": "Anak Sulat Allophone (Lower Garlit -O)",
+    "pronunciation": "/do/ as in \"doro\" (spit / skewer)",
+    "definition": "Consonant \"Da\" with lower diacritic for /o/.",
+    "writingRule": "Bracket body with wavy tilde crown and lower descending comma tick.",
+    "exampleWord": "Doro",
+    "exampleMeaning": "Skewer / Point"
+  },
+  {
+    "id": "60",
+    "latin": "ne",
+    "kulitanSymbol": "ne",
+    "classification": "Anak Sulat Allophone (Upper Garlit -E)",
+    "pronunciation": "/ne/ as in \"neda\" (theirs)",
+    "definition": "Consonant \"Na\" (umbrella dome with vertical stem) with upper diacritic for /e/.",
+    "writingRule": "Umbrella canopy dome with central vertical stem and acute tick above.",
+    "exampleWord": "Neda",
+    "exampleMeaning": "Theirs"
+  },
+  {
+    "id": "61",
+    "latin": "no",
+    "kulitanSymbol": "no",
+    "classification": "Anak Sulat Allophone (Lower Garlit -O)",
+    "pronunciation": "/no/ as in \"nokan\" (where)",
+    "definition": "Consonant \"Na\" with lower diacritic for /o/.",
+    "writingRule": "Umbrella canopy dome with central vertical stem and descending tick below.",
+    "exampleWord": "Nokarin / Nokan",
+    "exampleMeaning": "Where"
+  },
+  {
+    "id": "62",
+    "latin": "le",
+    "kulitanSymbol": "le",
+    "classification": "Anak Sulat Allophone (Upper Garlit -E)",
+    "pronunciation": "/le/ as in \"lele\" (beside / side)",
+    "definition": "Consonant \"La\" (vertical stem with top-right eyelet) with upper diacritic for /e/.",
+    "writingRule": "Vertical stem with top eyelet and acute tick or upright ascender.",
+    "exampleWord": "Lele",
+    "exampleMeaning": "Beside / Margin"
+  },
+  {
+    "id": "63",
+    "latin": "lo",
+    "kulitanSymbol": "lo",
+    "classification": "Anak Sulat Allophone (Lower Garlit -O)",
+    "pronunciation": "/lo/ as in \"lola\" (grandmother)",
+    "definition": "Consonant \"La\" with lower diacritic or attached valley hook for /o/.",
+    "writingRule": "Vertical downward stem with top eyelet and bottom valley hook.",
+    "exampleWord": "Lolo / Lola",
+    "exampleMeaning": "Grandparent"
+  },
+  {
+    "id": "64",
+    "latin": "se",
+    "kulitanSymbol": "se",
+    "classification": "Anak Sulat Allophone (Upper Garlit -E)",
+    "pronunciation": "/se/ as in \"seli\" (bought)",
+    "definition": "Consonant \"Sa\" (numeral 3 shape) with upper diacritic for /e/.",
+    "writingRule": "Double-lobed \"3\" shape with an acute tick hovering above.",
+    "exampleWord": "Seli",
+    "exampleMeaning": "Bought"
+  },
+  {
+    "id": "65",
+    "latin": "so",
+    "kulitanSymbol": "so",
+    "classification": "Anak Sulat Allophone (Lower Garlit -O)",
+    "pronunciation": "/so/ as in \"sora\" (fox / trick)",
+    "definition": "Consonant \"Sa\" with lower diacritic for /o/.",
+    "writingRule": "Double-lobed \"3\" shape with descending comma tick below.",
+    "exampleWord": "Sopan",
+    "exampleMeaning": "Help / Aid"
+  },
+  {
+    "id": "66",
+    "latin": "me",
+    "kulitanSymbol": "me",
+    "classification": "Anak Sulat Allophone (Upper Garlit -E)",
+    "pronunciation": "/me/ as in \"melaus\" (welcomed)",
+    "definition": "Consonant \"Ma\" (loop with crossbar) with upper diacritic for /e/.",
+    "writingRule": "Loop crossed by horizontal bar, with acute tick or ascender above.",
+    "exampleWord": "Melaus",
+    "exampleMeaning": "Welcomed / Entered"
+  },
+  {
+    "id": "67",
+    "latin": "mo",
+    "kulitanSymbol": "mo",
+    "classification": "Anak Sulat Allophone (Lower Garlit -O)",
+    "pronunciation": "/mo/ as in \"motuk\" (stumble)",
+    "definition": "Consonant \"Ma\" with lower diacritic for /o/.",
+    "writingRule": "Loop crossed by horizontal bar, with descending tick below.",
+    "exampleWord": "Mora",
+    "exampleMeaning": "Quickly"
+  },
+  {
+    "id": "68",
+    "latin": "pe",
+    "kulitanSymbol": "pe",
+    "classification": "Anak Sulat Allophone (Upper Garlit -E)",
+    "pronunciation": "/pe/ as in \"pera\" (money)",
+    "definition": "Consonant \"Pa\" (upright cup with internal tick) with upper diacritic for /e/.",
+    "writingRule": "Upright curved cup with internal tick and acute tick above.",
+    "exampleWord": "Pera",
+    "exampleMeaning": "Money / Wealth"
+  },
+  {
+    "id": "69",
+    "latin": "po",
+    "kulitanSymbol": "po",
+    "classification": "Anak Sulat Allophone (Lower Garlit -O)",
+    "pronunciation": "/po/ as in \"pota\" (later)",
+    "definition": "Consonant \"Pa\" with lower diacritic or attached valley hook for /o/.",
+    "writingRule": "Upright cup with internal tick and baseline valley hook.",
+    "exampleWord": "Pota",
+    "exampleMeaning": "Later"
+  },
+  {
+    "id": "70",
+    "latin": "be",
+    "kulitanSymbol": "be",
+    "classification": "Anak Sulat Allophone (Upper Garlit -E)",
+    "pronunciation": "/be/ as in \"bengi\" (night)",
+    "definition": "Consonant \"Ba\" (closed oval circle O) with upper diacritic for /e/.",
+    "writingRule": "Closed oval circle (O) with an acute tick placed above.",
+    "exampleWord": "Bengi",
+    "exampleMeaning": "Night"
+  },
+  {
+    "id": "71",
+    "latin": "bo",
+    "kulitanSymbol": "bo",
+    "classification": "Anak Sulat Allophone (Lower Garlit -O)",
+    "pronunciation": "/bo/ as in \"boti\" (boat)",
+    "definition": "Consonant \"Ba\" with lower diacritic for /o/.",
+    "writingRule": "Closed oval circle (O) with a descending comma tick below.",
+    "exampleWord": "Boti",
+    "exampleMeaning": "Bottle / Boat"
+  },
+  {
+    "id": "72",
+    "latin": "gi (Variant)",
+    "kulitanSymbol": "gi",
+    "classification": "Archival Calligraphy Variant (GI)",
+    "pronunciation": "/gi/ as in \"ginu\" (lord)",
+    "definition": "Historical calligraphy variation of \"GI\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"GI\". Base \"Ga\" arch with an acute tick placed above.",
+    "exampleWord": "Gintu (Gold)",
+    "exampleMeaning": "Spiritual / Power"
+  },
+  {
+    "id": "73",
+    "latin": "gu (Variant)",
+    "kulitanSymbol": "gu",
+    "classification": "Archival Calligraphy Variant (GU)",
+    "pronunciation": "/gu/ as in \"gulis\" (line)",
+    "definition": "Historical calligraphy variation of \"GU\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"GU\". Base \"Ga\" arch with a descending tick below.",
+    "exampleWord": "Gubat (Forest)",
+    "exampleMeaning": "Forest / Nature"
+  },
+  {
+    "id": "74",
+    "latin": "ki (Variant)",
+    "kulitanSymbol": "ki",
+    "classification": "Archival Calligraphy Variant (KI)",
+    "pronunciation": "/ki/ as in \"kilala\" (known)",
+    "definition": "Historical calligraphy variation of \"KI\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"KI\". Base \"Ka\" with an acute tick placed above.",
+    "exampleWord": "Kildap (Lightning)",
+    "exampleMeaning": "Lightning"
+  },
+  {
+    "id": "75",
+    "latin": "ku (Variant)",
+    "kulitanSymbol": "ku",
+    "classification": "Archival Calligraphy Variant (KU)",
+    "pronunciation": "/ku/ as in \"kuraldal\" (dance feast)",
+    "definition": "Historical calligraphy variation of \"KU\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"KU\". Base \"Ka\" with a descending tick below.",
+    "exampleWord": "Kulang (Lacking)",
+    "exampleMeaning": "Skin / Shell"
+  },
+  {
+    "id": "76",
+    "latin": "ngi (Variant)",
+    "kulitanSymbol": "ngi",
+    "classification": "Archival Calligraphy Variant (NGI)",
+    "pronunciation": "/ŋi/ as in \"ngisi\" (smile)",
+    "definition": "Historical calligraphy variation of \"NGI\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"NGI\". Base \"Nga\" with an acute tick placed above.",
+    "exampleWord": "Ngisi (Smile)",
+    "exampleMeaning": "Smile / Grin"
+  },
+  {
+    "id": "77",
+    "latin": "ngu (Variant)",
+    "kulitanSymbol": "ngu",
+    "classification": "Archival Calligraphy Variant (NGU)",
+    "pronunciation": "/ŋu/ as in \"ngungut\" (coconut)",
+    "definition": "Historical calligraphy variation of \"NGU\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"NGU\". Base \"Nga\" with a descending tick below.",
+    "exampleWord": "Ngusu (Snout)",
+    "exampleMeaning": "Snout / Point"
+  },
+  {
+    "id": "78",
+    "latin": "ti (Variant)",
+    "kulitanSymbol": "ti",
+    "classification": "Archival Calligraphy Variant (TI)",
+    "pronunciation": "/ti/ as in \"tigtigan\" (music)",
+    "definition": "Historical calligraphy variation of \"TI\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"TI\". Base \"Ta\" with an acute tick placed above.",
+    "exampleWord": "Titi (Drops)",
+    "exampleMeaning": "Drip / Drop"
+  },
+  {
+    "id": "79",
+    "latin": "tu (Variant)",
+    "kulitanSymbol": "tu",
+    "classification": "Archival Calligraphy Variant (TU)",
+    "pronunciation": "/tu/ as in \"tula\" (joy)",
+    "definition": "Historical calligraphy variation of \"TU\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"TU\". Base \"Ta\" with a descending tick below.",
+    "exampleWord": "Tudtud (Sleep)",
+    "exampleMeaning": "Direct / Straight"
+  },
+  {
+    "id": "80",
+    "latin": "di (Variant)",
+    "kulitanSymbol": "di",
+    "classification": "Archival Calligraphy Variant (DI)",
+    "pronunciation": "/di/ as in \"dilat\" (tongue)",
+    "definition": "Historical calligraphy variation of \"DI\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"DI\". Base \"Da\" with an acute tick placed above.",
+    "exampleWord": "Diyan (There)",
+    "exampleMeaning": "Here / Location"
+  },
+  {
+    "id": "81",
+    "latin": "du (Variant)",
+    "kulitanSymbol": "du",
+    "classification": "Archival Calligraphy Variant (DU)",
+    "pronunciation": "/du/ as in \"duyan\" (hammock)",
+    "definition": "Historical calligraphy variation of \"DU\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"DU\". Base \"Da\" with a descending tick below.",
+    "exampleWord": "Daya (Blood)",
+    "exampleMeaning": "Blood / Life"
+  },
+  {
+    "id": "82",
+    "latin": "ni (Variant)",
+    "kulitanSymbol": "ni",
+    "classification": "Archival Calligraphy Variant (NI)",
+    "pronunciation": "/ni/ as in \"ninu\" (who)",
+    "definition": "Historical calligraphy variation of \"NI\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"NI\". Base \"Na\" with an acute tick placed above.",
+    "exampleWord": "Ninu (Who)",
+    "exampleMeaning": "Possessive marker"
+  },
+  {
+    "id": "83",
+    "latin": "nu (Variant)",
+    "kulitanSymbol": "nu",
+    "classification": "Archival Calligraphy Variant (NU)",
+    "pronunciation": "/nu/ as in \"nukarin\" (where)",
+    "definition": "Historical calligraphy variation of \"NU\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"NU\". Base \"Na\" with a descending tick below.",
+    "exampleWord": "Nung (If)",
+    "exampleMeaning": "Question marker"
+  },
+  {
+    "id": "84",
+    "latin": "li (Variant)",
+    "kulitanSymbol": "li",
+    "classification": "Archival Calligraphy Variant (LI)",
+    "pronunciation": "/li/ as in \"lihim\" (secret)",
+    "definition": "Historical calligraphy variation of \"LI\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"LI\". Base \"La\" with an acute tick placed above.",
+    "exampleWord": "Likas (Transfer)",
+    "exampleMeaning": "Surround / Enclose"
+  },
+  {
+    "id": "85",
+    "latin": "lu (Variant)",
+    "kulitanSymbol": "lu",
+    "classification": "Archival Calligraphy Variant (LU)",
+    "pronunciation": "/lu/ as in \"lupa\" (face)",
+    "definition": "Historical calligraphy variation of \"LU\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"LU\". Base \"La\" with a descending tick below.",
+    "exampleWord": "Lwa (Tears)",
+    "exampleMeaning": "Tear / Weep"
+  },
+  {
+    "id": "86",
+    "latin": "si (Variant)",
+    "kulitanSymbol": "si",
+    "classification": "Archival Calligraphy Variant (SI)",
+    "pronunciation": "/si/ as in \"sinup\" (save / treasure)",
+    "definition": "Historical calligraphy variation of \"SI\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"SI\". Base \"Sa\" with an acute tick placed above.",
+    "exampleWord": "Sinag (Ray)",
+    "exampleMeaning": "Personal article"
+  },
+  {
+    "id": "87",
+    "latin": "su (Variant)",
+    "kulitanSymbol": "su",
+    "classification": "Archival Calligraphy Variant (SU)",
+    "pronunciation": "/su/ as in \"subli\" (inherit / revive)",
+    "definition": "Historical calligraphy variation of \"SU\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"SU\". Base \"Sa\" with a descending tick below.",
+    "exampleWord": "Sulu (Torch)",
+    "exampleMeaning": "Wear / Horn"
+  },
+  {
+    "id": "88",
+    "latin": "mi (Variant)",
+    "kulitanSymbol": "mi",
+    "classification": "Archival Calligraphy Variant (MI)",
+    "pronunciation": "/mi/ as in \"minum\" (drink)",
+    "definition": "Historical calligraphy variation of \"MI\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"MI\". Base \"Ma\" with an acute tick placed above.",
+    "exampleWord": "Misan (Once)",
+    "exampleMeaning": "We / Exclusive"
+  },
+  {
+    "id": "89",
+    "latin": "mu (Variant)",
+    "kulitanSymbol": "mu",
+    "classification": "Archival Calligraphy Variant (MU)",
+    "pronunciation": "/mu/ as in \"mura\" (cheap/young)",
+    "definition": "Historical calligraphy variation of \"MU\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"MU\". Base \"Ma\" with a descending tick below.",
+    "exampleWord": "Mura (Cheap)",
+    "exampleMeaning": "Only / Just"
+  },
+  {
+    "id": "90",
+    "latin": "pi (Variant)",
+    "kulitanSymbol": "pi",
+    "classification": "Archival Calligraphy Variant (PI)",
+    "pronunciation": "/pi/ as in \"pisan\" (cousin)",
+    "definition": "Historical calligraphy variation of \"PI\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"PI\". Base \"Pa\" with an acute tick placed above.",
+    "exampleWord": "Pili (Select)",
+    "exampleMeaning": "Chosen / Choice"
+  },
+  {
+    "id": "91",
+    "latin": "pu (Variant)",
+    "kulitanSymbol": "pu",
+    "classification": "Archival Calligraphy Variant (PU)",
+    "pronunciation": "/pu/ as in \"pusu\" (heart)",
+    "definition": "Historical calligraphy variation of \"PU\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"PU\". Base \"Pa\" with a descending tick below.",
+    "exampleWord": "Pusu (Heart)",
+    "exampleMeaning": "Respect particle"
+  },
+  {
+    "id": "92",
+    "latin": "bi (Variant)",
+    "kulitanSymbol": "bi",
+    "classification": "Archival Calligraphy Variant (BI)",
+    "pronunciation": "/bi/ as in \"bitis\" (feet)",
+    "definition": "Historical calligraphy variation of \"BI\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"BI\". Base \"Ba\" oval with an acute tick placed above.",
+    "exampleWord": "Bie (Life)",
+    "exampleMeaning": "Living / Life"
+  },
+  {
+    "id": "93",
+    "latin": "bu (Variant)",
+    "kulitanSymbol": "bu",
+    "classification": "Archival Calligraphy Variant (BU)",
+    "pronunciation": "/bu/ as in \"bukas\" (tomorrow)",
+    "definition": "Historical calligraphy variation of \"BU\" preserved in authentic Sulat Kapampangan archival manuscripts.",
+    "writingRule": "Alternate brush stroke weight and ligature pen angle for \"BU\". Base \"Ba\" oval with a descending tick below.",
+    "exampleWord": "Bwak (Hair)",
+    "exampleMeaning": "Hair / Feather"
   }
 ];

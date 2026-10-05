@@ -14,6 +14,8 @@ type FlashcardProps = {
 export default function Flashcard({ data }: FlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
+  if (!data) return null;
+
   return (
     <TouchableOpacity 
       style={styles.cardContainer} 
@@ -25,7 +27,7 @@ export default function Flashcard({ data }: FlashcardProps) {
           // Front of the card
           <View style={styles.cardContent}>
             <View style={styles.glyphWrapper}>
-              <KulitanGlyph symbol={data.latin} size={110} color="#0B2046" strokeWidth={5} />
+              <KulitanGlyph symbol={data.kulitanSymbol || data.latin} size={110} color="#0B2046" strokeWidth={5} />
             </View>
             <Text style={styles.latinText}>{data.latin}</Text>
             {data.classification && (
