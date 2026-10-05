@@ -35,10 +35,10 @@ It is NOT Tagalog Baybayin, NOT Sinhala, NOT Burmese, and NOT Arabic!
 - In Kulitan, 'Na' is an umbrella dome with a straight downward central vertical stem. It is NOT Nga.
 - In Kulitan, 'Nga' is a left crescent ')' + horizontal 'm' wave arch curving DOWNWARD (∩). In contrast, Standalone 'U/O' is an isolated double-valley wave ('w') sweeping UPWARD (∪) into the air.
 
-STRICT INSTRUCTION ON INDEPENDENT / ISOLATED SYMBOL RECOGNITION:
-The image contains an isolated Kulitan character, handwriting sample, or crop.
-There is NO English or Latin text accompanying the symbol. The symbol is COMPLETELY INDEPENDENT.
-You must identify the character SOLELY and PURELY by analyzing its stroke morphology according to the rules below.
+INPUT CONTEXT & LABELS:
+The image contains a Kulitan character drawn by a user on paper, an isolated glyph crop, or a study flashcard.
+- If an accompanying handwritten or printed Latin label / transliteration (e.g. "to", "e", "ngo", "ko", "de", "gu", etc.) is visible beside or near the Kulitan glyph, use it as strong corroborating confirmation of the intended syllable.
+- If NO Latin text is present, identify the character solely by analyzing its stroke morphology according to the rules below.
 
 =======================================================
 EXPERT DECODING WORKFLOW:
@@ -46,7 +46,7 @@ EXPERT DECODING WORKFLOW:
 
 1. CHECK FOR STANDALONE VOWELS (Indûng Patinig - NO Base Consonant on the left):
    - STANDALONE A (transliteration: "a"): A single continuous cursive stroke with a hook at top-left, crossing itself at the lower-left to form an 'alpha' (α) or cursive 2 loop, sweeping up into an open right wing. It has ONLY ONE valley trough with a lower-left crossing. NO horizontal crossbar! If the stroke crosses at the bottom-left and has NO horizontal crossbar, it is 100% STANDALONE VOWEL A ("a"), NEVER U/O and NEVER Pa!
-   - STANDALONE I / E (transliteration: "i" or "e"): Two identical twin components side-by-side (~|  ~|), each ending in a tall vertical upright needle stem shooting straight up with white space between them.
+   - STANDALONE I / E (transliteration: "i" or "e"): Either two twin upright needle components side-by-side (~|  ~|), OR the cursive vowel variant resembling an open wavy loop/curl (frequently paired with Latin label "e" or "i").
    - STANDALONE U / O (transliteration: "u" or "o"): An isolated single continuous flowing 'w' / 'vv' double-valley wave consisting of TWO connected rounded valley troughs along the baseline sweeping upward on the right into a terminal wing. It has NO preceding base consonant on the left, NO vertical hook, and NO internal tick!
 
 2. IDENTIFY THE BASE CONSONANT (Indûng Súlat - on the left if compound):
@@ -149,7 +149,7 @@ CRITICAL DISAMBIGUATION RULES:
    - ONLY if Base Nga has exactly 1 crescent and 1 arch with NO ticks and NO ligatures -> 100% plain BASE NGA ("nga")!
 8. ATTACHED LIGATURES vs STANDALONE U/O (Tú/To, Pú/Po, Lú/Lo, Ngú/Ngo):
    - PÚ / PO ('pu' or 'po'): In cursive form, the left body is Base Pa with an upright cup that connects at the bottom-left into a closed teardrop loop (resembling cursive 'p'), followed by an attached valley hook on the far right. If the left body has a bottom closed loop -> 100% PÚ / PO ('pu' or 'po')! (NEVER Tú/To, because Base Ta has NO bottom loop).
-   - TÚ / TO ('tu' or 'to'): The left body is Base Ta starting at the top-left with an upper-left hook that drops into a straight vertical stem and connects via an extended flat horizontal baseline floor to the medial arch, and the lowest point dips at the bottom-right valley hook. It has NO bottom-left loop (unlike Pa) and NO top eyelet on a downward stem (unlike La). Ta with attached valley hook is 100% TÚ / TO ('tu' or 'to')! (NEVER Standalone U/O!).
+   - TÚ / TO ('tu' or 'to'): The left body is Base Ta starting at the top-left with an upper-left hook that drops down into an extended flat horizontal baseline floor and medial arch, followed by a bottom valley hook dipping along the baseline. If the drawing starts with a distinct top-left hook/drop or is accompanied by the label "to" or "tu", it is 100% TÚ / TO ("tu" or "to"), NEVER Standalone U/O!
    - STANDALONE U/O: Pure symmetrical cursive 'w' where the highest stroke is on the FAR RIGHT and the lowest stroke curls at the FAR LEFT. It has NO upper-left hook, NO flat baseline floor, and NO bottom-left closed loop.
    - LÚ / LO ('lu' or 'lo'): Left side has a vertical stem with top eyelet (Base La) followed by a valley hook -> 100% LÚ / LO ("lu" or "lo")! (NEVER Standalone U/O).
 
