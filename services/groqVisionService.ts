@@ -259,16 +259,34 @@ export async function callGroqVision(
           parsed.type = 'Diacritic Reference Chart (Anak Sulat)';
         } else {
           const rawQuery = (parsed.transliteration || parsed.character || '').trim();
-          const normalized = normalizeKulitanSyllable(rawQuery);
-          const matched = kulitanSyllables.find(s => s.latin.toLowerCase() === normalized || s.id.toLowerCase() === normalized);
+          const rawLower = rawQuery.toLowerCase();
+
+          // 1. Direct match first among the 93 entries (including allophones and variants)
+          let matched = kulitanSyllables.find(s => 
+            s.latin.toLowerCase() === rawLower || 
+            s.kulitanSymbol.toLowerCase() === rawLower ||
+            s.latin.toLowerCase().startsWith(rawLower + ' ')
+          );
+
+          // 2. Fallback to canonical normalized syllable
+          if (!matched) {
+            const normalized = normalizeKulitanSyllable(rawQuery);
+            matched = kulitanSyllables.find(s => 
+              s.latin.toLowerCase() === normalized || 
+              s.id.toLowerCase() === normalized
+            );
+          }
+
           if (matched) {
             parsed.kulitanSymbol = matched.kulitanSymbol;
             parsed.type = matched.classification;
-            const rawLower = rawQuery.toLowerCase();
             const ALLOPHONES = ['e','o','ke','ko','ge','go','nge','ngo','te','to','de','do','ne','no','le','lo','se','so','me','mo','pe','po','be','bo'];
             if (ALLOPHONES.includes(rawLower)) {
               parsed.transliteration = rawLower;
               parsed.character = rawLower.toUpperCase();
+            } else if (matched.latin.includes('(Variant)')) {
+              parsed.character = matched.latin;
+              parsed.transliteration = matched.kulitanSymbol;
             } else {
               parsed.character = matched.latin.toUpperCase();
               parsed.transliteration = matched.latin;

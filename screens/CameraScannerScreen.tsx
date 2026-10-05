@@ -256,19 +256,34 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
                 parsed.type = 'Diacritic Reference Chart (Anak Sulat)';
               } else {
                 const rawQuery = (parsed.transliteration || parsed.character || '').trim();
-                const searchLatin = normalizeKulitanSyllable(rawQuery);
-                const matched = kulitanSyllables.find(s => 
-                  s.latin.toLowerCase() === searchLatin || 
-                  s.id.toLowerCase() === searchLatin
+                const rawLower = rawQuery.toLowerCase();
+
+                // 1. Direct match first among the 93 entries (including allophones and variants)
+                let matched = kulitanSyllables.find(s => 
+                  s.latin.toLowerCase() === rawLower || 
+                  s.kulitanSymbol.toLowerCase() === rawLower ||
+                  s.latin.toLowerCase().startsWith(rawLower + ' ')
                 );
+
+                // 2. Fallback to canonical normalized syllable
+                if (!matched) {
+                  const searchLatin = normalizeKulitanSyllable(rawQuery);
+                  matched = kulitanSyllables.find(s => 
+                    s.latin.toLowerCase() === searchLatin || 
+                    s.id.toLowerCase() === searchLatin
+                  );
+                }
+
                 if (matched) {
                   parsed.kulitanSymbol = matched.kulitanSymbol;
                   parsed.type = matched.classification;
-                  const rawLower = rawQuery.toLowerCase();
                   const ALLOPHONES = ['e','o','ke','ko','ge','go','nge','ngo','te','to','de','do','ne','no','le','lo','se','so','me','mo','pe','po','be','bo'];
                   if (ALLOPHONES.includes(rawLower)) {
                     parsed.transliteration = rawLower;
                     parsed.character = rawLower.toUpperCase();
+                  } else if (matched.latin.includes('(Variant)')) {
+                    parsed.character = matched.latin;
+                    parsed.transliteration = matched.kulitanSymbol;
                   } else {
                     parsed.character = matched.latin.toUpperCase();
                     parsed.transliteration = matched.latin;
@@ -714,11 +729,15 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
 
                   {/* Kapampangan Meaning & Cultural Usage Card */}
                   {scanResult.recognized && (() => {
+                    const rawTrans = (scanResult.transliteration || '').toLowerCase().trim();
+                    const rawChar = (scanResult.character || '').toLowerCase().trim();
                     const canonicalLatin = normalizeKulitanSyllable(scanResult.transliteration || scanResult.character);
                     const matched = kulitanSyllables.find(s => 
+                      s.latin.toLowerCase() === rawTrans ||
+                      s.latin.toLowerCase() === rawChar ||
+                      s.latin.toLowerCase().startsWith(rawTrans + ' ') ||
                       s.latin.toLowerCase() === canonicalLatin || 
-                      s.id.toLowerCase() === canonicalLatin ||
-                      s.latin.toLowerCase() === (scanResult.transliteration || '').toLowerCase()
+                      s.id.toLowerCase() === canonicalLatin
                     );
                     if (!matched) return null;
                     return (
