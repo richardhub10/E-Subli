@@ -45,20 +45,20 @@ EXPERT DECODING WORKFLOW:
 =======================================================
 
 1. CHECK FOR STANDALONE VOWELS (Indûng Patinig - NO Base Consonant on the left):
-   - STANDALONE A (transliteration: "a"): A single continuous cursive stroke with a hook at top-left, crossing itself at the lower-left to form an 'alpha' (α) or cursive 2 loop, sweeping up into an open right wing. It has ONLY ONE valley trough with a lower-left crossing. NO horizontal crossbar! If the stroke crosses at the bottom-left and has NO horizontal crossbar, it is 100% STANDALONE VOWEL A ("a"), NEVER U/O and NEVER Pa!
+   - STANDALONE A (transliteration: "a"): A single continuous cursive stroke with a hook at top-left, crossing itself at the lower-left to form an 'alpha' (α) or cursive 2 loop, sweeping up into an open right wing. It has ONLY ONE valley trough with a lower-left crossing. NO horizontal crossbar and NO rightward tall vertical ascender! (CRITICAL: If the loop has a horizontal crossbar or connects into a tall upright vertical ascender, it is BASE MA or MÉ / MI ("me" or "mi"), NEVER Standalone A!).
    - STANDALONE I / E (transliteration: "i" or "e"): Either two twin upright needle components side-by-side (~|  ~|), OR the cursive vowel variant resembling an open wavy loop/curl (frequently paired with Latin label "e" or "i").
-   - STANDALONE U / O (transliteration: "u" or "o"): An isolated single continuous flowing 'w' / 'vv' double-valley wave consisting of TWO connected rounded valley troughs along the baseline sweeping upward on the right into a terminal wing. It has NO preceding base consonant on the left, NO vertical hook, and NO internal tick!
+   - STANDALONE U / O (transliteration: "u" or "o"): An isolated single continuous flowing 'w' / 'vv' double-valley wave consisting of TWO connected rounded valley troughs along the baseline sweeping upward on the right into a terminal wing. It has NO preceding base consonant on the left, NO top-left hook/drop, and NO flat horizontal baseline floor! (CRITICAL: If the stroke begins at top-left with a downward hook/drop onto a baseline floor before connecting into a valley hook, it is TÚ / TO ("tu" or "to"), NEVER Standalone U/O!).
 
 2. IDENTIFY THE BASE CONSONANT (Indûng Súlat - on the left if compound):
    1. BA: Closed oval circle (O).
    2. DA: Angular box-bracket body [ with a distinct separate wavy tilde crown (~) hovering above its ceiling bar. (CRITICAL: Any glyph with a wavy tilde crown ~ is BASE DA: Da, De/Di, Do/Du, Dang!).
-   3. GA: INVERTED U-arch (∩), rounded dome at TOP, two vertical legs pointing DOWN. Open at bottom. (CRITICAL: Ga is inverted ∩, NOT an upright cup!).
+   3. GA: INVERTED U-arch (∩), rounded dome at TOP, two vertical legs pointing DOWN. Open at bottom. (CRITICAL: Ga is inverted ∩, NOT an upright cup! If an inverted arch ∩ has a lower comma tick beneath or bottom valley hook dipping along baseline -> 100% GÚ / GO ("gu" or "go"), NEVER Nga!).
    4. KA: Two horizontal parallel bars (=).
    5. LA: Vertical downward straight stem (↓) with a top horizontal bar that has an integral CLOSED LOOP / EYELET on the right side and an upward-curving left wing. (CRITICAL: Vertical stem + top-right eyelet = BASE LA: La, Le/Li, Lo/Lu, Lang! The top-right eyelet is PART of Base La, NOT an acute tick!).
-   6. MA: Loop or slash crossed completely by a HORIZONTAL CROSSBAR (—) that clearly extends PAST the outer left wall. (CRITICAL: Horizontal crossbar cutting through = BASE MA: Ma, Me/Mi, Mo/Mu, Mang!).
+   6. MA: Loop or slash crossed completely by a HORIZONTAL CROSSBAR (—) that clearly extends PAST the outer left wall. (CRITICAL: Horizontal crossbar cutting through or loop connecting to a tall vertical ascender = BASE MA / ME: Ma, Me/Mi, Mo/Mu, Mang!).
    7. NA: Symmetrical umbrella canopy dome (⌢) that curves down symmetrically on BOTH sides with a single straight downward central vertical stem. It has NO loop, NO eyelet, and NO crossbar.
-   8. NGA: Left downward crescent ')' + single undulating 'm' wave arch.
-   9. PA: UPRIGHT curved cup (∪), rounded floor at BOTTOM, open on TOP with arms pointing UP, and an internal horizontal tick on the inside of the right arm. Smooth unbroken outer left wall. (CRITICAL: Upright cup ∪ with internal tick = BASE PA: Pa, Pe/Pi, Po/Pu, Pang! It is the vertical opposite of inverted arch ∩ Ga!).
+   8. NGA: Left downward crescent ')' + single undulating 'm' wave arch. (CRITICAL: If accompanied by a lower comma tick beneath or trailing valley hook on right -> 100% NGÚ / NGO ("ngu" or "ngo"), NEVER Ngang! Ngang requires two complete repeating crescent+arch pairs side-by-side).
+   9. PA: UPRIGHT curved cup (∪), rounded floor at BOTTOM, open on TOP with arms pointing UP, and an internal horizontal tick on the inside of the right arm. Smooth unbroken outer left wall. (CRITICAL: Upright cup ∪ with internal tick = BASE PA: Pa, Pe/Pi, Po/Pu, Pang! Connected to a tall vertical ascender on right = PÉ / PI, NEVER Ta or Te!).
    10. SA: '3' numeral shape with two rounded lobes.
    11. TA: Upper-left hook dropping down vertically into an extended FLAT HORIZONTAL BASELINE FLOOR and medial arch. (NO wavy crown ~, NO box frame, NOT an upright cup).
 
@@ -152,6 +152,14 @@ CRITICAL DISAMBIGUATION RULES:
    - TÚ / TO ('tu' or 'to'): The left body is Base Ta starting at the top-left with an upper-left hook that drops down into an extended flat horizontal baseline floor and medial arch, followed by a bottom valley hook dipping along the baseline. If the drawing starts with a distinct top-left hook/drop or is accompanied by the label "to" or "tu", it is 100% TÚ / TO ("tu" or "to"), NEVER Standalone U/O!
    - STANDALONE U/O: Pure symmetrical cursive 'w' where the highest stroke is on the FAR RIGHT and the lowest stroke curls at the FAR LEFT. It has NO upper-left hook, NO flat baseline floor, and NO bottom-left closed loop.
    - LÚ / LO ('lu' or 'lo'): Left side has a vertical stem with top eyelet (Base La) followed by a valley hook -> 100% LÚ / LO ("lu" or "lo")! (NEVER Standalone U/O).
+9. PURE SYMBOLS WITHOUT LATIN LABELS (Strict Morphological Verification):
+   - When identifying pure handwriting or printed symbols without any accompanying Latin text:
+   * MA / ME vs STANDALONE A: If the loop connects on the right into a tall vertical ascender or has a horizontal crossbar, it is 100% ME / MI ("me" or "mi"), NEVER Standalone A!
+   * GA / GO vs NGA: Inverted U-arch dome ∩ on left + bottom valley hook is 100% GO / GU ("go" or "gu"), NEVER Nga!
+   * TA / TO vs STANDALONE U/O: Top-left hook/drop curving down to a flat baseline floor + valley hook is 100% TO / TU ("to" or "tu"), NEVER Standalone U/O!
+   * PA / PE vs TA / TE: Upright rounded cup ∪ with internal tick on right arm + tall vertical ascender is 100% PE / PI ("pe" or "pi"), NEVER Ta or Te!
+   * NGO vs NGANG: A single crescent + single 'm' arch with trailing valley hook is 100% NGO / NGU ("ngo" or "ngu"), NEVER Ngang!
+   * SE vs SA: Numeral '3' shape with an upper acute tick or vertical ascender is 100% SE / SI ("se" or "si"), NOT plain Sa!
 
 TASK:
 ${targetHint}
