@@ -156,8 +156,12 @@ CRITICAL DISAMBIGUATION RULES:
    - 1. BASE DA (DÍ / DE vs DÚ / DO vs TÍ / TE):
      * Any glyph consisting of an angular box-bracket [ or cursive Z with a distinct separate wavy tilde crown (~) hovering directly above its ceiling bar belongs 100% to BASE DA (Dí/De, Dú/Do, Da), NEVER Base Ta and NEVER Tí/Te!
      * Base Ta is ONE continuous single stroke without any wavy crown hovering on top.
-     * When an upper acute tick (/) hovers above the wavy crown (~) (and there is no mark below the box and no trailing valley hook) -> it is 100% DÍ / DE ("di" or "de", as in "dí/î"), NEVER Tí/Te!
-     * If a dot, comma tick, or mark is present BELOW the box-bracket, or if an attached trailing baseline valley hook (~v) sweeps up on the right -> it is 100% DÚ / DO ("du" or "do", as in study card "do" / ext_do_IMG_2655_18_.PNG).
+     * DÍ / DE ("di" or "de", as in study card "de" / ext_de_IMG_2655_10_.PNG and "dí/î"):
+       - When an upper acute tick (/) hovers above the wavy crown (~), OR
+       - When the glyph connects on the right to an attached cursive ligature with a TALL UPRIGHT VERTICAL ASCENDER STEM (~|) pointing straight UP into the air towards the top margin (reaching as high as or higher than the top crown) -> it is 100% DÍ / DE ("di" or "de"), NEVER Dú/Do!
+     * DÚ / DO ("du" or "do", as in study card "do" / ext_do_IMG_2655_18_.PNG and "dú/û"):
+       - If a dot, comma tick, or mark is present BELOW the box-bracket, OR
+       - If the right side has a low trailing baseline valley hook (~v) / shallow rounded trough that stays along the baseline with NO tall upright needle ascender -> it is 100% DÚ / DO ("du" or "do").
 
    - 2. BASE GA vs BASE NGA (GÚ / GO vs NGÚ / NGO vs GÍ / GE vs NGÍ / NGE):
      * COUNT THE SHAPES ON THE FAR-LEFT BEFORE THE TRAILING HOOK:
@@ -172,10 +176,13 @@ CRITICAL DISAMBIGUATION RULES:
          * A single inverted arch dome (∩) connected on the right to an upright vertical ascender stem (~|) -> 100% GÍ / GE ("gi" or "ge").
          * An inverted arch dome (∩) with an EMPTY interior and an upper acute tick (/) hovering directly above -> 100% GÍ / GE ("gi" or "ge", as in "gí/î"), NEVER Base Na and NEVER Ní/Ne! (Base Na MUST have a central vertical stem inside the dome).
 
-   - 3. BASE TA vs STANDALONE E / I (TÚ / TO vs STANDALONE E / I vs PLAIN TA):
+   - 3. BASE TA vs STANDALONE E / I vs BASE BA (TÚ / TO vs STANDALONE E / I vs PLAIN TA vs BÚ / BO):
      * STANDALONE E / I ("e" or "i", Indûng Patinig): A flowing cursive glyph featuring TWO CENTRAL HORIZONTAL PARALLEL BRIDGE BARS (=) connecting the left curl to the right loop/ascender. It has NO downward vertical cane hook and NO flat horizontal baseline floor. It is 100% STANDALONE E / I ("e" or "i"), NEVER Base Ta and NEVER Tú/To!
-     * TÚ / TO ("tu" or "to", as in "tú/û" or study card "to"): Consists of Base Ta's top-left downward cane hook that drops down into an extended flat horizontal baseline floor, connecting into an attached cursive trailing baseline valley hook (~v) / U-shaped trough sweeping up on the right (with an internal central fold/knot in the middle). It has NO twin parallel horizontal bridge bars (=). Any glyph with Base Ta's top-left cane hook and a trailing upward-sweeping valley hook (~v) / fold is 100% TÚ / TO ("tu" or "to", as in "tú/û" or study card "to"), NEVER plain Ta and NEVER Standalone E/I!
-     * PLAIN INHERENT TA ("ta", as in exemplar_ta.jpg): Begins with a top-left cane hook dropping into an extended flat horizontal baseline floor, and ends flat on the baseline with NO trailing upward curl, NO valley hook, and NO central knot -> 100% PLAIN BASE TA ("ta").
+     * TÚ / TO ("tu" or "to", as in exemplar_tu.jpg, "tú/û", or study card "to"):
+       - Standard Exemplar Form (exemplar_tu.jpg): Base Ta (top-left cane hook dropping into an extended flat horizontal baseline floor) accompanied by a DETACHED LOWER COMMA TICK (,) beneath the baseline floor at lower-left -> 100% TÚ / TO ("tu" or "to"), NEVER Bú/Bo and NEVER plain Ta! (CRITICAL: Base Ta is completely OPEN on the top and right. Do NOT confuse Base Ta's open cane hook and baseline floor with a closed circle O / Base Ba!).
+       - Cursive Study Card Form (study card "to" / ext_to_IMG_2655_17_.PNG): Base Ta's top-left cane hook connects into an attached cursive trailing baseline valley hook (~v) sweeping up on the right (with an internal fold/knot) -> 100% TÚ / TO ("tu" or "to").
+     * PLAIN INHERENT TA ("ta", as in exemplar_ta.jpg): Begins with a top-left cane hook dropping into an extended flat horizontal baseline floor, and ends flat on the baseline with NO trailing upward curl, NO valley hook, NO lower comma tick, and NO central knot -> 100% PLAIN BASE TA ("ta").
+     * BASE BA (Bú / Bo, as in exemplar_bu.jpg): Base Ba is a COMPLETELY CLOSED CIRCLE / OVAL (O). If the character is open on top with a cane hook and flat baseline floor, it is BASE TA, NOT Base Ba!
 
    - 4. BASE NGA: NGÚ / NGO vs NGÍ / NGE vs PLAIN NGA:
      * Base Nga has a vertical crescent arc ')' on the far-left followed by an 'm' arch.
@@ -190,10 +197,16 @@ CRITICAL DISAMBIGUATION RULES:
      * An isolated character composed of TWO TALL VERTICAL UPRIGHT LOOPS reaching vertically high into the air (resembling a tall double-U with vertical loops).
      * Standalone U/O NEVER has a central knot/overlapping fold (unlike Tú/To), and is NEVER a flat horizontal undulating wave (unlike Ngú/Ngo).
 
-   - 6. BASE KA (KÚ / KO vs KÍ / KE vs PLAIN KA):
+   - 6. BASE KA (KÍ / KE vs KÚ / KO vs PLAIN KA):
      * Base Ka consists of two horizontal parallel bars (=).
-     * If an attached trailing cursive baseline ligature sweeps up on the right (or a lower comma tick/bar is beneath) -> 100% KÚ / KO ("ku" or "ko", as in study card "ko" / ext_ko_IMG_2655_15_.PNG).
-     * If an upper acute tick hovers above or an attached tall vertical ascender rises on the right -> 100% KÍ / KE ("ki" or "ke").
+     * KÍ / KE ("ki" or "ke", as in study card "ke" / ext_ke_IMG_2655_6_.PNG and "kí/î"):
+       - If an upper acute tick (/) hovers above, OR
+       - If the two horizontal parallel bars connect on the right to an attached cursive ligature with a TALL UPRIGHT VERTICAL ASCENDER STEM (~|) pointing straight UP into the air towards the top margin -> 100% KÍ / KE ("ki" or "ke"), NEVER plain Ka and NEVER Kú/Ko!
+         (CRITICAL: Look at the far right of the two horizontal bars: if there is an attached ligature with a tall vertical ascender stem pointing straight UP, it is 100% KÍ / KE ("ki" or "ke")!).
+     * KÚ / KO ("ku" or "ko", as in study card "ko" / ext_ko_IMG_2655_15_.PNG and "kú/û"):
+       - If an attached trailing cursive baseline valley hook (~v) sweeps up gently on the right (or a lower comma tick/bar is beneath) with NO tall vertical ascender -> 100% KÚ / KO ("ku" or "ko").
+     * PLAIN KA ("ka", as in exemplar_ka.jpg):
+       - Two horizontal parallel bars (=) ALONE with NO attached ligature or vertical ascender on the right, and NO upper/lower diacritics -> 100% PLAIN KA ("ka").
 
 0A. MANDATORY OVERRIDE FOR BASE PA vs BASE TA & BASE LA:
    - BASE PA vs BASE TA (PÍ/PE vs TÍ/TE & PÚ/PO vs TÚ/TO):
