@@ -66,8 +66,8 @@ EXPERT DECODING WORKFLOW:
       * Base Ba + coda wave pair ')m' on right -> BANG ("bang")
    2. DA: Angular box-bracket body [ with a distinct separate wavy tilde crown (~) hovering directly above its ceiling bar.
       * CRITICAL: Any glyph featuring a separate wavy tilde crown (~) hovering on top belongs 100% to the DA family (Da, Dí/De, Dú/Do, Dang), NEVER TA! (Base Ta is one continuous stroke with an upper-left hook and flat baseline floor; Ta NEVER has a wavy tilde crown ~ hovering on top).
-       * DÚ / DO ("du" or "do", as in "dú/û"): Base Da + ANY detached mark (dot, comma tick ,, or dash) positioned BELOW or beneath the box-bracket -> 100% DÚ / DO ("du" or "do"), NEVER Dí/De and NEVER To/Tu! (CRITICAL: Look at the bottom of the glyph: if there is a dot or mark beneath the box, it is DÚ / DO, because the wavy crown ~ is Base Da's inherent letterhead, NOT a vowel tick!).
-       * DÍ / DE ("di" or "de", NEVER Te or Ti!): Base Da + upper acute tick (/) hovering ABOVE the wavy crown OR attached tall vertical upright ascender stem (~|) on right (ONLY when there is NO mark below the box-bracket).
+       * DÚ / DO ("du" or "do", as in "dú/û"): Base Da + ANY detached mark (dot, comma tick ,, or dash) positioned BELOW or beneath the box-bracket OR attached cursive trailing baseline valley hook (~v) sweeping up on the right (as in study card "do" / ext_do_IMG_2655_18_.PNG) -> 100% DÚ / DO ("du" or "do"), NEVER Dí/De and NEVER To/Tu! (CRITICAL: Look at the bottom of the glyph: if there is a dot or mark beneath the box, or a trailing valley hook, it is DÚ / DO, because the wavy crown ~ is Base Da's inherent letterhead, NOT a vowel tick!).
+       * DÍ / DE ("di" or "de", NEVER Te or Ti!): Base Da + upper acute tick (/) hovering ABOVE the wavy crown OR attached tall vertical upright ascender stem (~|) on right (ONLY when there is NO mark below the box-bracket and NO trailing valley hook).
       * Base Da + coda wave pair ')m' on right -> DANG ("dang")
       * Base Da alone -> DA ("da")
    3. GA: INVERTED U-arch (∩), rounded dome at TOP, two vertical legs pointing DOWN. Open at bottom.
@@ -81,7 +81,7 @@ EXPERT DECODING WORKFLOW:
       * Base Ga alone -> GA ("ga")
    4. KA: Two horizontal parallel bars (=).
       * Base Ka + upper acute tick hovering above OR attached tall vertical ascender stem on right -> KÍ / KE ("ki" or "ke")
-      * Base Ka + third lower tick/bar beneath OR attached baseline valley hook -> KÚ / KO ("ku" or "ko")
+      * Base Ka + third lower tick/bar beneath OR attached baseline valley hook / trailing cursive ligature -> KÚ / KO ("ku" or "ko", as in study card "ko" / ext_ko_IMG_2655_15_.PNG)
       * Base Ka + coda wave pair ')m' -> KANG ("kang")
       * Base Ka alone -> KA ("ka")
    5. LA: Vertical downward straight stem (↓) with a top horizontal bar that has an integral CLOSED LOOP / EYELET on the right side and an upward-curving left wing.
@@ -100,8 +100,11 @@ EXPERT DECODING WORKFLOW:
       * Base Na + coda wave pair ')m' -> NANG ("nang")
       * Base Na alone -> NA ("na")
    8. NGA:
-      * Plain inherent NGA ("nga", as in exemplar_nga.jpg): Left downward crescent ')' + medial arch + overarching top hook that curves DOWNWARD on the right into a downward-pointing stroke or teardrop.
-      * NGÚ / NGO ("ngu" or "ngo", as in "ngú/û" or study card "ngo"): Has NO downward teardrop/loop; it is an OPEN undulating cursive wave flowing horizontally along the baseline and sweeping UPWARD on the right (∪ / ~v). Any open undulating wave with NO upper acute tick is 100% NGÚ / NGO ("ngu" or "ngo"), NEVER plain inherent Nga!
+      * Standard Primary Exemplar Form (exemplar_nga.jpg & exemplar_ngu.jpg): Left downward crescent ')' + medial arch + overarching top hook that curves DOWNWARD on the right into a teardrop.
+        - Plain inherent NGA ("nga", exemplar_nga.jpg): NO lower comma tick/dot beneath, NO upper acute tick, NO trailing valley hook.
+        - NGÚ / NGO ("ngu" or "ngo", as in exemplar_ngu.jpg): Base Nga (crescent ')' + arch curving down) accompanied by a DETACHED LOWER COMMA TICK or DOT (,) beneath the central arch / baseline -> 100% NGÚ / NGO ("ngu" or "ngo"), NEVER plain inherent Nga! (CRITICAL: Look carefully below the central arch; the presence of a comma tick or dot beneath Base Nga is the vowel modifier for -u/-o!).
+      * Extended Cursive Card Form & Handwritten Form (study card "ngo" / ext_ngo_IMG_2655_16_.PNG, and handwritten "ngú/û"):
+        - NGÚ / NGO ("ngu" or "ngo"): An open undulating cursive wave beginning on the left with a distinct vertical crescent arc ')' followed by an 'm' arch, where the right side extends into an attached TRAILING BASELINE VALLEY HOOK (~v) / deep rounded U-trough sweeping UPWARD on the right -> 100% NGÚ / NGO ("ngu" or "ngo"), NEVER plain inherent Nga!
       * NGÍ / NGE ("ngi" or "nge", as in "ngí/î"): Base Nga + upper acute tick above 'm' arch OR attached upward flick/tick (↗) on right crest.
       * NGANG ("ngang"): Base Nga + second repeating crescent+arch wave pair along baseline (with NO upper acute tick and NO tall ascender).
    9. PA: UPRIGHT curved cup (∪), rounded floor at BOTTOM, open on TOP with arms pointing UP, and an internal horizontal tick on the inside of the right arm. Smooth unbroken outer left wall.
@@ -153,27 +156,44 @@ CRITICAL DISAMBIGUATION RULES:
    - 1. BASE DA (DÍ / DE vs DÚ / DO vs TÍ / TE):
      * Any glyph consisting of an angular box-bracket [ or cursive Z with a distinct separate wavy tilde crown (~) hovering directly above its ceiling bar belongs 100% to BASE DA (Dí/De, Dú/Do, Da), NEVER Base Ta and NEVER Tí/Te!
      * Base Ta is ONE continuous single stroke without any wavy crown hovering on top.
-     * When an upper acute tick (/) hovers above the wavy crown (~) (and there is no mark below the box) -> it is 100% DÍ / DE ("di" or "de", as in "dí/î"), NEVER Tí/Te!
-     * If a dot, comma tick, or mark is present BELOW the box-bracket -> it is 100% DÚ / DO ("du" or "do").
+     * When an upper acute tick (/) hovers above the wavy crown (~) (and there is no mark below the box and no trailing valley hook) -> it is 100% DÍ / DE ("di" or "de", as in "dí/î"), NEVER Tí/Te!
+     * If a dot, comma tick, or mark is present BELOW the box-bracket, or if an attached trailing baseline valley hook (~v) sweeps up on the right -> it is 100% DÚ / DO ("du" or "do", as in study card "do" / ext_do_IMG_2655_18_.PNG).
 
-   - 2. BASE GA vs BASE NA vs BASE NGA (GÍ / GE vs NÍ / NE vs NGÍ / NGE):
-     * BASE GA (Gí/Ge, as in gii.png): Consists of a SINGLE inverted arch dome (∩) with two downward vertical legs and a completely EMPTY interior (NO central vertical stem).
-       - If a SINGLE inverted arch dome (∩) connects on the right to an upright vertical ascender stem (~|) -> it is 100% GÍ / GE ("gi" or "ge", as in "gí/î"), NEVER Ngí/Nge and NEVER Ngang! Do NOT mistake the left downward leg of Base Ga's single arch dome for a crescent arc!
-       - If an inverted arch dome (∩) has an EMPTY interior and an upper acute tick (/) hovering directly above -> it is 100% GÍ / GE ("gi" or "ge", as in "gí/î"), NEVER Base Na and NEVER Ní/Ne! (CRITICAL: Base Na MUST have a straight central vertical stem dropping down from the canopy dome like an umbrella handle; if there is NO central vertical stem inside the dome, it is 100% BASE GA = GÍ / GE!).
-     * BASE NGA (Ngí/Nge, as in ngii.png): MUST have TWO distinct parts: a separate vertical crescent arc ')' on the far-left PLUS an 'm' arch before the ascender / upper acute tick.
-       - If an upper acute tick (/) or upward flick (↗) hovers above / rises from the right crest of Base Nga -> it is 100% NGÍ / NGE ("ngi" or "nge").
+   - 2. BASE GA vs BASE NGA (GÚ / GO vs NGÚ / NGO vs GÍ / GE vs NGÍ / NGE):
+     * COUNT THE SHAPES ON THE FAR-LEFT BEFORE THE TRAILING HOOK:
+       - BASE GA (Gú/Go, as in study card "go" / ext_go_IMG_2655_14_.PNG, and exemplar_gu.jpg):
+         * Begins DIRECTLY with ONLY ONE SINGLE INVERTED ARCH DOME (∩) with two downward vertical legs. It has NO preceding vertical crescent arc ')'!
+         * When this SINGLE inverted arch dome (∩) connects on the right to an attached wavy trailing baseline hook (~v) curving upward -> it is 100% GÚ / GO ("gu" or "go", as in study card "go"), NEVER Ngú/Ngo!
+           - CRITICAL OVERRIDE: Base Ga has ONLY ONE single arch dome ∩ on the left. It NEVER has a preceding crescent arc ')'. Any glyph having ONLY ONE single arch dome ∩ connected to a trailing baseline valley hook ~v is 100% GÚ / GO ("gu" or "go"), NEVER Base Nga and NEVER Ngú/Ngo!
+         * A single inverted arch dome (∩) with a detached lower comma tick (,) beneath at lower-left -> 100% GÚ / GO ("gu" or "go", as in exemplar_gu.jpg).
+       - BASE NGA (Ngú/Ngo, as in study card "ngo" / ext_ngo_IMG_2655_16_.PNG, and exemplar_ngu.jpg):
+         * Begins with a distinct VERTICAL CRESCENT ARC ')' on the far-left, followed by an 'm' arch before the trailing hook (~v).
+       - GÍ / GE ("gi" or "ge", as in "gí/î" / gii.png):
+         * A single inverted arch dome (∩) connected on the right to an upright vertical ascender stem (~|) -> 100% GÍ / GE ("gi" or "ge").
+         * An inverted arch dome (∩) with an EMPTY interior and an upper acute tick (/) hovering directly above -> 100% GÍ / GE ("gi" or "ge", as in "gí/î"), NEVER Base Na and NEVER Ní/Ne! (Base Na MUST have a central vertical stem inside the dome).
 
-   - 3. BASE TA vs STANDALONE E / I (TÚ / TO vs STANDALONE E / I):
+   - 3. BASE TA vs STANDALONE E / I (TÚ / TO vs STANDALONE E / I vs PLAIN TA):
      * STANDALONE E / I ("e" or "i", Indûng Patinig): A flowing cursive glyph featuring TWO CENTRAL HORIZONTAL PARALLEL BRIDGE BARS (=) connecting the left curl to the right loop/ascender. It has NO downward vertical cane hook and NO flat horizontal baseline floor. It is 100% STANDALONE E / I ("e" or "i"), NEVER Base Ta and NEVER Tú/To!
      * TÚ / TO ("tu" or "to", as in "tú/û" or study card "to"): Consists of Base Ta's top-left downward cane hook that drops down into an extended flat horizontal baseline floor, connecting into an attached cursive trailing baseline valley hook (~v) / U-shaped trough sweeping up on the right (with an internal central fold/knot in the middle). It has NO twin parallel horizontal bridge bars (=). Any glyph with Base Ta's top-left cane hook and a trailing upward-sweeping valley hook (~v) / fold is 100% TÚ / TO ("tu" or "to", as in "tú/û" or study card "to"), NEVER plain Ta and NEVER Standalone E/I!
+     * PLAIN INHERENT TA ("ta", as in exemplar_ta.jpg): Begins with a top-left cane hook dropping into an extended flat horizontal baseline floor, and ends flat on the baseline with NO trailing upward curl, NO valley hook, and NO central knot -> 100% PLAIN BASE TA ("ta").
 
-   - 4. BASE NGA (NGÍ / NGE vs NGÚ / NGO vs STANDALONE U/O):
-     * If Base Nga has an UPPER ACUTE TICK (/) hovering above or an attached upward flick (↗) on the right crest -> 100% NGÍ / NGE ("ngi" or "nge").
-     * If Base Nga has NO upper acute tick / flick, and consists of a continuous flowing wave (crescent arc ')' on left + open 'm'-wave) with a SMOOTH, OPEN CONNECTION between arches and NO central knot/loop, flowing along the baseline with smooth open arches and ending on the right in an upward trailing curl / trough / tail -> it is 100% NGÚ / NGO ("ngu" or "ngo", as in "ngú/û" or study card "ngo"), NEVER plain inherent Nga (plain inherent Nga is a compact vertical glyph that curves downwards, NOT an extended horizontal wave ending in an upward tail), NEVER Tú/To (Tú/To begins with a top-left cane hook dropping onto a flat floor with an internal fold), NEVER Standalone U/O (U/O has two tall vertical upright loops), and NEVER Baybayin La!
+   - 4. BASE NGA: NGÚ / NGO vs NGÍ / NGE vs PLAIN NGA:
+     * Base Nga has a vertical crescent arc ')' on the far-left followed by an 'm' arch.
+     * NGÍ / NGE ("ngi" or "nge", as in "ngí/î"): Base Nga + upper acute tick (/) hovering above or attached upward flick (↗) on right crest.
+     * NGÚ / NGO ("ngu" or "ngo", as in exemplar_ngu.jpg, study card "ngo" / ext_ngo_IMG_2655_16_.PNG, or handwritten "ngú/û"):
+       1. Base Nga accompanied by a DETACHED LOWER COMMA TICK or DOT (,) beneath the central arch / baseline -> 100% NGÚ / NGO ("ngu" or "ngo", as in exemplar_ngu.jpg), NEVER plain inherent Nga! (CRITICAL: Look carefully below the central arch; the presence of a comma tick or dot beneath Base Nga is the vowel modifier for -u/-o!).
+       2. Base Nga (crescent arc ')' + 'm' arch) with NO upper acute tick, where the right side extends into an attached TRAILING BASELINE VALLEY HOOK (~v) / deep rounded U-trough sweeping UPWARD or an upward-curling handwritten stroke -> 100% NGÚ / NGO ("ngu" or "ngo", as in study card "ngo" / ext_ngo_IMG_2655_16_.PNG and handwritten "ngú/û"), NEVER plain inherent Nga!
+     * PLAIN INHERENT NGA ("nga", as in exemplar_nga.jpg):
+       ONLY if there is NO lower comma tick/dot beneath, NO upper acute tick above, and NO upward trailing valley hook (the glyph curves down on the right into a downward-pointing teardrop) is it PLAIN INHERENT NGA ("nga").
 
    - 5. STANDALONE U / O (Indûng Patinig):
      * An isolated character composed of TWO TALL VERTICAL UPRIGHT LOOPS reaching vertically high into the air (resembling a tall double-U with vertical loops).
      * Standalone U/O NEVER has a central knot/overlapping fold (unlike Tú/To), and is NEVER a flat horizontal undulating wave (unlike Ngú/Ngo).
+
+   - 6. BASE KA (KÚ / KO vs KÍ / KE vs PLAIN KA):
+     * Base Ka consists of two horizontal parallel bars (=).
+     * If an attached trailing cursive baseline ligature sweeps up on the right (or a lower comma tick/bar is beneath) -> 100% KÚ / KO ("ku" or "ko", as in study card "ko" / ext_ko_IMG_2655_15_.PNG).
+     * If an upper acute tick hovers above or an attached tall vertical ascender rises on the right -> 100% KÍ / KE ("ki" or "ke").
 
 0A. MANDATORY OVERRIDE FOR BASE PA vs BASE TA & BASE LA:
    - BASE PA vs BASE TA (PÍ/PE vs TÍ/TE & PÚ/PO vs TÚ/TO):
