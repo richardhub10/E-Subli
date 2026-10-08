@@ -256,14 +256,18 @@ CRITICAL DISAMBIGUATION RULES:
        - If the right side has a low trailing baseline valley hook (~v) / shallow rounded trough that stays along the baseline with NO tall upright needle ascender -> it is 100% DÚ / DO ("du" or "do").
 
    - 2. BASE GA vs BASE NGA (GÚ / GO vs NGÚ / NGO vs GÍ / GE vs NGÍ / NGE):
-     * COUNT THE SHAPES ON THE FAR-LEFT BEFORE THE TRAILING HOOK:
-       - BASE GA (Gú/Go, as in study card "go" / ext_go_IMG_2655_14_.PNG, and exemplar_gu.jpg):
-         * Begins DIRECTLY with ONLY ONE SINGLE INVERTED ARCH DOME (∩) with two downward vertical legs. It has NO preceding vertical crescent arc ')'!
-         * When this SINGLE inverted arch dome (∩) connects on the right to an attached wavy trailing baseline hook (~v) curving upward -> it is 100% GÚ / GO ("gu" or "go", as in study card "go"), NEVER Ngú/Ngo!
-           - CRITICAL OVERRIDE: Base Ga has ONLY ONE single arch dome ∩ on the left. It NEVER has a preceding crescent arc ')'. Any glyph having ONLY ONE single arch dome ∩ connected to a trailing baseline valley hook ~v is 100% GÚ / GO ("gu" or "go"), NEVER Base Nga and NEVER Ngú/Ngo!
-         * A single inverted arch dome (∩) with a detached lower comma tick (,) beneath at lower-left -> 100% GÚ / GO ("gu" or "go", as in exemplar_gu.jpg).
+     * COUNT THE ARCHES AND SHAPES ON THE FAR-LEFT:
+       - BASE GA has ONLY ONE SINGLE INVERTED ARCH DOME (∩) with two downward vertical legs. It NEVER has a preceding crescent arc ')'!
+       - BASE NGA has a preceding crescent arc ')' followed by an 'm' arch (multiple waves/peaks). Base Nga CANNOT be a single arch dome (∩).
+       - BASE GA: GÚ / GO ("gu" or "go", as in "gú/û" / pure_guu.png, study card "go" / ext_go_IMG_2655_14_.PNG, and exemplar_gu.jpg):
+         * Any glyph where the main body is ONLY A SINGLE INVERTED ARCH DOME (∩) with:
+           (a) An attached wavy trailing baseline hook (~v) curving upward, OR
+           (b) A detached lower comma tick (,) beneath at lower-left, OR
+           (c) BOTH a lower comma tick (,) at lower-left AND an attached trailing baseline valley hook (~v) on the right (as seen in "gú/û" / pure_guu.png)!
+         * CRITICAL OVERRIDE FOR GÚ / GO ("gu" or "go", as in "gú/û" / pure_guu.png):
+           Do NOT mistake the small detached lower comma tick (,) beneath the single arch dome for Base Nga's preceding crescent arc ')'. The lower comma tick is BELOW the bottom-left baseline, and the body has only ONE single arch dome (∩). Any glyph having ONLY ONE single arch dome (∩) with a trailing hook (~v) and/or a lower tick (,) is 100% GÚ / GO ("gu" or "go"), NEVER Base Nga and NEVER Ngú/Ngo!
        - BASE NGA (Ngú/Ngo, as in study card "ngo" / ext_ngo_IMG_2655_16_.PNG, and exemplar_ngu.jpg):
-         * Begins with a distinct VERTICAL CRESCENT ARC ')' on the far-left, followed by an 'm' arch before the trailing hook (~v).
+         * Begins with a distinct full-height VERTICAL CRESCENT ARC ')' on the far-left, followed by an 'm' arch before the trailing hook (~v).
        - GÍ / GE ("gi" or "ge", as in "gí/î" / gii.png):
          * A single inverted arch dome (∩) connected on the right to an upright vertical ascender stem (~|) -> 100% GÍ / GE ("gi" or "ge").
          * An inverted arch dome (∩) with an EMPTY interior and an upper acute tick (/) hovering directly above -> 100% GÍ / GE ("gi" or "ge", as in "gí/î"), NEVER Base Na and NEVER Ní/Ne! (Base Na MUST have a central vertical stem inside the dome).
@@ -280,10 +284,10 @@ CRITICAL DISAMBIGUATION RULES:
      * BASE BA (Bú / Bo, as in exemplar_bu.jpg): Base Ba is a COMPLETELY CLOSED CIRCLE / OVAL (O). If the character is open on top with a cane hook and flat baseline floor, it is BASE TA, NOT Base Ba!
 
    - 4. BASE NGA: NGÚ / NGO vs NGÍ / NGE vs PLAIN NGA:
-     * Base Nga has a vertical crescent arc ')' on the far-left followed by an 'm' arch.
+     * Base Nga has a full-height vertical crescent arc ')' on the far-left followed by an 'm' arch. Base Nga NEVER has only a single inverted arch dome ∩! (If the body is only ONE single arch dome ∩ with a lower tick and/or trailing hook, it is 100% GÚ / GO, NEVER Ngú/Ngo!).
      * NGÍ / NGE ("ngi" or "nge", as in "ngí/î"): Base Nga + upper acute tick (/) hovering above or attached upward flick (↗) on right crest.
      * NGÚ / NGO ("ngu" or "ngo", as in exemplar_ngu.jpg, study card "ngo" / ext_ngo_IMG_2655_16_.PNG, or handwritten "ngú/û"):
-       1. Base Nga accompanied by a DETACHED LOWER COMMA TICK or DOT (,) beneath the central arch / baseline -> 100% NGÚ / NGO ("ngu" or "ngo", as in exemplar_ngu.jpg), NEVER plain inherent Nga! (CRITICAL: Look carefully below the central arch; the presence of a comma tick or dot beneath Base Nga is the vowel modifier for -u/-o!).
+       1. Base Nga (crescent arc ')' + 'm' arch) accompanied by a DETACHED LOWER COMMA TICK or DOT (,) beneath the central arch / baseline -> 100% NGÚ / NGO ("ngu" or "ngo", as in exemplar_ngu.jpg), NEVER plain inherent Nga!
        2. Base Nga (crescent arc ')' + 'm' arch) with NO upper acute tick, where the right side extends into an attached TRAILING BASELINE VALLEY HOOK (~v) / deep rounded U-trough sweeping UPWARD or an upward-curling handwritten stroke -> 100% NGÚ / NGO ("ngu" or "ngo", as in study card "ngo" / ext_ngo_IMG_2655_16_.PNG and handwritten "ngú/û"), NEVER plain inherent Nga!
      * PLAIN INHERENT NGA ("nga", as in exemplar_nga.jpg):
        ONLY if there is NO lower comma tick/dot beneath, NO upper acute tick above, and NO upward trailing valley hook (the glyph curves down on the right into a downward-pointing teardrop) is it PLAIN INHERENT NGA ("nga").
