@@ -89,7 +89,7 @@ EXPERT DECODING WORKFLOW:
    5. LA: Vertical downward straight needle stem (↓) with a top horizontal bar that has an integral CLOSED LOOP / EYELET on the right side and an upward-curving left wing.
       * Base La + upper acute tick / kudlit (hovering above or rising from top eyelet / Hamza-like crown) OR Base La + attached cursive ligature on right whose stroke shoots UPWARD (~|) -> 100% LÍ / LE ("li" or "le", as in study card "le" and exemplar_li.jpg), NEVER Lang and NEVER Nang!
         (CRITICAL DISAMBIGUATION FROM LANG: In Lí/Le the rightmost stroke shoots straight UPWARD into the air (~|). It is ONLY Lang if the glyph is accompanied by a wide separate horizontal coda wave pair ')m' that stays flat along the baseline and curves DOWNWARD towards the floor. An upward-pointing stroke is NEVER Lang; it is 100% LÍ / LE ("le" or "li")!).
-      * Base La + lower comma tick beneath downward stem OR attached baseline valley hook -> LÚ / LO ("lu" or "lo")
+      * Base La + lower comma tick beneath downward stem OR attached baseline valley hook -> LÚ / LO ("lu" or "lo", as in "lú/û" / pure_luu.png: Base La vertical needle stem with top eyelet + lower comma tick at lower-left -> 100% LÚ / LO ("lu" or "lo"), NEVER Tú/To and NEVER Base Ta!)
       * Base La + coda wave pair ')m' (ONLY when curving downward along baseline with NO upward ascender) -> LANG ("lang")
       * Base La alone -> LA ("la")
    6. MA: Loop or slash crossed completely by a HORIZONTAL CROSSBAR (—) that clearly extends PAST the outer left wall.
@@ -105,10 +105,10 @@ EXPERT DECODING WORKFLOW:
    8. NGA:
       * Standard Primary Exemplar Form (exemplar_nga.jpg & exemplar_ngu.jpg): Left downward crescent ')' + medial arch + overarching top hook that curves DOWNWARD on the right into a teardrop.
         - Plain inherent NGA ("nga", exemplar_nga.jpg): NO lower comma tick/dot beneath, NO upper acute tick, NO trailing valley hook.
-        - NGÚ / NGO ("ngu" or "ngo", as in exemplar_ngu.jpg): Base Nga (crescent ')' + arch curving down) accompanied by a DETACHED LOWER COMMA TICK or DOT (,) beneath the central arch / baseline -> 100% NGÚ / NGO ("ngu" or "ngo"), NEVER plain inherent Nga! (CRITICAL: Look carefully below the central arch; the presence of a comma tick or dot beneath Base Nga is the vowel modifier for -u/-o!).
-      * Extended Cursive Card Form & Handwritten Form (study card "ngo" / ext_ngo_IMG_2655_16_.PNG, and handwritten "ngú/û"):
-        - NGÚ / NGO ("ngu" or "ngo"): An open undulating cursive wave beginning on the left with a distinct vertical crescent arc ')' followed by an 'm' arch, where the right side extends into an attached TRAILING BASELINE VALLEY HOOK (~v) / deep rounded U-trough sweeping UPWARD on the right -> 100% NGÚ / NGO ("ngu" or "ngo"), NEVER plain inherent Nga!
-      * NGÍ / NGE ("ngi" or "nge", as in "ngí/î"): Base Nga + upper acute tick above 'm' arch OR attached upward flick/tick (↗) on right crest.
+        - NGÚ / NGO ("ngu" or "ngo", as in "ngú/û" / pure_nguu.png, exemplar_ngu.jpg, study card "ngo"):
+          Base Nga accompanied by a DETACHED LOWER COMMA TICK or DOT (,) beneath the central arch at lower-left, OR an attached trailing baseline valley hook (~v) staying along the baseline with NO upper acute tick and NO tall upright vertical needle ascender -> 100% NGÚ / NGO ("ngu" or "ngo"), NEVER plain inherent Nga!
+      * NGÍ / NGE ("ngi" or "nge", as in "ngí/î" / pure_ngii.png):
+        - Base Nga featuring an UPPER ACUTE TICK (/) hovering above or attached upward flick (↗) on the right crest of the 'm' arch, AND/OR an attached cursive ligature with a TALL UPRIGHT VERTICAL ASCENDER STEM (~|) pointing straight UP into the air towards the top margin (reaching as high as or higher than the arch), with NO lower comma tick beneath -> 100% NGÍ / NGE ("ngi" or "nge", as in "ngí/î" / pure_ngii.png), NEVER Ngú/Ngo!
       * NGANG ("ngang"): Base Nga + second repeating crescent+arch wave pair along baseline (with NO upper acute tick and NO tall ascender).
    9. PA: UPRIGHT curved cup (∪), rounded floor at BOTTOM, open on TOP with arms pointing UP, and an internal horizontal tick on the inside of the right arm. Smooth unbroken outer left wall.
       * Base Pa + upper tick OR attached tall vertical ascender stem on right -> PÍ / PE ("pi" or "pe", as in "pí/î")
@@ -240,6 +240,17 @@ CRITICAL DISAMBIGUATION RULES:
            -> The vertical downward stem is Base La, and the top curved head with an acute diagonal tick pointing up-right is Base La's letterhead modified by the vowel -i/-e kudlit!
            -> THIS GLYPH IS 100% LÍ / LE ("li" or "le"), NEVER Ní/Ne, NEVER plain La, and NEVER Arabic!
 
+     * 3B. BASE LA WITH LOWER COMMA TICK / TRAILING VALLEY HOOK (LÚ / LO "lu" or "lo", as in "lú/û" / pure_luu.png):
+       - Visual Anatomy:
+         * Base La's vertical needle stem dropping down from a top looped head/eyelet (like a staff with a top loop).
+         * Accompanied by:
+           (a) A DETACHED LOWER COMMA TICK (,) beneath at lower-left, AND/OR
+           (b) An attached cursive trailing baseline valley hook (~v) sweeping along the baseline on the right with NO tall vertical needle ascender!
+       - CRITICAL MANDATORY OVERRIDE FOR LÚ / LO:
+         -> THIS GLYPH IS 100% LÚ / LO ("lu" or "lo", as in "lú/û" / pure_luu.png), NEVER Base Ta and NEVER Tú/To!
+         -> Base Ta starts with an open top-left cane hook dropping into a flat horizontal baseline floor with NO vertical needle stem and NO top looped eyelet!
+         -> If the glyph has a vertical needle stem with a top eyelet/loop and a lower comma tick or trailing hook = 100% LÚ / LO ("lu" or "lo")!
+
      * 4. BASE NA WITH UPPER ACUTE TICK (NÍ / NE "ni" or "ne", as in exemplar_ni.jpg / tight_ni.png):
        - Symmetrical umbrella canopy dome (⌢) that curves DOWNWARD on BOTH sides like an open umbrella rim + central downward stem + upper acute tick (/) hovering above the dome -> 100% NÍ / NE ("ni" or "ne").
 
@@ -285,10 +296,12 @@ CRITICAL DISAMBIGUATION RULES:
 
    - 4. BASE NGA: NGÚ / NGO vs NGÍ / NGE vs PLAIN NGA:
      * Base Nga has a full-height vertical crescent arc ')' on the far-left followed by an 'm' arch. Base Nga NEVER has only a single inverted arch dome ∩! (If the body is only ONE single arch dome ∩ with a lower tick and/or trailing hook, it is 100% GÚ / GO, NEVER Ngú/Ngo!).
-     * NGÍ / NGE ("ngi" or "nge", as in "ngí/î"): Base Nga + upper acute tick (/) hovering above or attached upward flick (↗) on right crest.
-     * NGÚ / NGO ("ngu" or "ngo", as in exemplar_ngu.jpg, study card "ngo" / ext_ngo_IMG_2655_16_.PNG, or handwritten "ngú/û"):
-       1. Base Nga (crescent arc ')' + 'm' arch) accompanied by a DETACHED LOWER COMMA TICK or DOT (,) beneath the central arch / baseline -> 100% NGÚ / NGO ("ngu" or "ngo", as in exemplar_ngu.jpg), NEVER plain inherent Nga!
-       2. Base Nga (crescent arc ')' + 'm' arch) with NO upper acute tick, where the right side extends into an attached TRAILING BASELINE VALLEY HOOK (~v) / deep rounded U-trough sweeping UPWARD or an upward-curling handwritten stroke -> 100% NGÚ / NGO ("ngu" or "ngo", as in study card "ngo" / ext_ngo_IMG_2655_16_.PNG and handwritten "ngú/û"), NEVER plain inherent Nga!
+     * NGÍ / NGE ("ngi" or "nge", as in "ngí/î" / pure_ngii.png):
+       - If an UPPER ACUTE TICK (/) hovers directly above the arch / crest, OR
+       - If the right side connects to an attached cursive ligature with a TALL UPRIGHT VERTICAL ASCENDER STEM (~|) pointing straight UP into the air towards the top margin (reaching as high as or higher than the arch) with NO lower comma tick beneath -> 100% NGÍ / NGE ("ngi" or "nge", as in "ngí/î" / pure_ngii.png), NEVER Ngú/Ngo!
+     * NGÚ / NGO ("ngu" or "ngo", as in "ngú/û" / pure_nguu.png, exemplar_ngu.jpg, study card "ngo" / ext_ngo_IMG_2655_16_.PNG):
+       1. Base Nga accompanied by a DETACHED LOWER COMMA TICK or DOT (,) beneath the central arch / baseline -> 100% NGÚ / NGO ("ngu" or "ngo", as in "ngú/û" / pure_nguu.png / exemplar_ngu.jpg), NEVER Ngí/Nge and NEVER plain inherent Nga!
+       2. Base Nga (crescent arc ')' + 'm' arch) with NO upper acute tick and NO tall upright vertical ascender, where the right side extends into an attached TRAILING BASELINE VALLEY HOOK (~v) / low rounded trough staying along the baseline -> 100% NGÚ / NGO ("ngu" or "ngo", as in study card "ngo" / ext_ngo_IMG_2655_16_.PNG and handwritten "ngú/û"), NEVER plain inherent Nga!
      * PLAIN INHERENT NGA ("nga", as in exemplar_nga.jpg):
        ONLY if there is NO lower comma tick/dot beneath, NO upper acute tick above, and NO upward trailing valley hook (the glyph curves down on the right into a downward-pointing teardrop) is it PLAIN INHERENT NGA ("nga").
 
@@ -315,9 +328,10 @@ CRITICAL DISAMBIGUATION RULES:
        -> If there is an UPPER ACUTE TICK (/) hovering above = 100% PÍ / PE ("pi" or "pe", as in "pí/î"), NEVER Tí/Te!
        -> If there is a LOWER COMMA TICK (,) at the lower-left = 100% PÚ / PO ("pu" or "po", as in "pú/û"), NEVER Tú/To!
      * In contrast, if the glyph has a single continuous hook dropping onto an empty bottom floor with NO central horizontal bridge and NO stepped shelf + upper acute tick (/) above = 100% TÍ / TE ("ti" or "te", as in "tí/î"), NEVER Pí/Pe!
-   - BASE LA TERMINAL ORIENTATION (LÍ/LE vs LANG):
-     * Look closely at the FAR RIGHT of the glyph attached or beside Base La:
+   - BASE LA TERMINAL ORIENTATION (LÍ/LE vs LÚ/LO vs LANG):
+     * Look closely at the glyph of Base La (vertical needle stem + top loop/eyelet):
        -> If the rightmost tip/stroke shoots or points UPWARD (vertical ascender stem ~| pointing straight UP into the air towards the top margin) = 100% LÍ / LE ("li" or "le", as in "lí/î"), NEVER Lang and NEVER Nang!
+       -> If accompanied by a DETACHED LOWER COMMA TICK (,) beneath at lower-left OR a trailing baseline valley hook (~v) staying along the baseline = 100% LÚ / LO ("lu" or "lo", as in "lú/û" / pure_luu.png), NEVER Tú/To and NEVER Base Ta!
        -> It is ONLY Lang if the rightmost stroke stays flat along the baseline and curves DOWNWARD (hooking down towards the floor).
        -> CRITICAL MANDATORY OVERRIDE: An upward-pointing right stroke is NEVER a coda wave; if the rightmost stroke shoots UPWARD = 100% LÍ / LE ("li" or "le", as in "lí/î"), NEVER Lang!
 1. STANDALONE VOWEL A vs BASE PA vs STANDALONE U/O:
