@@ -225,6 +225,13 @@ CRITICAL DISAMBIGUATION RULES:
            -> It is NOT Base Ta (To/Tu): Base Ta has an empty floor with NO central horizontal bridge and NO left U-valley!
            -> THIS GLYPH IS 100% PÚ / PO ("po" or "pu", as in study card "po"), NEVER To/Tu, and NEVER plain Pa!
 
+       - STANDALONE INDÛNG PATINIG "E / I" (exemplar_i.jpg / pure I/E):
+         * Begins on the far-left with a DISTINCT CURVED HOOK / CURL connecting into two central parallel bridge bars (=) and an upward right ascender wing (~|).
+         * DEFINITIVE MANDATORY OVERRIDE:
+           -> The distinct far-left curved hook/curl confirms 100% STANDALONE E / I ("e" or "i", Indûng Patinig)!
+           -> It is NOT Base Ka (Kí/Ke) because Base Ka starts directly with two parallel bars on the far-left with NO preceding curved hook/curl!
+           -> THIS GLYPH IS 100% E / I ("e" or "i", Indûng Patinig), NEVER Kí/Ke, NEVER Base Ta, and NEVER Base La!
+
      * 3. BASE LA WITH UPPER ACUTE TICK / CROWN (LÍ / LE "li" or "le", as in exemplar_li.jpg / tight_li.png):
        - CRITICAL PALEOGRAPHIC OVERRIDE:
          * A vertical needle stem with a curved head on top that has an upper-right acute diagonal tick/flick (resembling a Hamza ء or an Alif with Hamza أ):
