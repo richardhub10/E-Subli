@@ -517,9 +517,8 @@ export async function callGroqVision(
 
         if (!response.ok) {
           const errorText = await response.text().catch(() => '');
-          console.warn(`Groq Vision API model ${model} with key ${currentKey.slice(0, 10)}... returned error status ${response.status}:`, errorText);
-          if (response.status === 429) {
-            // Hit rate limit on this key, try next key in pool
+          if (response.status === 429 || errorText.includes('rate_limit_exceeded') || errorText.includes('too large')) {
+            // Hit rate limit on this key, break to avoid slowing down user
             break;
           }
           continue;
