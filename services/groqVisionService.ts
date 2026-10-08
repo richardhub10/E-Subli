@@ -35,7 +35,9 @@ It is NOT Tagalog Baybayin, NOT Sinhala, NOT Burmese, and NOT Arabic!
 - In Kulitan, 'Da' is an angular box-bracket body [ (or cursive Z) with a distinct separate wavy tilde crown (~) hovering directly above its ceiling bar. The wavy crown ~ is part of Base Da itself, NOT an acute tick! If a dot, comma tick, or mark is present BELOW / BENEATH the bracket -> it is 100% DÚ / DO ("du" or "do"), NEVER Dí/De! If an acute tick (/) hovers above the wavy crown -> 100% DÍ / DE ("di" or "de").
 - In Kulitan, 'Na' is an umbrella dome with a straight downward central vertical stem. It is NOT Nga.
 - In Kulitan, 'Ga' is a SINGLE inverted U-arch dome (∩) with two vertical legs pointing down and an EMPTY interior (NO central vertical stem). If a single inverted arch dome (∩) connects on the right to an upright vertical ascender stem (~|) -> it is 100% GÍ / GE ("gi" or "ge", as in "gí/î", matching gii.png), NEVER Ngí/Nge and NEVER Ngang! With acute tick (/) above -> 100% GÍ / GE ("gi" or "ge"), NEVER Ní/Ne!
-- In Kulitan, 'La' (and 'Lí/Le') has a prominent straight vertical downward stem (↓) with an upward-curving left wing and top eyelet. If accompanied on the right by a tall vertical upright ascender stem (~|) shooting straight UP into the air, it is 100% LÍ / LE ("li" or "le", as in "lí/î"), NEVER Nang and NEVER Lang!
+- In Kulitan, 'La' has a prominent straight vertical downward needle stem (↓) with an upward-curving left wing and a top eyelet/bar.
+  * If Base La has an UPPER ACUTE TICK (/) hovering above or acute flick rising from the top loop/bar (or resembling a curved head with acute flick / Hamza-like crown on a vertical stem) -> it is 100% LÍ / LE ("li" or "le", as in exemplar_li.jpg), NEVER Ní/Ne, NEVER plain Na, and NOT Arabic!
+  * If Base La connects on the right to an attached cursive ligature with an arch and an upward vertical stroke (~|) -> it is 100% LÍ / LE ("le" or "li", as in study card "le" / IMG_2655(4)), NEVER Lang and NEVER plain La!
 - In Kulitan, 'Nga' begins on the far left with a distinct vertical crescent arc ')' followed by an 'm' arch. If accompanied by an upper acute tick (/) hovering above the 'm' arch or an attached upward flick (↗) rising from the right crest, it is 100% NGÍ / NGE ("ngi" or "nge", as in "ngí/î"). If ending in an attached trailing baseline valley hook (~v / ∪) curling upward -> 100% NGÚ / NGO ("ngu" or "ngo", as in "ngo"), NEVER plain Nga!
 - In Kulitan, 'Nga' is a left crescent ')' + horizontal 'm' wave arch curving DOWNWARD (∩). In contrast, Standalone 'U/O' is an isolated character with two tall vertical upright loops.
 
@@ -84,10 +86,11 @@ EXPERT DECODING WORKFLOW:
       * Base Ka + third lower tick/bar beneath OR attached baseline valley hook / trailing cursive ligature -> KÚ / KO ("ku" or "ko", as in study card "ko" / ext_ko_IMG_2655_15_.PNG)
       * Base Ka + coda wave pair ')m' -> KANG ("kang")
       * Base Ka alone -> KA ("ka")
-   5. LA: Vertical downward straight stem (↓) with a top horizontal bar that has an integral CLOSED LOOP / EYELET on the right side and an upward-curving left wing.
-      * Base La + upper acute tick above top loop OR attached tall vertical ascender on far right -> LÍ / LE ("li" or "le", NEVER Lang and NEVER Nang! In Lí/Le the right ascender shoots straight up to the top, whereas Lang and Nang have a low horizontal coda wave )m along the baseline with NO tall ascender).
+   5. LA: Vertical downward straight needle stem (↓) with a top horizontal bar that has an integral CLOSED LOOP / EYELET on the right side and an upward-curving left wing.
+      * Base La + upper acute tick / kudlit (hovering above or rising from top eyelet / Hamza-like crown) OR Base La + attached cursive ligature on right whose stroke shoots UPWARD (~|) -> 100% LÍ / LE ("li" or "le", as in study card "le" and exemplar_li.jpg), NEVER Lang and NEVER Nang!
+        (CRITICAL DISAMBIGUATION FROM LANG: In Lí/Le the rightmost stroke shoots straight UPWARD into the air (~|). It is ONLY Lang if the glyph is accompanied by a wide separate horizontal coda wave pair ')m' that stays flat along the baseline and curves DOWNWARD towards the floor. An upward-pointing stroke is NEVER Lang; it is 100% LÍ / LE ("le" or "li")!).
       * Base La + lower comma tick beneath downward stem OR attached baseline valley hook -> LÚ / LO ("lu" or "lo")
-      * Base La + coda wave pair ')m' -> LANG ("lang")
+      * Base La + coda wave pair ')m' (ONLY when curving downward along baseline with NO upward ascender) -> LANG ("lang")
       * Base La alone -> LA ("la")
    6. MA: Loop or slash crossed completely by a HORIZONTAL CROSSBAR (—) that clearly extends PAST the outer left wall.
       * Base Ma + upper tick/ascender -> MÉ / MI ("me" or "mi", as in "mí/î"). (CRITICAL: Any glyph with a horizontal crossbar — slicing through a left loop/body is 100% BASE MA / MÍ / ME ("me" or "mi"), NEVER Base Ta and NEVER Tí/Te! Ta has NO loop and NO horizontal crossbar).
@@ -143,7 +146,9 @@ EXPERT DECODING WORKFLOW:
       * Kang: Base Ka (parallel bars) + ')m'
       * Gang: Base Ga (inverted arch dome ∩ with legs down) + ')m'
       * Ngang: Two repeating wave pairs along baseline (')m )m').
-      CRITICAL: If a distinct base consonant is on the left followed by ')m', it is 100% that base consonant's CODA NASAL LIGATURE (-ng: Tang, Dang, Nang, Lang, Bang, Sang, Pang, Mang, Kang, Gang), NEVER Ngang and NEVER plain Base Nga!
+      CRITICAL: Coda nasal ligature (-ng: Tang, Dang, Nang, Lang, Bang, Sang, Pang, Mang, Kang, Gang) requires the authentic two-part coda wave pair: a separate crescent arc ')' PLUS an undulating 'm' wave along the baseline that curves DOWNWARD towards the floor.
+      DO NOT confuse with the attached vowel -i/-e modifier (Lí/Le, Ní/Ne, Kí/Ke, Dí/De):
+      - If the attached structure on the right ends in a vertical stroke pointing/extending UPWARD (~|) -> it is 100% VOWEL -I / -E (Lí/Le, Ní/Ne, Kí/Ke, Dí/De), NEVER Coda Nasal -ng and NEVER Lang!
 
    D. INHERENT VOWEL -A (Indûng Súlat):
       If NO coda nasal, NO upper/lower ticks, and NO attached ligatures (and NO upward trailing valley troughs / hooks) are present:
@@ -153,6 +158,70 @@ EXPERT DECODING WORKFLOW:
 CRITICAL DISAMBIGUATION RULES:
 =======================================================
 0. TOP SCANNER OVERRIDES FOR PURE ISOLATED SYMBOLS:
+   - 0. ABSOLUTE MANDATORY OVERRIDES FOR STUDY FLASHCARDS & PURE ISOLATED SYMBOLS:
+     * 1. ATTACHED CURSIVE VOWEL -I / -E LIGATURE (LE, NE, ME, SE, PE, BE, KE, DE):
+       - In cursive Kulitan calligraphy and study flashcards (IMG_2655 series), the vowel -i/-e modifier is written as an attached cursive ligature on the right consisting of an arch leading into a TALL UPWARD VERTICAL NEEDLE STROKE (~|):
+         -> IT IS 100% VOWEL -I / -E!
+         -> IT IS NEVER a plain inherent consonant!
+         -> IT IS NEVER coda nasal -ng, and NEVER vowel -u/-o!
+       - STUDY CARD "LE" (tight_le.png):
+         * Consists of Base La on the left (downward vertical stem with top eyelet) connected directly on the right to an attached cursive ligature: an arch/wave leading into a vertical line going UPWARD (~|).
+         * It has NO separate crescent arc ')' and does NOT curve downward along the baseline.
+         * THIS GLYPH IS 100% LÍ / LE ("le" or "li", as in study card "le"), NEVER Lang and NEVER plain La!
+       - STUDY CARD "NE" (tight_ne.png):
+         * Consists of Base Na on the left (umbrella dome ⌢ with central vertical stem) connected directly on the right to an attached cursive ligature ending in a TALL VERTICAL NEEDLE STROKE pointing straight UPWARD (~|).
+         * CRITICAL DISAMBIGUATION FROM NO:
+           -> In "ne", the rightmost stroke shoots straight UPWARD into the air (~|) towards the top margin.
+           -> If the rightmost stroke shoots straight UPWARD (~|), it is 100% NÍ / NE ("ne" or "ni"), NEVER Nú/No!
+           -> It is ONLY "no" if the right side is a low rounded valley trough (~v / ∪) along the baseline with NO tall vertical ascender.
+         * THIS GLYPH IS 100% NÍ / NE ("ne" or "ni", as in study card "ne"), NEVER plain Na and NEVER Nang!
+       - STUDY CARD "ME" (tight_me.png):
+         * Consists of Base Ma on the left (a loop clearly crossed by a HORIZONTAL CROSSBAR — extending past the outer left wall) connected directly on the right to an attached cursive ligature ending in an upward vertical stroke (~|).
+         * Look at the left loop: if a horizontal bar slices completely through it and extends past the left wall, it is 100% BASE MA!
+         * THIS GLYPH IS 100% MÉ / MI ("me" or "mi", as in study card "me"), NEVER Lí/Le and NEVER plain Ma!
+       - STUDY CARD "SE" (tight_se.png):
+         * Consists of Base Sa on the left ('3' numeral shape with two rounded lobes) connected directly on the right to an attached cursive ligature ending in an upward vertical stroke (~|).
+         * CRITICAL OVERRIDE: The rightmost stroke shoots straight UPWARD into the air (~|). This is the vowel -i/-e modifier, NOT a baseline valley hook!
+         * THIS GLYPH IS 100% SÉ / SI ("se" or "si", as in study card "se"), NEVER Sú/So and NEVER plain Sa!
+       - STUDY CARD "PE" (tight_pe.png / study card "pe"):
+         * Visual Anatomy:
+           1. Far-left: An upright cup with an open top, curving down into a rounded bottom floor at the base.
+           2. Medial: An internal horizontal stepped shelf/bridge rising into a rounded medial arch.
+           3. Far-right: An attached cursive ligature ending in a tall vertical needle stroke (~|) shooting straight UP into the air towards the top margin.
+         * DEFINITIVE MANDATORY OVERRIDE:
+           -> This glyph is 100% PÉ / PI ("pe" or "pi", as in study card "pe")!
+           -> It is NOT Base La (Lí/Le) because the lower-left has a rounded cup floor with an internal shelf, NOT a straight downward vertical needle stem.
+           -> It is NOT Base Nga (Ngú/Ngo) because it is an upright cup with an internal shelf, NOT a detached crescent arc ')'.
+           -> It is NOT Base Na (Ní/Ne) because it has an upright cup on the left, NOT an umbrella dome.
+           -> ANY glyph with this upright cup + stepped shelf + upward needle ascender is 100% PÉ / PI ("pe" or "pi"), NEVER Lí/Le, NEVER Ngú/Ngo, and NEVER Ní/Ne!
+
+       - STUDY CARD "BE" (tight_be.png):
+         * Consists of Base Ba on the left (a closed oval circle O) connected directly on the right to an attached cursive ligature ending in an upward vertical stroke (~|).
+         * THIS GLYPH IS 100% BÉ / BI ("be" or "bi", as in study card "be"), NEVER Bú/Bo and NEVER Bang!
+       - STUDY CARD "KE" (ext_ke_IMG_2655_6_.PNG):
+         * Two horizontal parallel bars (=) connected directly on the right to an attached cursive ligature ending in an upward vertical stroke (~|) -> 100% KÍ / KE ("ke" or "ki").
+       - STUDY CARD "DE" (ext_de_IMG_2655_10_.PNG):
+         * Box bracket [ with wavy tilde crown (~) connected on the right to an attached cursive ligature ending in an upward vertical stroke (~|) -> 100% DÍ / DE ("de" or "di").
+
+     * 2. ATTACHED CURSIVE TRAILING BASELINE VALLEY HOOK FOR VOWEL -U / -O (NO, TO, KO, DO, NGO):
+       - STUDY CARD "NO" (tight_no.png):
+         * Consists of Base Na on the left (symmetrical umbrella canopy dome ⌢ with central downward vertical stem) connected directly on the right to an attached cursive trailing baseline valley hook (~v / ∪) sweeping upward.
+         * In "no", the trailing hook is a low rounded trough along the baseline with NO tall vertical ascender needle reaching the top margin.
+         * THIS GLYPH IS 100% NÚ / NO ("no" or "nu", as in study card "no"), NEVER plain Na and NEVER Nang!
+
+     * 3. BASE LA WITH UPPER ACUTE TICK / CROWN (LÍ / LE "li" or "le", as in exemplar_li.jpg / tight_li.png):
+       - CRITICAL PALEOGRAPHIC OVERRIDE:
+         * A vertical needle stem with a curved head on top that has an upper-right acute diagonal tick/flick (resembling a Hamza ء or an Alif with Hamza أ):
+           -> THIS IS NOT ARABIC AND NOT BASE NA!
+           -> In authentic Sulat Kapampangan (Kulitan), this exact shape is 100% the canonical calligraphic exemplar for LÍ / LE ("li" or "le", as in study card "li" and exemplar_li.jpg)!
+           -> The vertical downward stem is Base La, and the top curved head with an acute diagonal tick pointing up-right is Base La's letterhead modified by the vowel -i/-e kudlit!
+           -> THIS GLYPH IS 100% LÍ / LE ("li" or "le"), NEVER Ní/Ne, NEVER plain La, and NEVER Arabic!
+
+     * 4. BASE NA WITH UPPER ACUTE TICK (NÍ / NE "ni" or "ne", as in exemplar_ni.jpg / tight_ni.png):
+       - Symmetrical umbrella canopy dome (⌢) that curves DOWNWARD on BOTH sides like an open umbrella rim + central downward stem + upper acute tick (/) hovering above the dome -> 100% NÍ / NE ("ni" or "ne").
+
+     * 5. BASE NA WITH LOWER COMMA TICK (NÚ / NO, as in exemplar_nu.jpg / tight_nu.png):
+       - Symmetrical umbrella dome (⌢) + central downward stem + detached lower comma tick (,) at lower-left -> 100% NÚ / NO ("nu" or "no").
    - 1. BASE DA (DÍ / DE vs DÚ / DO vs TÍ / TE):
      * Any glyph consisting of an angular box-bracket [ or cursive Z with a distinct separate wavy tilde crown (~) hovering directly above its ceiling bar belongs 100% to BASE DA (Dí/De, Dú/Do, Da), NEVER Base Ta and NEVER Tí/Te!
      * Base Ta is ONE continuous single stroke without any wavy crown hovering on top.
