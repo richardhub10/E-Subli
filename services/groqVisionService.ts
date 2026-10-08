@@ -267,6 +267,9 @@ CRITICAL DISAMBIGUATION RULES:
        - GÍ / GE ("gi" or "ge", as in "gí/î" / gii.png):
          * A single inverted arch dome (∩) connected on the right to an upright vertical ascender stem (~|) -> 100% GÍ / GE ("gi" or "ge").
          * An inverted arch dome (∩) with an EMPTY interior and an upper acute tick (/) hovering directly above -> 100% GÍ / GE ("gi" or "ge", as in "gí/î"), NEVER Base Na and NEVER Ní/Ne! (Base Na MUST have a central vertical stem inside the dome).
+        - GANG ("gang", as in gang.png / exemplar_gang.png):
+          * A single inverted arch dome on the far-left followed on the right by the coda wave pair ')m' -> 100% GANG ("gang"), NEVER Ngang and NEVER plain Nga!
+          * Ngang consists of TWO repeating wave pairs (')m )m'). If the far-left is ONLY a single inverted arch dome, it is 100% GANG ("gang")!
 
    - 3. BASE TA vs STANDALONE E / I vs BASE BA (TÚ / TO vs STANDALONE E / I vs PLAIN TA vs BÚ / BO):
      * STANDALONE E / I ("e" or "i", Indûng Patinig): A flowing cursive glyph featuring TWO CENTRAL HORIZONTAL PARALLEL BRIDGE BARS (=) connecting the left curl to the right loop/ascender. It has NO downward vertical cane hook and NO flat horizontal baseline floor. It is 100% STANDALONE E / I ("e" or "i"), NEVER Base Ta and NEVER Tú/To!
