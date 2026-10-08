@@ -203,11 +203,27 @@ CRITICAL DISAMBIGUATION RULES:
        - STUDY CARD "DE" (ext_de_IMG_2655_10_.PNG):
          * Box bracket [ with wavy tilde crown (~) connected on the right to an attached cursive ligature ending in an upward vertical stroke (~|) -> 100% DÍ / DE ("de" or "di").
 
-     * 2. ATTACHED CURSIVE TRAILING BASELINE VALLEY HOOK FOR VOWEL -U / -O (NO, TO, KO, DO, NGO):
-       - STUDY CARD "NO" (tight_no.png):
-         * Consists of Base Na on the left (symmetrical umbrella canopy dome ⌢ with central downward vertical stem) connected directly on the right to an attached cursive trailing baseline valley hook (~v / ∪) sweeping upward.
-         * In "no", the trailing hook is a low rounded trough along the baseline with NO tall vertical ascender needle reaching the top margin.
-         * THIS GLYPH IS 100% NÚ / NO ("no" or "nu", as in study card "no"), NEVER plain Na and NEVER Nang!
+     * 2. ATTACHED CURSIVE TRAILING BASELINE VALLEY HOOK FOR VOWEL -U / -O (NO, MO, PO, BO, SO, TO, KO, DO, NGO):
+       - STUDY CARD "NO" (tight_no.png / study card "no"):
+         * Consists of Base Na on the left (symmetrical umbrella canopy dome ⌢ with central downward vertical stem) connected directly on the right to an attached cursive trailing baseline valley hook (~v / ∪) sweeping upward along the baseline floor.
+         * CRITICAL OVERRIDE:
+           -> The attached trailing baseline valley hook (~v / ∪) on the right is the authentic vowel modifier for -u/-o!
+           -> In "no", the trailing hook is a low rounded trough along the baseline with NO tall vertical ascender needle reaching the top margin.
+           -> THIS GLYPH IS 100% NÚ / NO ("no" or "nu", as in study card "no"), NEVER plain inherent Na and NEVER Nang!
+
+       - STUDY CARD "MO" (tight_mo.png / study card "mo"):
+         * Consists of Base Ma on the left (a loop clearly crossed by a HORIZONTAL CROSSBAR extending past the outer left wall) connected directly on the right to an attached cursive trailing baseline valley hook (~v / ∪) sweeping upward along the baseline floor with NO tall vertical ascender.
+         * THIS GLYPH IS 100% MÚ / MO ("mo" or "mu", as in study card "mo"), NEVER plain Ma, and NEVER Mang!
+
+       - STUDY CARD "PO" (tight_po.png / study card "po"):
+         * Visual Anatomy (Three Components):
+           1. The Left U-Valley: Begins on the far-left with a stroke that drops down and sweeps into a rounded bottom U-valley floor.
+           2. The Central Bridge: Transitions into a horizontal cross-bar / stepped bridge connecting the left portion to the right portion. This central horizontal bridge is the definitive diagnostic morphology of BASE PA!
+           3. The Right Arc & Tail: Lifts into an arch terminating in a trailing curved tail / valley hook (~v / ∪) along the baseline floor with NO tall vertical needle ascender reaching the top margin.
+         * DEFINITIVE MANDATORY OVERRIDE:
+           -> The central horizontal bridge connecting the left U-valley to the right arch confirms 100% BASE PA!
+           -> It is NOT Base Ta (To/Tu): Base Ta has an empty floor with NO central horizontal bridge and NO left U-valley!
+           -> THIS GLYPH IS 100% PÚ / PO ("po" or "pu", as in study card "po"), NEVER To/Tu, and NEVER plain Pa!
 
      * 3. BASE LA WITH UPPER ACUTE TICK / CROWN (LÍ / LE "li" or "le", as in exemplar_li.jpg / tight_li.png):
        - CRITICAL PALEOGRAPHIC OVERRIDE:
