@@ -31,8 +31,11 @@ CRITICAL SCRIPT CONTEXT:
 This is authentic SULAT KAPAMPANGAN (KULITAN) from Pampanga, Philippines.
 It is NOT Tagalog Baybayin, NOT Sinhala, NOT Burmese, and NOT Arabic!
 - In Kulitan, 'Ba' is ALWAYS a closed oval circle (O).
-- In Kulitan, 'Ta' is an upper-left cane hook curving down into an extended flat horizontal baseline floor and medial arch. Ta NEVER has a wavy tilde crown (~) hovering on top, and NEVER has a box bracket!
-- In Kulitan, 'Da' is an angular box-bracket body [ (or cursive Z) with a distinct separate wavy tilde crown (~) hovering directly above its ceiling bar. The wavy crown ~ is part of Base Da itself, NOT an acute tick! If a dot, comma tick, or mark is present BELOW / BENEATH the bracket -> it is 100% DÚ / DO ("du" or "do"), NEVER Dí/De! If an acute tick (/) hovers above the wavy crown -> 100% DÍ / DE ("di" or "de").
+- In Kulitan, 'Ta' begins on the far-left with an overhanging cane hook / swan-neck ('乙' / '2'-curve) that drops down to a sharp corner, then extends into a flat horizontal baseline floor (________) and medial notch/arch.
+  * Ta is NOT Base Pa: Base Pa begins with an UPRIGHT CUP (∪) whose leftmost tip points UPWARD towards the ceiling, and has an internal horizontal shelf. Ta has an overhanging hook curving OVER and DOWN to a flat floor.
+  * Ta is NOT Base La: Base La has a straight vertical downward needle stem (↓) with a top looped eyelet. Ta has an overhanging cane hook with a flat floor and NO vertical needle stem.
+  * Ta is NOT Base Da: Base Da strictly requires a separate floating wavy tilde crown (~) in the air above. Ta has NO floating crown.
+- In Kulitan, 'Da' consists of an angular box-bracket body [ with a distinct separate wavy tilde crown (~) hovering in the air directly above its ceiling bar. (CRITICAL: Base Da MUST have the separate floating wavy crown ~ in the air. If there is NO separate floating crown ~, a glyph with a top-left cane hook and flat baseline floor is 100% BASE TA, NOT Base Da!). In Base Da: if a mark/tick is beneath the box bracket -> 100% DÚ / DO ("du" or "do"). If an acute tick hovers above the crown -> 100% DÍ / DE ("di" or "de").
 - In Kulitan, 'Na' is an umbrella dome with a straight downward central vertical stem. It is NOT Nga.
 - In Kulitan, 'Ga' is a SINGLE inverted U-arch dome (∩) with two vertical legs pointing down and an EMPTY interior (NO central vertical stem). If a single inverted arch dome (∩) connects on the right to an upright vertical ascender stem (~|) -> it is 100% GÍ / GE ("gi" or "ge", as in "gí/î", matching gii.png), NEVER Ngí/Nge and NEVER Ngang! With acute tick (/) above -> 100% GÍ / GE ("gi" or "ge"), NEVER Ní/Ne!
 - In Kulitan, 'La' has a prominent straight vertical downward needle stem (↓) with an upward-curving left wing and a top eyelet/bar.
@@ -68,7 +71,7 @@ EXPERT DECODING WORKFLOW:
       * Base Ba + coda wave pair ')m' on right -> BANG ("bang")
    2. DA: Angular box-bracket body [ with a distinct separate wavy tilde crown (~) hovering directly above its ceiling bar.
       * CRITICAL: Any glyph featuring a separate wavy tilde crown (~) hovering on top belongs 100% to the DA family (Da, Dí/De, Dú/Do, Dang), NEVER TA! (Base Ta is one continuous stroke with an upper-left hook and flat baseline floor; Ta NEVER has a wavy tilde crown ~ hovering on top).
-       * DÚ / DO ("du" or "do", as in "dú/û"): Base Da + ANY detached mark (dot, comma tick ,, or dash) positioned BELOW or beneath the box-bracket OR attached cursive trailing baseline valley hook (~v) sweeping up on the right (as in study card "do" / ext_do_IMG_2655_18_.PNG) -> 100% DÚ / DO ("du" or "do"), NEVER Dí/De and NEVER To/Tu! (CRITICAL: Look at the bottom of the glyph: if there is a dot or mark beneath the box, or a trailing valley hook, it is DÚ / DO, because the wavy crown ~ is Base Da's inherent letterhead, NOT a vowel tick!).
+       * DÚ / DO ("du" or "do", as in "dú/û"): Base Da + ANY detached mark (dot, comma tick ,, or dash) positioned BELOW or beneath the box-bracket OR attached cursive trailing baseline valley hook (~v) sweeping up on the right (as in study card "do" / ext_do_IMG_2655_18_.PNG) -> 100% DÚ / DO ("du" or "do"), NEVER Dí/De! (CRITICAL: Dú/Do strictly requires the separate floating wavy crown ~ in the air above. If there is NO floating crown ~, a cane hook + flat floor + lower tick is 100% TÚ / TO, NEVER Dú/Do!) (CRITICAL: Look at the bottom of the glyph: if there is a dot or mark beneath the box, or a trailing valley hook, it is DÚ / DO, because the wavy crown ~ is Base Da's inherent letterhead, NOT a vowel tick!).
        * DÍ / DE ("di" or "de", NEVER Te or Ti!): Base Da + upper acute tick (/) hovering ABOVE the wavy crown OR attached tall vertical upright ascender stem (~|) on right (ONLY when there is NO mark below the box-bracket and NO trailing valley hook).
       * Base Da + coda wave pair ')m' on right -> DANG ("dang")
       * Base Da alone -> DA ("da")
@@ -120,9 +123,9 @@ EXPERT DECODING WORKFLOW:
       * Base Sa + lower tick/valley hook -> SÚ / SO ("su" or "so")
       * Base Sa + coda wave pair ')m' -> SANG ("sang")
       * Base Sa alone -> SA ("sa")
-   11. TA: Upper-left hook dropping down vertically into an extended FLAT HORIZONTAL BASELINE FLOOR and medial arch. (NO wavy crown ~, NO box frame, NOT an upright cup).
-      * Base Ta + upper acute tick hovering above OR attached tall vertical ascender on right -> TÍ / TE ("ti" or "te")
-      * Base Ta + lower comma tick beneath OR attached baseline valley hook -> TÚ / TO ("tu" or "to")
+   11. TA: Upper-left cane hook dropping down vertically into an extended FLAT HORIZONTAL BASELINE FLOOR and medial arch. (NO wavy crown ~, NO box frame, NOT an upright cup).
+      * Base Ta + upper acute tick hovering above OR attached tall vertical ascender on right -> TÍ / TE ("ti" or "te", as in "tí/î" / pure_tii.png: top-left cane hook + flat baseline floor + upper acute tick -> 100% TÍ / TE, NEVER Pí/Pe!)
+      * Base Ta + lower comma tick beneath OR attached baseline valley hook -> TÚ / TO ("tu" or "to", as in "tú/û" / pure_tuu.png)
       * Base Ta + coda wave pair ')m' -> TANG ("tang")
       * Base Ta alone -> TA ("ta")
 
@@ -183,17 +186,27 @@ CRITICAL DISAMBIGUATION RULES:
          * Consists of Base Sa on the left ('3' numeral shape with two rounded lobes) connected directly on the right to an attached cursive ligature ending in an upward vertical stroke (~|).
          * CRITICAL OVERRIDE: The rightmost stroke shoots straight UPWARD into the air (~|). This is the vowel -i/-e modifier, NOT a baseline valley hook!
          * THIS GLYPH IS 100% SÉ / SI ("se" or "si", as in study card "se"), NEVER Sú/So and NEVER plain Sa!
-       - STUDY CARD "PE" (tight_pe.png / study card "pe"):
+       - STUDY CARD "PE" (tight_pe.png / study card "pe" / "pí/î" / pure_pii.png):
          * Visual Anatomy:
-           1. Far-left: An upright cup with an open top, curving down into a rounded bottom floor at the base.
+           1. Far-left: An UPRIGHT CUP (∪) with an open top, curving down into a rounded bottom bowl floor at the base, whose leftmost tip points UPWARDS towards the ceiling.
            2. Medial: An internal horizontal stepped shelf/bridge rising into a rounded medial arch.
-           3. Far-right: An attached cursive ligature ending in a tall vertical needle stroke (~|) shooting straight UP into the air towards the top margin.
+           3. Right & Kudlit: An attached cursive ligature ending in a tall vertical needle stroke (~|) shooting UPWARDS, AND/OR an UPPER ACUTE TICK (/) hovering above.
+         * DEFINITIVE MANDATORY OVERRIDE FOR PÍ / PE vs TÍ / TE:
+           -> Look at the far-left stroke: if it is an UPRIGHT CUP (∪) whose leftmost tip points UPWARDS (with an internal horizontal shelf/bridge inside), it is 100% PÍ / PE ("pi" or "pe", as in "pí/î" / pure_pii.png), NEVER Tí/Te!
+           -> It is NOT Base Ta (Tí/Te): Base Ta begins with an overhanging cane hook ('乙' / '2'-curve) curving OVER and DOWN, NOT an upright cup (∪)!
+           -> It is NOT Base La (Lí/Le) because it has a rounded cup floor with an internal shelf, NOT a straight downward vertical needle stem.
+           -> ANY glyph with this upright cup (∪) + stepped shelf + upper acute tick (/) or upward needle ascender is 100% PÍ / PE ("pi" or "pe"), NEVER Tí/Te, NEVER Lí/Le, and NEVER Dí/De!
+
+       - STUDY CARD "TE" (study card "tí/î" / pure_tii.png):
+         * Visual Anatomy:
+           1. Far-left: Begins with an OVERHANGING CANE HOOK / SWAN-NECK ('乙' / '2'-curve) that arches over at the top and drops down vertically to a sharp corner at the baseline floor.
+           2. Bottom & Medial: Turns right into an extended FLAT HORIZONTAL BASELINE FLOOR (________) and rises into a medial notch/arch.
+           3. Far-right: Attached cursive ligature ending in a tall upright vertical needle stroke (~|) shooting straight UP into the air towards the top margin, accompanied by an upper acute tick (/) hovering above.
          * DEFINITIVE MANDATORY OVERRIDE:
-           -> This glyph is 100% PÉ / PI ("pe" or "pi", as in study card "pe")!
-           -> It is NOT Base La (Lí/Le) because the lower-left has a rounded cup floor with an internal shelf, NOT a straight downward vertical needle stem.
-           -> It is NOT Base Nga (Ngú/Ngo) because it is an upright cup with an internal shelf, NOT a detached crescent arc ')'.
-           -> It is NOT Base Na (Ní/Ne) because it has an upright cup on the left, NOT an umbrella dome.
-           -> ANY glyph with this upright cup + stepped shelf + upward needle ascender is 100% PÉ / PI ("pe" or "pi"), NEVER Lí/Le, NEVER Ngú/Ngo, and NEVER Ní/Ne!
+           -> Look at the far-left stroke: if it is an OVERHANGING CANE HOOK ('乙') curving over and down into a flat horizontal baseline floor (________), it is 100% TÍ / TE ("ti" or "te", as in "tí/î" / pure_tii.png)!
+           -> It is NOT Base Pa (Pí/Pe) because Base Pa starts with an upright cup (∪) whose leftmost tip points UPWARDS!
+           -> It is NOT Base Da (Dí/De) because it is ONE continuous stroke with NO separate floating wavy tilde crown (~) hovering above!
+           -> ANY glyph with this overhanging cane hook + flat baseline floor + right ascender / upper acute tick is 100% TÍ / TE ("ti" or "te"), NEVER Pí/Pe and NEVER Dí/De!
 
        - STUDY CARD "BE" (tight_be.png):
          * Consists of Base Ba on the left (a closed oval circle O) connected directly on the right to an attached cursive ligature ending in an upward vertical stroke (~|).
@@ -214,6 +227,17 @@ CRITICAL DISAMBIGUATION RULES:
        - STUDY CARD "MO" (tight_mo.png / study card "mo"):
          * Consists of Base Ma on the left (a loop clearly crossed by a HORIZONTAL CROSSBAR extending past the outer left wall) connected directly on the right to an attached cursive trailing baseline valley hook (~v / ∪) sweeping upward along the baseline floor with NO tall vertical ascender.
          * THIS GLYPH IS 100% MÚ / MO ("mo" or "mu", as in study card "mo"), NEVER plain Ma, and NEVER Mang!
+
+       - STUDY CARD "TO" (study card "tú/û" / pure_tuu.png / study card "to"):
+         * CRITICAL MANDATORY CHECK FIRST: DOES THE GLYPH FEATURE A STYLIZED CAPITAL 'T' SHAPE (A STRAIGHT VERTICAL DOWNWARD NEEDLE STEM ↓ WITH A TOP LOOPED CROSSBAR) + LOWER COMMA TICK (Base La)?
+           - If YES -> STOP IMMEDIATELY! That is 100% LÚ / LO ("lu" or "lo", as in "lú/û" / pure_luu.png), NEVER Base Ta and NEVER Tú/To! Base Ta NEVER has a straight downward vertical needle stem (↓) and NEVER has a top looped crossbar!
+         * Visual Anatomy of Base Ta in "TO":
+           1. Far-left: Begins with an OVERHANGING CANE HOOK / SWAN-NECK ('乙' / '2'-curve) curving over at top and dropping down to a sharp corner at the baseline floor. It has NO straight vertical downward needle stem (↓) and NO closed top eyelet!
+           2. Bottom: Turns right into an extended FLAT HORIZONTAL BASELINE FLOOR (________) with a medial notch.
+           3. Diacritic / Ending: Accompanied by a DETACHED LOWER COMMA TICK (,) beneath at lower-left, and/or attached cursive trailing baseline valley hook (~v) along the baseline floor.
+           4. Crucial: There is NO separate floating wavy tilde crown (~) hovering above in the air!
+         * DEFINITIVE MANDATORY OVERRIDE:
+           -> If it has an overhanging cane hook ('乙') curving over and dropping to a flat baseline floor (with NO vertical needle stem, NO top eyelet, and NO floating crown) -> THIS GLYPH IS 100% TÚ / TO ("tu" or "to", as in study card "tú/û" / pure_tuu.png), NEVER Dú/Do, NEVER Lú/Lo, and NEVER Pú/Po!
 
        - STUDY CARD "PO" (tight_po.png / study card "po"):
          * Visual Anatomy (Three Components):
@@ -242,29 +266,42 @@ CRITICAL DISAMBIGUATION RULES:
 
      * 3B. BASE LA WITH LOWER COMMA TICK / TRAILING VALLEY HOOK (LÚ / LO "lu" or "lo", as in "lú/û" / pure_luu.png):
        - Visual Anatomy:
-         * Base La's vertical needle stem dropping down from a top looped head/eyelet (like a staff with a top loop).
+         * Consists of Base La: A character resembling a stylized capital 'T' or staff, composed of a prominent straight downward vertical needle stem (↓) that tapers at the bottom, topped by a horizontal-to-curved crossbar with an integral top loop/eyelet.
          * Accompanied by:
-           (a) A DETACHED LOWER COMMA TICK (,) beneath at lower-left, AND/OR
-           (b) An attached cursive trailing baseline valley hook (~v) sweeping along the baseline on the right with NO tall vertical needle ascender!
-       - CRITICAL MANDATORY OVERRIDE FOR LÚ / LO:
-         -> THIS GLYPH IS 100% LÚ / LO ("lu" or "lo", as in "lú/û" / pure_luu.png), NEVER Base Ta and NEVER Tú/To!
-         -> Base Ta starts with an open top-left cane hook dropping into a flat horizontal baseline floor with NO vertical needle stem and NO top looped eyelet!
-         -> If the glyph has a vertical needle stem with a top eyelet/loop and a lower comma tick or trailing hook = 100% LÚ / LO ("lu" or "lo")!
+           (a) A DETACHED LOWER COMMA TICK (,) at the lower-left, AND/OR
+           (b) An attached or adjacent cursive trailing baseline valley hook (~v / 'u' shape) on the right.
+       - DEFINITIVE MANDATORY OVERRIDE FOR LÚ / LO vs TÚ / TO:
+         -> If the character features a stylized capital 'T' shape (a straight downward vertical needle stem ↓ with a top looped crossbar) + lower comma tick (,) at lower-left -> THIS IS 100% LÚ / LO ("lu" or "lo", as in "lú/û" / pure_luu.png), NEVER Base Ta and NEVER Tú/To!
+         -> Base Ta is NEVER a capital 'T' shape with a straight downward vertical needle stem! Base Ta is an open cane hook ('乙' / '2'-curve) curving over and dropping to a flat horizontal baseline floor.
+         -> Any glyph with this straight downward vertical needle stem (↓) + top loop/crossbar + lower comma tick is 100% LÚ / LO ("lu" or "lo")!
 
      * 4. BASE NA WITH UPPER ACUTE TICK (NÍ / NE "ni" or "ne", as in exemplar_ni.jpg / tight_ni.png):
        - Symmetrical umbrella canopy dome (⌢) that curves DOWNWARD on BOTH sides like an open umbrella rim + central downward stem + upper acute tick (/) hovering above the dome -> 100% NÍ / NE ("ni" or "ne").
 
      * 5. BASE NA WITH LOWER COMMA TICK (NÚ / NO, as in exemplar_nu.jpg / tight_nu.png):
        - Symmetrical umbrella dome (⌢) + central downward stem + detached lower comma tick (,) at lower-left -> 100% NÚ / NO ("nu" or "no").
+   - 0B. DEFINITIVE MORPHOLOGY OF BASE TA (TÍ / TE vs TÚ / TO vs PLAIN TA vs BASE PA vs BASE DA):
+     * Visual Anatomy of BASE TA (as seen in "tí/î" / pure_tii.png and "tú/û" / pure_tuu.png):
+       1. Far-left stroke: Begins with an OVERHANGING TOP-LEFT CANE HOOK that drops down vertically to the bottom baseline.
+       2. Bottom floor: Turns sharply right into an EXTENDED FLAT HORIZONTAL BASELINE FLOOR (________).
+       3. Continuity: It is ONE SINGLE CONTINUOUS STROKE from the top-left cane hook into the flat bottom floor. It has NO separate floating wavy crown hovering above (unlike Base Da) and is NOT an upright rounded U-cup (unlike Base Pa).
+     * CRITICAL DISAMBIGUATION RULES FOR BASE TA:
+       - NEVER BASE DA: Base Da MUST have a distinct SEPARATE floating wavy tilde crown (~) hovering in the air above its ceiling bar. If the glyph is ONE single continuous stroke with an overhanging top-left cane hook and flat bottom floor with NO separate floating wavy crown, it is 100% BASE TA, NEVER Base Da and NEVER Dú/Do!
+       - NEVER BASE PA: Base Pa is an upright rounded cup (∪) with an internal horizontal tooth/shelf inside the cup. Base Ta has an overhanging top-left cane hook and an extended flat horizontal baseline floor (________). The flat baseline floor along the bottom is Base Ta's floor, NOT a shelf!
+     * THEREFORE:
+       - Base Ta (top-left cane hook + flat horizontal baseline floor) + UPPER ACUTE TICK (/) hovering above OR attached tall upright vertical ascender (~|) on right -> 100% TÍ / TE ("ti" or "te", as in "tí/î" / pure_tii.png), NEVER Pí/Pe, NEVER Base Nga, and NEVER Dí/De! (Look at the far-left: it starts with an overhanging top-left cane hook, NOT a crescent arc ')'!).
+       - Base Ta (top-left cane hook + flat horizontal baseline floor) + DETACHED LOWER COMMA TICK (,) beneath at lower-left OR trailing baseline valley hook (~v) -> 100% TÚ / TO ("tu" or "to", as in "tú/û" / pure_tuu.png), NEVER Dú/Do and NEVER Pú/Po!
+
    - 1. BASE DA (DÍ / DE vs DÚ / DO vs TÍ / TE):
-     * Any glyph consisting of an angular box-bracket [ or cursive Z with a distinct separate wavy tilde crown (~) hovering directly above its ceiling bar belongs 100% to BASE DA (Dí/De, Dú/Do, Da), NEVER Base Ta and NEVER Tí/Te!
-     * Base Ta is ONE continuous single stroke without any wavy crown hovering on top.
+     * Any glyph consisting of an angular box-bracket [ with a distinct separate floating wavy tilde crown (~) hovering directly above its ceiling bar belongs 100% to BASE DA (Dí/De, Dú/Do, Da), NEVER Base Ta and NEVER Tí/Te! (Base Da MUST have the floating wavy crown ~; Base Ta is ONE continuous single stroke with an overhanging top-left cane hook and flat baseline floor, and has NO wavy crown!).
      * DÍ / DE ("di" or "de", as in study card "de" / ext_de_IMG_2655_10_.PNG and "dí/î"):
        - When an upper acute tick (/) hovers above the wavy crown (~), OR
        - When the glyph connects on the right to an attached cursive ligature with a TALL UPRIGHT VERTICAL ASCENDER STEM (~|) pointing straight UP into the air towards the top margin (reaching as high as or higher than the top crown) -> it is 100% DÍ / DE ("di" or "de"), NEVER Dú/Do!
      * DÚ / DO ("du" or "do", as in study card "do" / ext_do_IMG_2655_18_.PNG and "dú/û"):
-       - If a dot, comma tick, or mark is present BELOW the box-bracket, OR
-       - If the right side has a low trailing baseline valley hook (~v) / shallow rounded trough that stays along the baseline with NO tall upright needle ascender -> it is 100% DÚ / DO ("du" or "do").
+       - CRITICAL MANDATORY OVERRIDE FOR DÚ / DO vs TÚ / TO ("tu" or "to", as in "tú/û" / pure_tuu.png):
+         * DÚ / DO MUST HAVE A DISTINCT SEPARATE FLOATING WAVEY TILDE CROWN (~) hovering in the air directly above its ceiling bar!
+         * If the glyph has NO separate floating crown (~) above, and is instead a continuous stroke with an overhanging top-left cane hook and a flat horizontal bottom floor accompanied by a lower comma tick beneath, it is 100% TÚ / TO ("tu" or "to", as in "tú/û" / pure_tuu.png), NEVER Dú/Do!
+       - If a dot, comma tick, or mark is present BELOW the box-bracket (under the floating wavy crown ~) -> 100% DÚ / DO ("du" or "do").
 
    - 2. BASE GA vs BASE NGA (GÚ / GO vs NGÚ / NGO vs GÍ / GE vs NGÍ / NGE):
      * COUNT THE ARCHES AND SHAPES ON THE FAR-LEFT:
@@ -288,17 +325,25 @@ CRITICAL DISAMBIGUATION RULES:
 
    - 3. BASE TA vs STANDALONE E / I vs BASE BA (TÚ / TO vs STANDALONE E / I vs PLAIN TA vs BÚ / BO):
      * STANDALONE E / I ("e" or "i", Indûng Patinig): A flowing cursive glyph featuring TWO CENTRAL HORIZONTAL PARALLEL BRIDGE BARS (=) connecting the left curl to the right loop/ascender. It has NO downward vertical cane hook and NO flat horizontal baseline floor. It is 100% STANDALONE E / I ("e" or "i"), NEVER Base Ta and NEVER Tú/To!
-     * TÚ / TO ("tu" or "to", as in exemplar_tu.jpg, "tú/û", or study card "to"):
+     * TÍ / TE ("ti" or "te", as in "tí/î" / pure_tii.png):
+       - Visual Anatomy: Begins with Base Ta's characteristic TOP-LEFT CANE HOOK that drops down into an EXTENDED FLAT HORIZONTAL BASELINE FLOOR (____) and medial arch, accompanied by:
+         (a) An UPPER ACUTE TICK (/) hovering above, AND/OR
+         (b) An attached cursive ligature on the right with a TALL UPRIGHT VERTICAL ASCENDER STEM (~|) pointing straight UP into the air towards the top margin!
+       - CRITICAL MANDATORY OVERRIDE FOR TÍ / TE vs PÍ / PE:
+         * Base Ta has an overhanging top-left cane hook and a straight flat horizontal baseline floor (____). It is completely OPEN on the top-left!
+         * Base Pa (Pí/Pe) has an open upright cup (∪) with a rounded bottom valley and an internal horizontal stepped shelf inside the cup.
+         * If the glyph starts with an overhanging top-left cane hook and a flat horizontal baseline floor along the bottom with an upper acute tick or tall vertical ascender -> it is 100% TÍ / TE ("ti" or "te", as in "tí/î" / pure_tii.png), NEVER Pí/Pe and NEVER Dí/De!
+     * TÚ / TO ("tu" or "to", as in exemplar_tu.jpg, "tú/û" / pure_tuu.png, or study card "to"):
        - Standard Exemplar Form (exemplar_tu.jpg): Base Ta (top-left cane hook dropping into an extended flat horizontal baseline floor) accompanied by a DETACHED LOWER COMMA TICK (,) beneath the baseline floor at lower-left -> 100% TÚ / TO ("tu" or "to"), NEVER Bú/Bo and NEVER plain Ta! (CRITICAL: Base Ta is completely OPEN on the top and right. Do NOT confuse Base Ta's open cane hook and baseline floor with a closed circle O / Base Ba!).
        - Cursive Study Card Form (study card "to" / ext_to_IMG_2655_17_.PNG): Base Ta's top-left cane hook connects into an attached cursive trailing baseline valley hook (~v) sweeping up on the right (with an internal fold/knot) -> 100% TÚ / TO ("tu" or "to").
      * PLAIN INHERENT TA ("ta", as in exemplar_ta.jpg): Begins with a top-left cane hook dropping into an extended flat horizontal baseline floor, and ends flat on the baseline with NO trailing upward curl, NO valley hook, NO lower comma tick, and NO central knot -> 100% PLAIN BASE TA ("ta").
      * BASE BA (Bú / Bo, as in exemplar_bu.jpg): Base Ba is a COMPLETELY CLOSED CIRCLE / OVAL (O). If the character is open on top with a cane hook and flat baseline floor, it is BASE TA, NOT Base Ba!
 
    - 4. BASE NGA: NGÚ / NGO vs NGÍ / NGE vs PLAIN NGA:
-     * Base Nga has a full-height vertical crescent arc ')' on the far-left followed by an 'm' arch. Base Nga NEVER has only a single inverted arch dome ∩! (If the body is only ONE single arch dome ∩ with a lower tick and/or trailing hook, it is 100% GÚ / GO, NEVER Ngú/Ngo!).
+     * Base Nga has a full-height vertical crescent arc ')' on the far-left followed by an 'm' arch. Base Nga NEVER has only a single inverted arch dome ∩, and NEVER has a top-left cane hook with a flat bottom floor (which is Base Ta!).
      * NGÍ / NGE ("ngi" or "nge", as in "ngí/î" / pure_ngii.png):
-       - If an UPPER ACUTE TICK (/) hovers directly above the arch / crest, OR
-       - If the right side connects to an attached cursive ligature with a TALL UPRIGHT VERTICAL ASCENDER STEM (~|) pointing straight UP into the air towards the top margin (reaching as high as or higher than the arch) with NO lower comma tick beneath -> 100% NGÍ / NGE ("ngi" or "nge", as in "ngí/î" / pure_ngii.png), NEVER Ngú/Ngo!
+       - Visual Requirement: MUST start on the far-left with Base Nga's full-height VERTICAL CRESCENT ARC ')' followed by an 'm' arch (NOT an overhanging cane hook and flat floor!).
+       - Combined with: An UPPER ACUTE TICK (/) hovering directly above the arch / crest, OR an attached cursive ligature with a TALL UPRIGHT VERTICAL ASCENDER STEM (~|) pointing straight UP into the air towards the top margin with NO lower comma tick beneath -> 100% NGÍ / NGE ("ngi" or "nge"), NEVER Ngú/Ngo and NEVER Tí/Te!
      * NGÚ / NGO ("ngu" or "ngo", as in "ngú/û" / pure_nguu.png, exemplar_ngu.jpg, study card "ngo" / ext_ngo_IMG_2655_16_.PNG):
        1. Base Nga accompanied by a DETACHED LOWER COMMA TICK or DOT (,) beneath the central arch / baseline -> 100% NGÚ / NGO ("ngu" or "ngo", as in "ngú/û" / pure_nguu.png / exemplar_ngu.jpg), NEVER Ngí/Nge and NEVER plain inherent Nga!
        2. Base Nga (crescent arc ')' + 'm' arch) with NO upper acute tick and NO tall upright vertical ascender, where the right side extends into an attached TRAILING BASELINE VALLEY HOOK (~v) / low rounded trough staying along the baseline -> 100% NGÚ / NGO ("ngu" or "ngo", as in study card "ngo" / ext_ngo_IMG_2655_16_.PNG and handwritten "ngú/û"), NEVER plain inherent Nga!
@@ -322,12 +367,14 @@ CRITICAL DISAMBIGUATION RULES:
 
 0A. MANDATORY OVERRIDE FOR BASE PA vs BASE TA & BASE LA:
    - BASE PA vs BASE TA (PÍ/PE vs TÍ/TE & PÚ/PO vs TÚ/TO):
-     * In Sulat Kapampangan, the presence of a CENTRAL HORIZONTAL BRIDGE or sharp-angled stepped shelf connecting the left descending stroke to the right ascending vertical stroke is the definitive morphology of BASE PA (PÍ/PE "pí/î").
-     * Base Ta (Tí/Te) NEVER has a central horizontal bridge or stepped inner shelf; Ta is a single continuous hook dropping onto an empty bottom floor.
-     * THEREFORE: If you see ANY glyph featuring an internal horizontal shelf/bridge or stepped inner structure (and no crossbar extending past the outer left wall):
-       -> If there is an UPPER ACUTE TICK (/) hovering above = 100% PÍ / PE ("pi" or "pe", as in "pí/î"), NEVER Tí/Te!
-       -> If there is a LOWER COMMA TICK (,) at the lower-left = 100% PÚ / PO ("pu" or "po", as in "pú/û"), NEVER Tú/To!
-     * In contrast, if the glyph has a single continuous hook dropping onto an empty bottom floor with NO central horizontal bridge and NO stepped shelf + upper acute tick (/) above = 100% TÍ / TE ("ti" or "te", as in "tí/î"), NEVER Pí/Pe!
+     * DISTINGUISHING MORPHOLOGY:
+       - BASE TA (Tí/Te & Tú/To): Starts with a top-left overhanging cane hook that drops down into an extended flat horizontal baseline floor (____). Any character featuring a top-left cane hook and a flat horizontal bottom floor belongs 100% to BASE TA (Tí/Te if upper acute tick/ascender present; Tú/To if lower comma tick/trailing valley hook present), NEVER Base Pa!
+       - BASE PA (Pí/Pe & Pú/Po): Starts with an open upright U-cup (∪) with a rounded bottom valley (NO flat horizontal baseline floor and NO top-left cane hook), with an internal horizontal stepped shelf/tooth inside the right wall of the cup.
+     * THEREFORE:
+       -> If the glyph starts with an overhanging top-left cane hook dropping into a flat horizontal baseline floor (____) + upper acute tick (/) above = 100% TÍ / TE ("ti" or "te", as in "tí/î" / pure_tii.png), NEVER Pí/Pe!
+       -> If the glyph starts with an open upright U-cup (∪) with a rounded bottom valley and internal horizontal shelf + upper acute tick (/) above = 100% PÍ / PE ("pi" or "pe", as in "pí/î" / pure_pii.png), NEVER Tí/Te!
+       -> If accompanied by a LOWER COMMA TICK (,) at the lower-left beneath the upright U-cup = 100% PÚ / PO ("pu" or "po", as in "pú/û" / pure_puu.png), NEVER Tú/To!
+       -> If accompanied by a LOWER COMMA TICK (,) at the lower-left beneath the flat baseline floor = 100% TÚ / TO ("tu" or "to", as in "tú/û" / pure_tuu.png), NEVER Pú/Po!
    - BASE LA TERMINAL ORIENTATION (LÍ/LE vs LÚ/LO vs LANG):
      * Look closely at the glyph of Base La (vertical needle stem + top loop/eyelet):
        -> If the rightmost tip/stroke shoots or points UPWARD (vertical ascender stem ~| pointing straight UP into the air towards the top margin) = 100% LÍ / LE ("li" or "le", as in "lí/î"), NEVER Lang and NEVER Nang!
