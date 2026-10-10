@@ -162,6 +162,25 @@ CRITICAL DISAMBIGUATION RULES:
 =======================================================
 0. TOP SCANNER OVERRIDES FOR PURE ISOLATED SYMBOLS:
    - 0. ABSOLUTE MANDATORY OVERRIDES FOR STUDY FLASHCARDS & PURE ISOLATED SYMBOLS:
+     * ABSOLUTE MANDATORY OVERRIDE FOR BASE LA WITH RIGHT ASCENDER (LÍ / LE "le" or "li", as in study card "le" / pure_le_batch7.png):
+       - Visual Anatomy: Base La (straight vertical downward needle stem ↓ with top eyelet) + attached right stroke that dips and sweeps straight UPWARD into a tall vertical needle ascender (~|).
+       - DEFINITIVE MANDATORY OVERRIDE:
+         -> ANY glyph showing Base La (vertical downward stem ↓ + top eyelet) + attached right stroke shooting straight UPWARD (~|) is 100% LÍ / LE ("le" or "li", as in study card "le" / pure_le_batch7.png)!
+         -> It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
+         -> It is NEVER Lang! DO NOT mistake the attached cursive connector/undulation for coda wave ')m'! Lang coda wave pair ')m' must stay low and curve DOWNWARD along the baseline with NO upward needle ascender. Any stroke ending in an UPWARD-pointing ascender (~|) is 100% LÍ / LE ("le" or "li"), NEVER Lang!
+         -> It is NEVER plain La and NEVER Nang!
+
+     * ABSOLUTE MANDATORY OVERRIDE FOR BASE NA (NÍ / NE vs NÚ / NO vs PLAIN NA):
+       - Look at the height of the attached right stroke connected to Base Na:
+         1. TALL VERTICAL ASCENDER (~|): If the attached right stroke shoots straight UPWARD into the air as a tall vertical needle ascender (~|) reaching high towards the top margin / dome ceiling:
+            -> THIS GLYPH IS 100% NÍ / NE ("ne" or "ni", as in study card "ne" / pure_ne_batch7.png), NEVER Nú/No and NEVER plain Na!
+         2. LOW BASELINE VALLEY HOOK (~v / ∪): If the attached right stroke stays low along the baseline floor as a trailing valley hook (~v / ∪) with NO tall vertical ascender reaching the ceiling:
+            -> THIS GLYPH IS 100% NÚ / NO ("no" or "nu", as in study card "no" / pure_no_batch8.png), NEVER Ní/Ne and NEVER plain Na!
+         3. NO RIGHT ATTACHMENT: Symmetrical umbrella dome alone with NO right attachment:
+            -> With upper acute tick (/) above -> 100% NÍ / NE ("ni" or "ne", as in pure_ni_batch7.png).
+            -> With lower comma tick (,) beneath -> 100% NÚ / NO ("nu" or "no", as in pure_nu_batch7.png).
+            -> Completely bare -> Plain inherent NA ("na").
+
      * 1. ATTACHED CURSIVE VOWEL -I / -E LIGATURE (LE, NE, ME, SE, PE, BE, KE, DE):
        - In cursive Kulitan calligraphy and study flashcards (IMG_2655 series), the vowel -i/-e modifier is written as an attached cursive ligature on the right consisting of an arch leading into a TALL UPWARD VERTICAL NEEDLE STROKE (~|):
          -> IT IS 100% VOWEL -I / -E!
@@ -191,10 +210,11 @@ CRITICAL DISAMBIGUATION RULES:
              * It is ONLY "no" if the right side is a low rounded valley trough (~v / ∪) along the baseline with NO tall vertical ascender.
            -> It is NOT plain Na and NEVER Nang!
 
-       - STUDY CARD "ME" (tight_me.png):
-         * Consists of Base Ma on the left (a loop clearly crossed by a HORIZONTAL CROSSBAR — extending past the outer left wall) connected directly on the right to an attached cursive ligature ending in an upward vertical stroke (~|).
+       - STUDY CARD & PURE ISOLATED SYMBOL "ME" (tight_me.png / study card "me" / pure_me_batch8.png):
+         * Consists of Base Ma on the left (a loop clearly crossed by a HORIZONTAL CROSSBAR — extending past the outer left wall) connected directly on the right to an attached cursive ligature ending in an upward vertical needle stroke (~|).
          * Look at the left loop: if a horizontal bar slices completely through it and extends past the left wall, it is 100% BASE MA!
-         * THIS GLYPH IS 100% MÉ / MI ("me" or "mi", as in study card "me"), NEVER Lí/Le and NEVER plain Ma!
+         * THIS GLYPH IS 100% MÉ / MI ("me" or "mi", as in study card "me" / pure_me_batch8.png), NEVER Lí/Le and NEVER plain Ma!
+         * It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
 
        - STUDY CARD & PURE ISOLATED SYMBOL "SE" (study card "se" / tight_se.png / pure_se_batch7.png):
          * Visual Anatomy:
@@ -206,17 +226,17 @@ CRITICAL DISAMBIGUATION RULES:
            -> The rightmost stroke shoots straight UPWARD into the air (~|). This is the vowel -i/-e modifier, NOT a baseline valley hook!
            -> It is 100% SÉ / SI ("se" or "si"), NEVER Sú/So and NEVER plain Sa!
 
-       - STUDY CARD "PE" (tight_pe.png / study card "pe" / "pí/î" / pure_pii.png):
+       - STUDY CARD & PURE ISOLATED SYMBOL "PE" (tight_pe.png / study card "pe" / "pí/î" / pure_pii.png / pure_pe_batch8.png):
          * Visual Anatomy:
            1. Far-left: An UPRIGHT CUP (∪) with an open top, curving down into a rounded bottom bowl floor at the base, whose leftmost tip points UPWARDS towards the ceiling.
            2. Medial: An internal horizontal stepped shelf/bridge rising into a rounded medial arch.
            3. Right & Kudlit: An attached cursive ligature ending in a tall vertical needle stroke (~|) shooting UPWARDS, AND/OR an UPPER ACUTE TICK (/) hovering above.
-         * DEFINITIVE MANDATORY OVERRIDE FOR PÍ / PE vs TÍ / TE:
-           -> Look at the far-left stroke: if it is an UPRIGHT CUP (∪) whose leftmost tip points UPWARDS (with an internal horizontal shelf/bridge inside), it is 100% PÍ / PE ("pi" or "pe", as in "pí/î" / pure_pii.png), NEVER Tí/Te!
-           -> It is NOT Base Ta (Tí/Te): Base Ta begins with an overhanging cane hook ('乙' / '2'-curve) curving OVER and DOWN, NOT an upright cup (∪)!
-           -> It is NOT Base La (Lí/Le) because it has a rounded cup floor with an internal shelf, NOT a straight downward vertical needle stem.
-           -> ANY glyph with this upright cup (∪) + stepped shelf + upper acute tick (/) or upward needle ascender is 100% PÍ / PE ("pi" or "pe"), NEVER Tí/Te, NEVER Lí/Le, and NEVER Dí/De!
-
+          * DEFINITIVE MANDATORY OVERRIDE FOR PÍ / PE vs TÍ / TE:
+            -> Look at the far-left stroke: if it is an UPRIGHT CUP (∪) whose leftmost tip points UPWARDS (with a curved bottom bowl and an internal horizontal shelf/bridge inside), it is 100% PÍ / PE ("pi" or "pe", as in "pí/î" / pure_pii.png / pure_pe_batch8.png), NEVER Tí/Te!
+            -> Even if handwritten with a slight lean, the curved bottom bowl + internal horizontal shelf/bridge confirms 100% Base Pa, NOT Base Ta!
+            -> It is NOT Base Ta (Tí/Te): Base Ta begins with an overhanging cane hook ('乙' / '2'-curve) curving OVER and DOWN to a flat horizontal baseline floor, with NO upright cup and NO internal shelf!
+            -> It is NOT Base La (Lí/Le) because it has a rounded cup floor with an internal shelf, NOT a straight downward vertical needle stem.
+            -> ANY glyph with this upright cup (∪) + stepped shelf + upper acute tick (/) or upward needle ascender is 100% PÍ / PE ("pi" or "pe"), NEVER Tí/Te, NEVER Lí/Le, and NEVER Dí/De!
        - STUDY CARD "TE" (study card "tí/î" / pure_tii.png):
          * Visual Anatomy:
            1. Far-left: Begins with an OVERHANGING CANE HOOK / SWAN-NECK ('乙' / '2'-curve) that arches over at the top and drops down vertically to a sharp corner at the baseline floor.
@@ -228,21 +248,32 @@ CRITICAL DISAMBIGUATION RULES:
            -> It is NOT Base Da (Dí/De) because it is ONE continuous stroke with NO separate floating wavy tilde crown (~) hovering above!
            -> ANY glyph with this overhanging cane hook + flat baseline floor + right ascender / upper acute tick is 100% TÍ / TE ("ti" or "te"), NEVER Pí/Pe and NEVER Dí/De!
 
-       - STUDY CARD "BE" (tight_be.png):
-         * Consists of Base Ba on the left (a closed oval circle O) connected directly on the right to an attached cursive ligature ending in an upward vertical stroke (~|).
-         * THIS GLYPH IS 100% BÉ / BI ("be" or "bi", as in study card "be"), NEVER Bú/Bo and NEVER Bang!
+       - STUDY CARD & PURE ISOLATED SYMBOL "BE" (tight_be.png / study card "be" / pure_be_batch8.png):
+         * Consists of Base Ba on the left (a closed oval circle O) connected directly on the right to an attached cursive ligature ending in an upward vertical needle stroke (~|).
+         * THIS GLYPH IS 100% BÉ / BI ("be" or "bi", as in study card "be" / pure_be_batch8.png), NEVER Bú/Bo, NEVER plain Ba, and NEVER Bang!
+         * It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
        - STUDY CARD "KE" (ext_ke_IMG_2655_6_.PNG):
          * Two horizontal parallel bars (=) connected directly on the right to an attached cursive ligature ending in an upward vertical stroke (~|) -> 100% KÍ / KE ("ke" or "ki").
        - STUDY CARD "DE" (ext_de_IMG_2655_10_.PNG):
          * Box bracket [ with wavy tilde crown (~) connected on the right to an attached cursive ligature ending in an upward vertical stroke (~|) -> 100% DÍ / DE ("de" or "di").
 
-     * 2. ATTACHED CURSIVE TRAILING BASELINE VALLEY HOOK FOR VOWEL -U / -O (NO, MO, PO, BO, SO, TO, KO, DO, NGO):
-       - STUDY CARD "NO" (tight_no.png / study card "no"):
-         * Consists of Base Na on the left (symmetrical umbrella canopy dome ⌢ with central downward vertical stem) connected directly on the right to an attached cursive trailing baseline valley hook (~v / ∪) sweeping upward along the baseline floor.
-         * CRITICAL OVERRIDE:
+     * 2. ATTACHED CURSIVE TRAILING BASELINE VALLEY HOOK FOR VOWEL -U / -O (NO, LO, MO, PO, BO, SO, TO, KO, DO, NGO):
+       - STUDY CARD & PURE ISOLATED SYMBOL "LO" (tight_lo.png / study card "lo" / pure_lo_batch8.png):
+         * Consists of Base La on the left (prominent straight vertical downward needle stem ↓ with top eyelet/bar) accompanied on the right by an attached cursive trailing baseline valley hook (~v / ∪) along the baseline floor.
+         * In contrast, Lí/Le has a tall needle ascender shooting straight UP into the air towards top margin (~|).
+         * THIS GLYPH IS 100% LÚ / LO ("lo" or "lu", as in study card "lo" / pure_lo_batch8.png), NEVER plain La, and NEVER Lang!
+         * It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
+
+       - STUDY CARD & PURE ISOLATED SYMBOL "NO" (tight_no.png / study card "no" / pure_no_batch8.png):
+         * Visual Anatomy:
+           1. Left: Base Na (symmetrical umbrella canopy dome ⌢ with central downward vertical stem).
+           2. Right: Attached cursive trailing baseline valley hook (~v / ∪) sweeping upward along the baseline floor (a wavy curve extending from the stem/dome that dips down and sweeps upward in a crescent curve).
+         * DEFINITIVE MANDATORY OVERRIDE:
+           -> THIS GLYPH IS 100% NÚ / NO ("no" or "nu", as in study card "no" / pure_no_batch8.png)!
+           -> It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
            -> The attached trailing baseline valley hook (~v / ∪) on the right is the authentic vowel modifier for -u/-o!
-           -> In "no", the trailing hook is a low rounded trough along the baseline with NO tall vertical ascender needle reaching the top margin.
-           -> THIS GLYPH IS 100% NÚ / NO ("no" or "nu", as in study card "no"), NEVER plain inherent Na and NEVER Nang!
+           -> It is NEVER plain inherent Na (plain Na is an isolated umbrella dome with NO attached right trailing valley hook).
+           -> ANY glyph with Base Na umbrella dome + attached trailing baseline valley hook (~v / ∪) is 100% NÚ / NO ("no" or "nu"), NEVER plain Na and NEVER Nang!
 
        - STUDY CARD "MO" (tight_mo.png / study card "mo"):
          * Consists of Base Ma on the left (a loop clearly crossed by a HORIZONTAL CROSSBAR extending past the outer left wall) connected directly on the right to an attached cursive trailing baseline valley hook (~v / ∪) sweeping upward along the baseline floor with NO tall vertical ascender.
@@ -603,6 +634,11 @@ VOWEL MODIFIERS (Anak Súlat):
 CRITICAL DISAMBIGUATIONS:
 - LE / LI: Base La (vertical stem ↓ + top eyelet) + attached right ascender ligature (~|) OR upper tick -> 100% LE / LI ("le" or "li").
 - SE / SI: Base Sa ('3' shape) + attached right ascender ligature (~|) OR upper tick -> 100% SE / SI ("se" or "si").
+- BE / BI: Base Ba (oval circle O) + attached right ascender ligature (~|) -> 100% BE / BI ("be" or "bi").
+- ME / MI: Base Ma (loop crossed by horizontal bar —) + attached right ascender ligature (~|) -> 100% ME / MI ("me" or "mi").
+- PE / PI: Base Pa (upright cup ∪ with internal shelf) + attached right ascender ligature (~|) -> 100% PE / PI ("pe" or "pi").
+- LO / LU: Base La (vertical stem ↓ + top eyelet) + attached trailing baseline valley hook (~v) -> 100% LO / LU ("lo" or "lu").
+- NO / NU: Base Na (umbrella dome ⌢ + central stem) + attached trailing baseline valley hook (~v) -> 100% NO / NU ("no" or "nu").
 - NE / NI: Base Na (umbrella dome ⌢ + central stem) + attached right ascender ligature (~|) -> 100% NE / NI ("ne" or "ni").
 - NI: Base Na (umbrella dome ⌢ + central stem) + upper acute tick (/) hovering above -> 100% NI / NE ("ni" or "ne").
 - NU / NO: Base Na (umbrella dome ⌢ + central stem) + detached lower comma tick (,) beneath -> 100% NU / NO ("nu" or "no").
