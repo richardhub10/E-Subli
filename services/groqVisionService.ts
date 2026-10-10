@@ -167,25 +167,45 @@ CRITICAL DISAMBIGUATION RULES:
          -> IT IS 100% VOWEL -I / -E!
          -> IT IS NEVER a plain inherent consonant!
          -> IT IS NEVER coda nasal -ng, and NEVER vowel -u/-o!
-       - STUDY CARD "LE" (tight_le.png):
-         * Consists of Base La on the left (downward vertical stem with top eyelet) connected directly on the right to an attached cursive ligature: an arch/wave leading into a vertical line going UPWARD (~|).
-         * It has NO separate crescent arc ')' and does NOT curve downward along the baseline.
-         * THIS GLYPH IS 100% LÍ / LE ("le" or "li", as in study card "le"), NEVER Lang and NEVER plain La!
-       - STUDY CARD "NE" (tight_ne.png):
-         * Consists of Base Na on the left (umbrella dome ⌢ with central vertical stem) connected directly on the right to an attached cursive ligature ending in a TALL VERTICAL NEEDLE STROKE pointing straight UPWARD (~|).
-         * CRITICAL DISAMBIGUATION FROM NO:
-           -> In "ne", the rightmost stroke shoots straight UPWARD into the air (~|) towards the top margin.
-           -> If the rightmost stroke shoots straight UPWARD (~|), it is 100% NÍ / NE ("ne" or "ni"), NEVER Nú/No!
-           -> It is ONLY "no" if the right side is a low rounded valley trough (~v / ∪) along the baseline with NO tall vertical ascender.
-         * THIS GLYPH IS 100% NÍ / NE ("ne" or "ni", as in study card "ne"), NEVER plain Na and NEVER Nang!
+       - STUDY CARD & PURE ISOLATED SYMBOL "LE" (study card "le" / tight_le.png / pure_le_batch7.png):
+         * Visual Anatomy:
+           1. Left: Base La (straight vertical downward needle stem ↓ with top eyelet/loop).
+           2. Right: Attached cursive ligature with an arch leading into a tall upright vertical needle ascender (~|) shooting straight UP into the air towards top margin.
+         * DEFINITIVE MANDATORY OVERRIDE:
+           -> THIS GLYPH IS 100% LÍ / LE ("le" or "li", as in study card "le" / pure_le_batch7.png)!
+           -> It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
+           -> It is NOT Lang because it has NO wide separate horizontal coda wave pair ')m' curving down along baseline.
+           -> It is NOT plain La because it has the attached tall right ascender ligature (~|).
+           -> ANY glyph with this vertical downward stem + top loop + attached upright needle ascender is 100% LÍ / LE ("le" or "li")!
+
+       - STUDY CARD & PURE ISOLATED SYMBOL "NE" (study card "ne" / tight_ne.png / pure_ne_batch7.png):
+         * Visual Anatomy:
+           1. Left: Base Na (symmetrical umbrella dome ⌢ with central downward vertical stem).
+           2. Right: Attached cursive ligature leading into a tall upright vertical needle ascender (~|) shooting straight UP into the air towards top margin.
+         * DEFINITIVE MANDATORY OVERRIDE:
+           -> THIS GLYPH IS 100% NÍ / NE ("ne" or "ni", as in study card "ne" / pure_ne_batch7.png)!
+           -> It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
+           -> CRITICAL DISAMBIGUATION FROM NO:
+             * In "ne", the rightmost stroke shoots straight UPWARD into the air (~|) towards the top margin.
+             * If the rightmost stroke shoots straight UPWARD (~|), it is 100% NÍ / NE ("ne" or "ni"), NEVER Nú/No!
+             * It is ONLY "no" if the right side is a low rounded valley trough (~v / ∪) along the baseline with NO tall vertical ascender.
+           -> It is NOT plain Na and NEVER Nang!
+
        - STUDY CARD "ME" (tight_me.png):
          * Consists of Base Ma on the left (a loop clearly crossed by a HORIZONTAL CROSSBAR — extending past the outer left wall) connected directly on the right to an attached cursive ligature ending in an upward vertical stroke (~|).
          * Look at the left loop: if a horizontal bar slices completely through it and extends past the left wall, it is 100% BASE MA!
          * THIS GLYPH IS 100% MÉ / MI ("me" or "mi", as in study card "me"), NEVER Lí/Le and NEVER plain Ma!
-       - STUDY CARD "SE" (tight_se.png):
-         * Consists of Base Sa on the left ('3' numeral shape with two rounded lobes) connected directly on the right to an attached cursive ligature ending in an upward vertical stroke (~|).
-         * CRITICAL OVERRIDE: The rightmost stroke shoots straight UPWARD into the air (~|). This is the vowel -i/-e modifier, NOT a baseline valley hook!
-         * THIS GLYPH IS 100% SÉ / SI ("se" or "si", as in study card "se"), NEVER Sú/So and NEVER plain Sa!
+
+       - STUDY CARD & PURE ISOLATED SYMBOL "SE" (study card "se" / tight_se.png / pure_se_batch7.png):
+         * Visual Anatomy:
+           1. Left: Base Sa ('3' numeral shape with two rounded lobes).
+           2. Right: Attached cursive ligature ending in a tall upright vertical needle ascender (~|) shooting straight UP into the air.
+         * DEFINITIVE MANDATORY OVERRIDE:
+           -> THIS GLYPH IS 100% SÉ / SI ("se" or "si", as in study card "se" / pure_se_batch7.png)!
+           -> It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
+           -> The rightmost stroke shoots straight UPWARD into the air (~|). This is the vowel -i/-e modifier, NOT a baseline valley hook!
+           -> It is 100% SÉ / SI ("se" or "si"), NEVER Sú/So and NEVER plain Sa!
+
        - STUDY CARD "PE" (tight_pe.png / study card "pe" / "pí/î" / pure_pii.png):
          * Visual Anatomy:
            1. Far-left: An UPRIGHT CUP (∪) with an open top, curving down into a rounded bottom bowl floor at the base, whose leftmost tip points UPWARDS towards the ceiling.
@@ -275,11 +295,27 @@ CRITICAL DISAMBIGUATION RULES:
          -> Base Ta is NEVER a capital 'T' shape with a straight downward vertical needle stem! Base Ta is an open cane hook ('乙' / '2'-curve) curving over and dropping to a flat horizontal baseline floor.
          -> Any glyph with this straight downward vertical needle stem (↓) + top loop/crossbar + lower comma tick is 100% LÚ / LO ("lu" or "lo")!
 
-     * 4. BASE NA WITH UPPER ACUTE TICK (NÍ / NE "ni" or "ne", as in exemplar_ni.jpg / tight_ni.png):
-       - Symmetrical umbrella canopy dome (⌢) that curves DOWNWARD on BOTH sides like an open umbrella rim + central downward stem + upper acute tick (/) hovering above the dome -> 100% NÍ / NE ("ni" or "ne").
+     * 4. BASE NA WITH UPPER ACUTE TICK (NÍ / NE "ni" or "ne", as in study card "ni" / exemplar_ni.jpg / tight_ni.png / pure_ni_batch7.png):
+       - Visual Anatomy:
+         1. Base Na: Symmetrical umbrella canopy dome (⌢) that curves DOWNWARD on BOTH sides + central straight downward vertical stem.
+         2. Kudlit: UPPER ACUTE TICK (/) hovering directly above the dome in the air.
+       - DEFINITIVE MANDATORY OVERRIDE:
+         -> THIS GLYPH IS 100% NÍ / NE ("ni" or "ne", as in study card "ni" / pure_ni_batch7.png)!
+         -> It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
+         -> It is NOT Base Ga (Ga has NO central vertical stem inside; Na has a distinct central downward stem).
+         -> It is NOT Base Ta (Ta starts with an overhanging cane hook and flat baseline floor).
+         -> NEVER plain Na and NEVER Nu/No!
 
-     * 5. BASE NA WITH LOWER COMMA TICK (NÚ / NO, as in exemplar_nu.jpg / tight_nu.png):
-       - Symmetrical umbrella dome (⌢) + central downward stem + detached lower comma tick (,) at lower-left -> 100% NÚ / NO ("nu" or "no").
+     * 5. BASE NA WITH LOWER COMMA TICK (NÚ / NO "nu" or "no", as in study card "nu" / exemplar_nu.jpg / tight_nu.png / pure_nu_batch7.png):
+       - Visual Anatomy:
+         1. Base Na: Symmetrical umbrella canopy dome (⌢) that curves DOWNWARD on BOTH sides + central straight downward vertical stem.
+         2. Kudlit: DETACHED LOWER COMMA TICK (,) at lower-left beneath the dome.
+       - DEFINITIVE MANDATORY OVERRIDE:
+         -> THIS GLYPH IS 100% NÚ / NO ("nu" or "no", as in study card "nu" / pure_nu_batch7.png)!
+         -> It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
+         -> It is NOT Base Ga / Gu (Ga has NO central stem).
+         -> It is NOT Base Ta / Tu (Ta starts with an overhanging cane hook and flat baseline floor).
+         -> NEVER plain Na and NEVER Ni/Ne!
    - 0B. DEFINITIVE MORPHOLOGY OF BASE TA (TÍ / TE vs TÚ / TO vs PLAIN TA vs BASE PA vs BASE DA):
      * Visual Anatomy of BASE TA (as seen in "tí/î" / pure_tii.png and "tú/û" / pure_tuu.png):
        1. Far-left stroke: Begins with an OVERHANGING TOP-LEFT CANE HOOK that drops down vertically to the bottom baseline.
@@ -529,6 +565,63 @@ Return a JSON object in this exact schema:
 }
 
 /**
+ * Lightweight Groq Vision prompt optimized for Groq LPU rate limits (ITPM < 7000).
+ */
+export function getGroqVisionPrompt(targetSyllable: string | null): string {
+  const targetHint = targetSyllable 
+    ? `Target expectation: "${targetSyllable.toUpperCase()}". If matches, return recognized: true with high confidence (90-99).` 
+    : 'Identify which authentic Sulat Kapampangan (Kulitan) character is drawn or shown in the image.';
+
+  return `You are an expert paleographer in authentic Sulat Kapampangan (Kulitan), indigenous script of Pampanga, Philippines.
+${targetHint}
+
+IMPORTANT CONTEXT:
+The image contains a handwritten Kulitan character, an isolated glyph crop, or a flashcard.
+If Latin text (e.g. "le", "se", "ni", "nu", "ne", "ti", "tu", "su", "pi", "pu", etc.) is visible, use it as strong confirmation.
+If NO text is present, classify based strictly on stroke morphology:
+
+CONSONANT ROOTS (Indûng Súlat):
+1. Ba: Closed oval circle (O).
+2. Da: Angular box-bracket body [ with a distinct floating wavy tilde crown (~) hovering directly above.
+3. Ga: Single inverted U-arch dome (∩) with two legs pointing down. Empty inside (NO central vertical stem).
+4. Ka: Two horizontal parallel bars (=).
+5. La: Straight vertical downward needle stem (↓) with top eyelet/loop.
+6. Ma: Loop crossed completely by a horizontal crossbar (—) extending past outer left wall.
+7. Na: Symmetrical umbrella canopy dome (⌢) with a straight downward central vertical stem.
+8. Nga: Vertical crescent arc ')' on far-left + 'm' arch.
+9. Pa: Upright cup (∪) opening upwards with internal horizontal stepped bridge/shelf.
+10. Sa: Numeral '3' shape with two rounded lobes.
+11. Ta: Overhanging top-left cane hook ('乙' / '2'-curve) dropping down to an extended flat horizontal baseline floor (________). NO floating crown.
+
+VOWEL MODIFIERS (Anak Súlat):
+- -I / -E: Upper acute tick (/) hovering above, OR attached cursive right ligature ending in a tall upright vertical needle ascender (~|) shooting straight UP towards top margin.
+  * Examples: Li/Le, Si/Se, Ni/Ne, Ti/Te, Pi/Pe, Gi/Ge, Ki/Ke, Bi/Be, Di/De, Mi/Me, Ngi/Nge.
+- -U / -O: Detached lower comma tick (,) beneath at lower-left, OR attached cursive trailing baseline valley hook (~v) along baseline floor.
+  * Examples: Lu/Lo, Su/So, Nu/No, Tu/To, Pu/Po, Gu/Go, Ku/Ko, Bu/Bo, Du/Do, Mu/Mo, Ngu/Ngo.
+- CODA -NG (Kamulitan): Authentic two-part wave pair: crescent arc ')' + undulating 'm' wave curving down along baseline.
+
+CRITICAL DISAMBIGUATIONS:
+- LE / LI: Base La (vertical stem ↓ + top eyelet) + attached right ascender ligature (~|) OR upper tick -> 100% LE / LI ("le" or "li").
+- SE / SI: Base Sa ('3' shape) + attached right ascender ligature (~|) OR upper tick -> 100% SE / SI ("se" or "si").
+- NE / NI: Base Na (umbrella dome ⌢ + central stem) + attached right ascender ligature (~|) -> 100% NE / NI ("ne" or "ni").
+- NI: Base Na (umbrella dome ⌢ + central stem) + upper acute tick (/) hovering above -> 100% NI / NE ("ni" or "ne").
+- NU / NO: Base Na (umbrella dome ⌢ + central stem) + detached lower comma tick (,) beneath -> 100% NU / NO ("nu" or "no").
+- TE / TI: Base Ta (cane hook + flat floor) + upper tick or ascender (~|) -> 100% TE / TI ("te" or "ti").
+- TO / TU: Base Ta (cane hook + flat floor) + lower comma tick or trailing hook (~v) -> 100% TO / TU ("to" or "tu").
+- SU / SO: Base Sa ('3' shape) + lower comma tick or trailing hook (~v) -> 100% SU / SO ("su" or "so").
+
+OUTPUT SCHEMA (strictly valid JSON):
+{
+  "recognized": true,
+  "character": "Name e.g. 'Le', 'Se', 'Ni', 'Nu', 'Ne', 'Ti', 'Tu', 'Su'",
+  "transliteration": "lowercase canonical or allophone syllable e.g. 'le', 'se', 'ni', 'nu', 'ne', 'ti', 'tu', 'su'",
+  "confidence": 98,
+  "feedback": "Concise morphological explanation citing strokes observed",
+  "type": "Diacritic Vowel Form (Anak Súlat)"
+}`;
+}
+
+/**
  * Calls Groq's high-speed Vision API to analyze handwritten Kulitan images.
  * Powered by qwen/qwen3.8-27b running on Groq LPU hardware.
  */
@@ -544,7 +637,7 @@ export async function callGroqVision(
     return null;
   }
 
-  const prompt = getKulitanVisionPrompt(targetSyllable);
+  const prompt = getGroqVisionPrompt(targetSyllable);
 
   for (const currentKey of candidateKeys) {
     for (const model of GROQ_VISION_MODELS) {
