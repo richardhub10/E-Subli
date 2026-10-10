@@ -61,7 +61,13 @@ EXPERT DECODING WORKFLOW:
      * Classical Form: Two twin upright needle components side-by-side (~|  ~|).
      * Cursive Indûng Patinig Form: A flowing single glyph starting with a leftward curl into two central horizontal parallel bridge bars (=) or knot, sweeping upward on the right into a curved wing (resembling a cursive sideways loop with parallel bridge lines).
      * CRITICAL OVERRIDE: Standalone E / I is an independent vowel: it is 100% STANDALONE E / I ("e" or "i"), NEVER Base La (La has a prominent straight downward vertical needle stem ↓), NEVER Lí/Le, and NEVER Base Pa!
-   - STANDALONE U / O (transliteration: "u" or "o"): An isolated character composed of TWO TALL VERTICAL UPRIGHT LOOPS reaching vertically high into the air (resembling a tall double-U or coiled spring with vertical loops). Standalone U/O NEVER has a central knot/overlapping fold (unlike Tú/To), and is NEVER a flat horizontal undulating 'm'-wave (unlike Ngú/Ngo).
+   - STANDALONE U / O (transliteration: "u" or "o", Indûng Patinig):
+     * Classical Form: An isolated character composed of TWO TALL VERTICAL UPRIGHT LOOPS reaching vertically high into the air (resembling a tall double-U or coiled spring with vertical loops).
+     * Cursive / Study Card Form (study card "o" / IMG_2655(13).PNG / pure symbol "o"): A single continuous serpentine cursive stroke with two rounded wave peaks, beginning on the far-left with a downward hook curving left, dipping into a trough, and sweeping upward on the right into a trailing flick (~v), resembling a cursive 'w' or undulating wave. It has NO preceding crescent arc ')', NO separate consonant body, NO central knot, and NO vertical needle stem.
+     * CRITICAL MANDATORY DISAMBIGUATION BEFORE CALLING A GLYPH STANDALONE U / O:
+       1. If the glyph has an internal horizontal shelf / crossbar or junction connecting the two lobes (creating an internal shelf/pocket) -> it is 100% BASE PA / PÚ / PO ("po" or "pu", as in study card "po" / pure_po), NEVER Standalone U/O!
+       2. If the glyph begins on the far-left with a distinct vertical crescent arc ')' -> it is 100% BASE NGA / NGÚ / NGO ("ngo" or "ngu", as in study card "ngo"), NEVER Standalone U/O!
+       3. ONLY if there is NO internal shelf/crossbar, NO crescent arc ')', and NO consonant base on the left is it 100% STANDALONE "O" / "U" ("o" or "u", Indûng Patinig), NEVER plain Nga and NEVER Ngang!
 
 2. IDENTIFY THE BASE CONSONANT (Indûng Súlat - on the left if compound):
    1. BA: Closed oval circle (O).
@@ -108,8 +114,9 @@ EXPERT DECODING WORKFLOW:
    8. NGA:
       * Standard Primary Exemplar Form (exemplar_nga.jpg & exemplar_ngu.jpg): Left downward crescent ')' + medial arch + overarching top hook that curves DOWNWARD on the right into a teardrop.
         - Plain inherent NGA ("nga", exemplar_nga.jpg): NO lower comma tick/dot beneath, NO upper acute tick, NO trailing valley hook.
-        - NGÚ / NGO ("ngu" or "ngo", as in "ngú/û" / pure_nguu.png, exemplar_ngu.jpg, study card "ngo"):
+        - NGÚ / NGO ("ngu" or "ngo", as in "ngú/û" / pure_nguu.png, exemplar_ngu.jpg, study card "ngo" / ext_ngo_IMG_2655_16_.PNG):
           Base Nga accompanied by a DETACHED LOWER COMMA TICK or DOT (,) beneath the central arch at lower-left, OR an attached trailing baseline valley hook (~v) staying along the baseline with NO upper acute tick and NO tall upright vertical needle ascender -> 100% NGÚ / NGO ("ngu" or "ngo"), NEVER plain inherent Nga!
+          (CRITICAL: If the glyph has Base Nga crescent ')' + 'm' arch and terminates on the right in an attached trailing baseline valley hook (~v) curling upward, it is 100% NGÚ / NGO ("ngo" or "ngu", as in study card "ngo" / IMG_2655(16).PNG), NEVER Ngang! Ngang strictly requires two distinct repeating segments side-by-side with a terminal curving DOWNWARD).
       * NGÍ / NGE ("ngi" or "nge", as in "ngí/î" / pure_ngii.png):
         - Base Nga featuring an UPPER ACUTE TICK (/) hovering above or attached upward flick (↗) on the right crest of the 'm' arch, AND/OR an attached cursive ligature with a TALL UPRIGHT VERTICAL ASCENDER STEM (~|) pointing straight UP into the air towards the top margin (reaching as high as or higher than the arch), with NO lower comma tick beneath -> 100% NGÍ / NGE ("ngi" or "nge", as in "ngí/î" / pure_ngii.png), NEVER Ngú/Ngo!
       * NGANG ("ngang"): Base Nga + second repeating crescent+arch wave pair along baseline (with NO upper acute tick and NO tall ascender).
@@ -256,7 +263,7 @@ CRITICAL DISAMBIGUATION RULES:
              -> Even if handwritten with a slight lean, the curved bottom bowl + internal horizontal shelf/bridge confirms 100% Base Pa, NOT Base Ta!
              -> It is NOT Base Ta (Tí/Te): Base Ta begins with an overhanging cane hook ('乙' / '2'-curve) curving OVER and DOWN to a flat horizontal baseline floor, with NO upright cup and NO internal shelf!
              -> It is NOT Base La (Lí/Le) because it has a rounded cup floor with an internal shelf, NOT a straight downward vertical needle stem.
-             -> ANY glyph with this upright cup (∪) + stepped shelf + upper acute tick (/) or upward needle ascender is 100% PÍ / PE ("pi" or "pe"), NEVER Tí/Te, NEVER Lí/Le, and NEVER Dí/De!
+              -> ANY glyph with this upright cup (∪) + stepped shelf + upper acute tick (/) or upward needle ascender is 100% PÍ / PE ("pi" or "pe"), NEVER Tí/Te, NEVER Lí/Le, NEVER Gí/Ge, and NEVER Dí/De! (Base Ga is an inverted U-arch dome ∩ with legs pointing down; Base Pa starts with an open upright cup ∪ whose leftmost tip points UPWARDS towards the ceiling with an internal horizontal shelf).
        - STUDY CARD "TE" (study card "tí/î" / pure_tii.png):
          * Visual Anatomy:
            1. Far-left: Begins with an OVERHANGING CANE HOOK / SWAN-NECK ('乙' / '2'-curve) that arches over at the top and drops down vertically to a sharp corner at the baseline floor.
@@ -272,8 +279,27 @@ CRITICAL DISAMBIGUATION RULES:
          * Consists of Base Ba on the left (a closed oval circle O) connected directly on the right to an attached cursive ligature ending in an upward vertical needle stroke (~|).
          * THIS GLYPH IS 100% BÉ / BI ("be" or "bi", as in study card "be" / pure_be_batch8.png), NEVER Bú/Bo, NEVER plain Ba, and NEVER Bang!
          * It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
-       - STUDY CARD "KE" (ext_ke_IMG_2655_6_.PNG):
-         * Two horizontal parallel bars (=) connected directly on the right to an attached cursive ligature ending in an upward vertical stroke (~|) -> 100% KÍ / KE ("ke" or "ki").
+       - STUDY CARD & PURE ISOLATED SYMBOL "KE" (ext_ke_IMG_2655_6_.PNG / study card "ke" / pure symbol "ke"):
+         * Visual Anatomy:
+           1. Left: Base Ka (two horizontal parallel bars =).
+           2. Right: Attached cursive ligature with an arch ending in a TALL UPWARD VERTICAL NEEDLE ASCENDER (~|) shooting straight UP into the air towards top margin.
+         * DEFINITIVE MANDATORY OVERRIDE:
+           -> THIS GLYPH IS 100% KÍ / KE ("ke" or "ki", as in study card "ke" / IMG_2655(6).PNG)!
+           -> It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
+           -> It is NOT plain Ka and NEVER Kú/Ko!
+
+       - STUDY CARD & PURE ISOLATED SYMBOL "GE" (ext_ge_IMG_2656.PNG / study card "ge" / pure symbol "ge"):
+         * Visual Anatomy:
+           1. Left: Base Ga (a SINGLE inverted U-arch dome ∩ with two downward legs and an EMPTY interior with NO central stem).
+           2. Right: Connected directly to an attached cursive ligature dipping into a small trough and shooting straight UP into a TALL UPWARD VERTICAL NEEDLE ASCENDER (~|) towards top margin.
+         * DEFINITIVE MANDATORY OVERRIDE:
+           -> THIS GLYPH IS 100% GÍ / GE ("ge" or "gi", as in study card "ge" / IMG_2656.PNG)!
+           -> It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
+            -> It has ONLY ONE inverted arch dome (∩) on the left (Base Ga). It is NOT Base Nga, NEVER Ngú/Ngo, and NEVER plain Ga!
+            -> It is NOT Base Pa (Pí/Pe): Base Pa starts with an open upright cup (∪) pointing UP with an internal shelf. Base Ga has an inverted U-arch dome (∩) curved over at the top with NO upright cup and NO internal shelf!
+           -> The tall upward-pointing stroke on the right (~|) is the authentic vowel -i/-e ligature, NOT a baseline valley hook!
+           -> ANY glyph with Base Ga's single inverted U-arch dome (∩) + attached tall upright vertical needle ascender (~|) is 100% GÍ / GE ("ge" or "gi")!
+
        - STUDY CARD "DE" (ext_de_IMG_2655_10_.PNG):
          * Box bracket [ with wavy tilde crown (~) connected on the right to an attached cursive ligature ending in an upward vertical stroke (~|) -> 100% DÍ / DE ("de" or "di").
 
@@ -327,15 +353,44 @@ CRITICAL DISAMBIGUATION RULES:
             -> If it has an overhanging cane hook ('乙') curving over and dropping to a flat baseline floor (with NO vertical needle stem, NO top eyelet, and NO floating crown) -> THIS GLYPH IS 100% TÚ / TO ("tu" or "to", as in study card "tú/û" / pure_tuu.png), NEVER Dú/Do, NEVER Lú/Lo, and NEVER Pú/Po!
 
         - STUDY CARD & PURE ISOLATED SYMBOL "PO" (tight_po.png / study card "po" / pure_po_batch9.png):
-          * Visual Anatomy (Three Components):
+          * Visual Anatomy:
             1. Left: Base Pa (upright curved cup ∪ with open top facing upwards and internal horizontal stepped shelf/bridge).
-            2. Right: Attached cursive trailing baseline valley hook (~v / ∪) along the baseline floor with NO tall vertical needle ascender reaching the top margin.
+            2. Center: A distinct horizontal crossbar/junction (internal shelf) connecting the left cup to the right loop, creating an internal enclosed or semi-enclosed negative space.
+            3. Right: Attached cursive trailing baseline valley hook (~v / ∪) along the baseline floor with NO tall vertical needle ascender reaching the top margin.
           * DEFINITIVE MANDATORY OVERRIDE:
             -> THIS GLYPH IS 100% PÚ / PO ("po" or "pu", as in study card "po" / pure_po_batch9.png)!
             -> It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
-            -> The trailing baseline valley hook (~v / ∪) on the right is the authentic vowel modifier for -u/-o!
+            -> CRITICAL DISAMBIGUATION FROM STANDALONE O:
+              * Look for the central horizontal shelf / junction inside the left cup:
+              * If there is an internal horizontal shelf / bridge creating an enclosed or semi-enclosed central pocket -> it is 100% PÚ / PO ("po" or "pu"), NEVER Standalone O!
+              * Standalone O is a single flowing wave with NO horizontal crossbar, NO internal shelf, and NO enclosed negative space.
             -> It is NEVER plain inherent Pa ("pa")! (Plain Pa has NO attached trailing baseline valley hook).
             -> It is NOT Base Ta (Tú/To) and NOT Base Ma (Mú/Mo)!
+
+        - STUDY CARD & PURE ISOLATED SYMBOL "NGO" (ext_ngo_IMG_2655_16_.PNG / study card "ngo" / pure symbol "ngo"):
+          * Visual Anatomy:
+            1. Left: Base Nga (a concave vertical crescent arc ')' on the far-left followed by an 'm' arch).
+            2. Right: Connected directly to an attached cursive TRAILING BASELINE VALLEY HOOK (~v / ∪) along the baseline floor that curls UPWARD at the terminal end.
+            3. Diacritics: NO upper acute tick above, and NO tall upright vertical needle ascender shooting into the ceiling margin.
+          * DEFINITIVE MANDATORY OVERRIDE FOR NGO vs NGANG:
+            -> CRITICAL RULE: If the glyph begins with Base Nga (crescent arc ')' + 'm' arch) and terminates on the far-right with an UPWARD-curling tail/valley hook (~v / ∪) -> THIS GLYPH IS 100% NGÚ / NGO ("ngo" or "ngu", as in study card "ngo" / IMG_2655(16).PNG)!
+            -> It is NEVER Ngang! Ngang strictly requires two distinct repeating segments side-by-side (')m )m') ending with downward or vertical terminals. NGO is a single continuous character with one main arch terminating in an upward-curling hook (~v).
+            -> It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
+            -> It is NOT plain Nga (plain Nga has NO upward trailing hook; its right end curves down into a downward teardrop).
+            -> ANY glyph with Base Nga crescent ')' + 'm' arch + attached upward-curling trailing baseline valley hook (~v) is 100% NGÚ / NGO ("ngo" or "ngu"), NEVER Ngang and NEVER plain Nga!
+
+        - STUDY CARD & PURE ISOLATED SYMBOL "O" (ext_o_IMG_2655_13_.PNG / study card "o" / pure symbol "o"):
+          * Visual Anatomy:
+            1. A single continuous cursive serpentine wave resembling a flowing 'w' or double-crest wave with two rounded upward arches.
+            2. Begins on the left with a downward curve hooking left, dips into a shallow trough, rises into a first rounded peak, dips into a second trough, and finishes on the right sweeping upward into a trailing flick (~v).
+            3. CRUCIAL: It has NO horizontal crossbar / internal shelf, NO enclosed loops/holes, NO preceding crescent arc ')', and NO vertical downward needle stem.
+          * DEFINITIVE MANDATORY OVERRIDE:
+            -> THIS GLYPH IS 100% STANDALONE "O" / "U" ("o" or "u", Indûng Patinig, as in study card "o" / IMG_2655(13).PNG)!
+            -> It applies whether a printed Latin label is present or if it is a PURE ISOLATED SYMBOL without text ("kahit symbol lang")!
+            -> DISAMBIGUATION FROM PO: If the glyph has an internal horizontal shelf/crossbar inside the left cup creating an enclosed negative space, it is PÚ / PO ("po" or "pu"). Only a continuous open wave with NO horizontal shelf is Standalone O!
+            -> It is NOT Base Nga (Nga begins with an isolated vertical crescent arc ')' standing on the left).
+            -> It is NOT Ngang (Ngang has repeating ')m' wave pairs).
+            -> ANY standalone undulating serpentine 'w'-like wave with NO internal crossbar is 100% STANDALONE "O" / "U" ("o" or "u")!
 
        - STANDALONE INDÛNG PATINIG "E / I" (exemplar_i.jpg / pure I/E):
          * Begins on the far-left with a DISTINCT CURVED HOOK / CURL connecting into two central parallel bridge bars (=) and an upward right ascender wing (~|).
@@ -455,8 +510,8 @@ CRITICAL DISAMBIGUATION RULES:
        ONLY if there is NO lower comma tick/dot beneath, NO upper acute tick above, and NO upward trailing valley hook (the glyph curves down on the right into a downward-pointing teardrop) is it PLAIN INHERENT NGA ("nga").
 
    - 5. STANDALONE U / O (Indûng Patinig):
-     * An isolated character composed of TWO TALL VERTICAL UPRIGHT LOOPS reaching vertically high into the air (resembling a tall double-U with vertical loops).
-     * Standalone U/O NEVER has a central knot/overlapping fold (unlike Tú/To), and is NEVER a flat horizontal undulating wave (unlike Ngú/Ngo).
+     * Inscriptional Form: An isolated character composed of TWO TALL VERTICAL UPRIGHT LOOPS reaching vertically high into the air (resembling a tall double-U with vertical loops).
+     * Cursive / Study Card Form (study card "o" / ext_o_IMG_2655_13_.PNG / pure symbol "o"): A single continuous flowing serpentine wave resembling a cursive 'w' with a leftward hook, two wave peaks, and an upward-sweeping right trailing flick (~v). It has NO preceding crescent arc ')', NO separate consonant body, and NO central knot -> 100% STANDALONE "O" / "U" ("o" or "u"), NEVER plain Nga and NEVER Ngang!
 
    - 6. BASE KA (KÍ / KE vs KÚ / KO vs PLAIN KA):
      * Base Ka consists of two horizontal parallel bars (=).
