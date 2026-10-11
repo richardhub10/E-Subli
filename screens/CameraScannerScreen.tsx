@@ -258,7 +258,7 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
       </View>
 
       {/* Main Viewport Card */}
-      <View style={styles.content}>
+      <View style={[styles.content, photoUri ? styles.contentPreview : null]}>
         {/* Botanical corner flourish accents matching proposed design */}
         <View pointerEvents="none" style={styles.cardLeafTL}>
           <Image 
@@ -506,12 +506,12 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
                 {/* Center Camera Reticle Watermark matching Proposed Mockup */}
                 {!targetSyllable && (
                   <View style={styles.centerCameraWatermark} pointerEvents="none">
-                    <Ionicons name="camera-outline" size={48} color="rgba(255, 255, 255, 0.75)" />
+                    <Ionicons name="camera-outline" size={54} color="rgba(255, 255, 255, 0.85)" />
                   </View>
                 )}
 
-                {/* Laser Scanning Reticle with Optional Target Watermark */}
-                <View style={styles.reticleOverlay}>
+                {/* Subtle alignment scanning guide */}
+                <View style={styles.reticleOverlay} pointerEvents="none">
                   <View style={styles.scanBox}>
                     <Animated.View 
                       style={[
@@ -527,16 +527,11 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
                     {/* Target Watermark Glyph Guide */}
                     {targetSyllable && (
                       <View style={styles.watermarkContainer}>
-                        <KulitanGlyph symbol={targetSyllable} size={130} color="rgba(255, 255, 255, 0.22)" />
+                        <KulitanGlyph symbol={targetSyllable} size={120} color="rgba(255, 255, 255, 0.25)" />
                         <Text style={styles.watermarkLabel}>Target: {targetSyllable.toUpperCase()}</Text>
                       </View>
                     )}
                   </View>
-                  <Text style={styles.reticleText}>
-                    {targetSyllable 
-                      ? `Align handwritten "${targetSyllable.toUpperCase()}" inside frame` 
-                      : 'Align handwritten Kulitan inside frame'}
-                  </Text>
                 </View>
 
                 {/* Terracotta Action Pill inside Card matching Mockup */}
@@ -733,16 +728,27 @@ const styles = StyleSheet.create({
     marginLeft: 7,
   },
   content: {
-    flex: 1,
-    marginHorizontal: 16,
+    width: '90%',
+    alignSelf: 'center',
+    height: Math.min(SCREEN_WIDTH * 1.05, 430),
+    maxHeight: 450,
+    marginTop: 6,
+    marginBottom: 12,
     borderRadius: 28,
     overflow: 'hidden',
-    backgroundColor: '#0F172A',
+    backgroundColor: '#152238',
+    position: 'relative',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.28,
     shadowRadius: 16,
-    elevation: 10,
+    elevation: 8,
+  },
+  contentPreview: {
+    height: undefined,
+    maxHeight: undefined,
+    flex: 1,
+    width: '92%',
   },
   cameraWrapper: {
     flex: 1,
@@ -769,60 +775,60 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 30,
+    paddingBottom: 24,
   },
   scanBox: {
-    width: 250,
-    height: 250,
+    width: 210,
+    height: 210,
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
   },
   laserLine: {
     position: 'absolute',
-    left: 10,
-    right: 10,
-    height: 2.5,
+    left: 8,
+    right: 8,
+    height: 2,
     backgroundColor: '#F59E0B',
     shadowColor: '#F59E0B',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOpacity: 0.8,
+    shadowRadius: 5,
+    elevation: 3,
     zIndex: 5,
   },
   corner: {
     position: 'absolute',
-    width: 26,
-    height: 26,
-    borderColor: '#F59E0B',
+    width: 22,
+    height: 22,
+    borderColor: 'rgba(255, 255, 255, 0.45)',
   },
   topLeft: {
     top: 0,
     left: 0,
-    borderTopWidth: 4,
-    borderLeftWidth: 4,
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
     borderTopLeftRadius: 6,
   },
   topRight: {
     top: 0,
     right: 0,
-    borderTopWidth: 4,
-    borderRightWidth: 4,
+    borderTopWidth: 3,
+    borderRightWidth: 3,
     borderTopRightRadius: 6,
   },
   bottomLeft: {
     bottom: 0,
     left: 0,
-    borderBottomWidth: 4,
-    borderLeftWidth: 4,
+    borderBottomWidth: 3,
+    borderLeftWidth: 3,
     borderBottomLeftRadius: 6,
   },
   bottomRight: {
     bottom: 0,
     right: 0,
-    borderBottomWidth: 4,
-    borderRightWidth: 4,
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
     borderBottomRightRadius: 6,
   },
   watermarkContainer: {
@@ -1303,8 +1309,6 @@ const styles = StyleSheet.create({
   },
   sideIconCircleActive: {
     backgroundColor: '#FEF3C7',
-    borderWidth: 1.5,
-    borderColor: '#F59E0B',
   },
   shutterHalo: {
     width: 82,
