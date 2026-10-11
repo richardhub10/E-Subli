@@ -89,15 +89,33 @@ export async function callTestScannerApi(
   options?: {
     timeoutMs?: number;
     apiUrl?: string;
+    onStatusUpdate?: (status: string) => void;
   }
 ): Promise<ScanResult> {
   const cleanB64 = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
   const dataUrl = `data:image/jpeg;base64,${cleanB64}`;
   const apiUrl = options?.apiUrl || getScannerApiUrl();
-  const timeoutMs = options?.timeoutMs ?? 25000; // 25s for potential Render cold spin-up
+  const timeoutMs = options?.timeoutMs ?? 45000; // 45s for Render cold spin-up
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  // Progressive status updates if Render container is waking up
+  const wakeTimer1 = setTimeout(() => {
+    options?.onStatusUpdate?.(
+      language === 'EN'
+        ? 'Waking up ResNet-18 model on Render... Please hold on...'
+        : 'Ginigising ang ResNet-18 model sa Render... Mangyaring maghintay...'
+    );
+  }, 3500);
+
+  const wakeTimer2 = setTimeout(() => {
+    options?.onStatusUpdate?.(
+      language === 'EN'
+        ? 'Finalizing glyph neural extraction... Almost done...'
+        : 'Tinatapos ang neural extraction ng titik...'
+    );
+  }, 12000);
 
   try {
     const response = await fetch(apiUrl, {
@@ -113,6 +131,8 @@ export async function callTestScannerApi(
     });
 
     clearTimeout(timeoutId);
+    clearTimeout(wakeTimer1);
+    clearTimeout(wakeTimer2);
 
     if (!response.ok) {
       const errText = await response.text().catch(() => '');

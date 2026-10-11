@@ -11,24 +11,19 @@ import {
   Platform, 
   Animated, 
   Dimensions,
-  Modal,
-  TextInput
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
-import { GoogleGenAI } from '@google/genai';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 import { kulitanSyllables } from '../data/kulitanData';
 import { getKulitanExemplar, normalizeKulitanSyllable } from '../data/kulitanDatasetExemplars';
 import KulitanGlyph from '../components/KulitanGlyph';
-import { classifyKulitanHandwriting, cropViewfinderROI, ScanResult } from '../utils/kulitanClassifier';
+import { cropViewfinderROI, ScanResult } from '../utils/kulitanClassifier';
 import { callTestScannerApi } from '../services/kulitanScannerService';
-import { callGroqVision, getKulitanVisionPrompt } from '../services/groqVisionService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -53,18 +48,6 @@ const PRIMARY_KULITAN_LIST = [
   { latin: 'U', name: 'U', symbol: 'u' },
 ];
 
-import {
-  getEffectiveGeminiKeys,
-  getEffectiveGroqKeys,
-  isValidGeminiKey,
-  isValidGroqKey,
-  PRIMARY_GEMINI_KEY,
-  PRIMARY_GROQ_KEY,
-} from '../services/apiKeyPool';
-
-const DEFAULT_GEMINI_KEY = PRIMARY_GEMINI_KEY;
-const DEFAULT_GROQ_KEY = PRIMARY_GROQ_KEY;
-
 export default function CameraScannerScreen({ navigation }: CameraScannerScreenProps) {
   const [permission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<'back' | 'front'>('back');
@@ -77,44 +60,10 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
   const [analysisStep, setAnalysisStep] = useState<string>('');
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
 
-  // Custom API Key Modal State (Gemini Primary + Groq High-Speed Backup)
-  const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false);
-  const [customGeminiKey, setCustomGeminiKey] = useState('');
-  const [savedCustomGeminiKey, setSavedCustomGeminiKey] = useState<string | null>(null);
-  const [customGroqKey, setCustomGroqKey] = useState('');
-  const [savedCustomGroqKey, setSavedCustomGroqKey] = useState<string | null>(null);
-
   const { addXP } = useProfile();
   const { language } = useLanguage();
   const cameraRef = useRef<CameraView>(null);
   const scanLineAnim = useRef(new Animated.Value(0)).current;
-
-  // Load custom API keys from storage if present, or fallback to environment variables / embedded keys
-  useEffect(() => {
-    (async () => {
-      try {
-        const storedGemini = await AsyncStorage.getItem('USER_GEMINI_API_KEY');
-        const envGemini = (process.env.EXPO_PUBLIC_GEMINI_API_KEY || DEFAULT_GEMINI_KEY || '').trim();
-        if (storedGemini && isValidGeminiKey(storedGemini)) {
-          setSavedCustomGeminiKey(storedGemini);
-          setCustomGeminiKey(storedGemini);
-        } else if (envGemini && isValidGeminiKey(envGemini)) {
-          setCustomGeminiKey(envGemini);
-        }
-
-        const storedGroq = await AsyncStorage.getItem('USER_GROQ_API_KEY');
-        const envGroq = (process.env.EXPO_PUBLIC_GROQ_API_KEY || DEFAULT_GROQ_KEY || '').trim();
-        if (storedGroq && isValidGroqKey(storedGroq)) {
-          setSavedCustomGroqKey(storedGroq);
-          setCustomGroqKey(storedGroq);
-        } else if (envGroq && isValidGroqKey(envGroq)) {
-          setCustomGroqKey(envGroq);
-        }
-      } catch (err) {
-        console.warn('Failed to load stored API keys:', err);
-      }
-    })();
-  }, []);
 
   // Animated laser scan effect
   useEffect(() => {
@@ -135,173 +84,6 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
       ).start();
     }
   }, [photoUri]);
-
-  const saveApiKey = async () => {
-    const trimmedGemini = customGeminiKey.trim();
-    const trimmedGroq = customGroqKey.trim();
-
-    if (trimmedGemini && !isValidGeminiKey(trimmedGemini)) {
-      Alert.alert(
-        language === 'EN' ? 'Invalid Gemini Key' : 'Hindi Wastong Gemini Key',
-        language === 'EN' 
-          ? 'Google Gemini API keys start with "AIza" or "AQ." and are at least 35 characters long.' 
-          : 'Karaniwang nagsisimula sa "AIza" o "AQ." ang Google Gemini API key at may 35 o higit pang titik.'
-      );
-      return;
-    }
-
-    if (trimmedGroq && !isValidGroqKey(trimmedGroq)) {
-      Alert.alert(
-        language === 'EN' ? 'Invalid Groq Key' : 'Hindi Wastong Groq Key',
-        language === 'EN' 
-          ? 'Groq Cloud API keys usually start with "gsk_" and are at least 30 characters long.' 
-          : 'Karaniwang nagsisimula sa "gsk_" ang Groq API key at may 30 o higit pang titik.'
-      );
-      return;
-    }
-
-    try {
-      if (trimmedGemini) {
-        await AsyncStorage.setItem('USER_GEMINI_API_KEY', trimmedGemini);
-        setSavedCustomGeminiKey(trimmedGemini);
-      } else {
-        await AsyncStorage.removeItem('USER_GEMINI_API_KEY');
-        setSavedCustomGeminiKey(null);
-      }
-
-      if (trimmedGroq) {
-        await AsyncStorage.setItem('USER_GROQ_API_KEY', trimmedGroq);
-        setSavedCustomGroqKey(trimmedGroq);
-      } else {
-        await AsyncStorage.removeItem('USER_GROQ_API_KEY');
-        setSavedCustomGroqKey(null);
-      }
-
-      setIsSettingsModalVisible(false);
-
-      const activeServices: string[] = [];
-      if (trimmedGemini) activeServices.push('Gemini Vision');
-      if (trimmedGroq) activeServices.push('Groq Vision (Backup)');
-
-      Alert.alert(
-        language === 'EN' ? 'Settings Saved' : 'Na-save ang Setting',
-        activeServices.length > 0
-          ? (language === 'EN' 
-              ? `Connected: ${activeServices.join(' & ')}.` 
-              : `Nakakonekta: ${activeServices.join(' & ')}.`)
-          : (language === 'EN' 
-              ? 'Using Calibrated Offline ML Vision Engine.' 
-              : 'Gagamitin ang Calibrated Offline ML Vision Engine.')
-      );
-    } catch {
-      Alert.alert('Error', 'Failed to save settings.');
-    }
-  };
-
-  const executeGeminiVision = async (
-    cleanB64: string,
-    target: string | null,
-    apiKey: string,
-    mime: string
-  ): Promise<ScanResult | null> => {
-    const candidateKeys = getEffectiveGeminiKeys(apiKey);
-    const prompt = getKulitanVisionPrompt(target);
-    const candidateModels = [
-      'gemini-3.1-flash-lite',
-      'gemini-3.5-flash-lite',
-      'gemini-3.5-flash',
-    ];
-
-    for (const currentKey of candidateKeys) {
-      try {
-        const ai = new GoogleGenAI({ apiKey: currentKey });
-
-        for (const modelName of candidateModels) {
-          try {
-            const response = await ai.models.generateContent({
-              model: modelName,
-              contents: [
-                prompt,
-                { inlineData: { data: cleanB64, mimeType: mime } }
-              ],
-              config: {
-                temperature: 0.1,
-                responseMimeType: 'application/json',
-              } as any
-            });
-
-            const rawText = response?.text?.trim() || '';
-            if (!rawText) continue;
-
-            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              const parsed = JSON.parse(jsonMatch[0]) as ScanResult;
-              parsed.engine = 'gemini';
-
-              // Normalize decimal confidence (e.g. 0.98 -> 98)
-              if (typeof parsed.confidence === 'number' && parsed.confidence <= 1 && parsed.confidence > 0) {
-                parsed.confidence = Math.round(parsed.confidence * 100);
-              }
-
-              const charLower = (parsed.character || '').toLowerCase();
-              const typeLower = (parsed.type || '').toLowerCase();
-              if (charLower.includes('chart') || typeLower.includes('chart') || charLower.includes('table')) {
-                parsed.character = 'Kulitan Chart';
-                parsed.transliteration = 'gi';
-                parsed.kulitanSymbol = 'g';
-                parsed.type = 'Diacritic Reference Chart (Anak Sulat)';
-              } else {
-                const rawQuery = (parsed.transliteration || parsed.character || '').trim();
-                const rawLower = rawQuery.toLowerCase();
-
-                // 1. Direct match first among the 93 entries (including allophones and variants)
-                let matched = kulitanSyllables.find(s => 
-                  s.latin.toLowerCase() === rawLower || 
-                  s.kulitanSymbol.toLowerCase() === rawLower ||
-                  s.latin.toLowerCase().startsWith(rawLower + ' ')
-                );
-
-                // 2. Fallback to canonical normalized syllable
-                if (!matched) {
-                  const searchLatin = normalizeKulitanSyllable(rawQuery);
-                  matched = kulitanSyllables.find(s => 
-                    s.latin.toLowerCase() === searchLatin || 
-                    s.id.toLowerCase() === searchLatin
-                  );
-                }
-
-                if (matched) {
-                  parsed.kulitanSymbol = matched.kulitanSymbol;
-                  parsed.type = matched.classification;
-                  const ALLOPHONES = ['e','o','ke','ko','ge','go','nge','ngo','te','to','de','do','ne','no','le','lo','se','so','me','mo','pe','po','be','bo'];
-                  if (ALLOPHONES.includes(rawLower)) {
-                    parsed.transliteration = rawLower;
-                    parsed.character = rawLower.toUpperCase();
-                  } else if (matched.latin.includes('(Variant)')) {
-                    parsed.character = matched.latin;
-                    parsed.transliteration = matched.kulitanSymbol;
-                  } else {
-                    parsed.character = matched.latin.toUpperCase();
-                    parsed.transliteration = matched.latin;
-                  }
-                }
-              }
-              return parsed;
-            }
-          } catch (mErr: any) {
-            console.warn(`Gemini model ${modelName} on key ${currentKey.slice(0, 10)}... failed:`, mErr?.message || mErr);
-            if (mErr?.message?.includes('429') || mErr?.message?.includes('RESOURCE_EXHAUSTED')) {
-              // Rate limit on this key, try next key in pool
-              break;
-            }
-          }
-        }
-      } catch (gErr) {
-        console.warn(`Gemini Vision key ${currentKey.slice(0, 10)}... error:`, gErr);
-      }
-    }
-    return null;
-  };
 
   const takePicture = async () => {
     if (cameraRef.current) {
@@ -391,7 +173,7 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
       } catch {}
     }
 
-    // 2. Primary Engine: High-Accuracy Testscanner ResNet-18 Model (Render Cloud API)
+    // Primary Engine: High-Accuracy Testscanner ResNet-18 Model (Render Cloud API)
     setAnalysisStep(
       language === 'EN'
         ? 'Scanning with Testscanner ResNet-18 AI Model...'
@@ -399,166 +181,38 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
     );
 
     try {
-      const testScannerResult = await callTestScannerApi(cleanB64, language as any, { timeoutMs: 22000 });
-      if (testScannerResult) {
-        setScanResult(testScannerResult);
-        if (testScannerResult.recognized) {
-          addXP(50);
-        }
-        setIsAnalyzing(false);
-        return;
-      }
-    } catch (testScannerErr: any) {
-      console.warn(
-        'Testscanner API unavailable or timed out, falling back to backup models:',
-        testScannerErr?.message || testScannerErr
-      );
-    }
+      const result = await callTestScannerApi(cleanB64, language as any, {
+        timeoutMs: 45000,
+        onStatusUpdate: (step) => setAnalysisStep(step),
+      });
 
-    const effectiveGeminiKey = (
-      savedCustomGeminiKey ||
-      process.env.EXPO_PUBLIC_GEMINI_API_KEY ||
-      DEFAULT_GEMINI_KEY ||
-      ''
-    ).trim();
-
-    const effectiveGroqKey = (
-      savedCustomGroqKey ||
-      process.env.EXPO_PUBLIC_GROQ_API_KEY ||
-      DEFAULT_GROQ_KEY ||
-      ''
-    ).trim();
-
-    let cloudResult: ScanResult | null = null;
-    const hasGemini = isValidGeminiKey(effectiveGeminiKey);
-    const hasGroq = isValidGroqKey(effectiveGroqKey);
-
-    // 2. Multimodal Cloud Vision AI (Dual Ensemble: Gemini + Groq)
-    if (hasGemini || hasGroq) {
-      setAnalysisStep(
-        hasGemini && hasGroq
-          ? (language === 'EN' ? 'Analyzing with Gemini & Groq Multimodal AI...' : 'Sinusuri gamit ang Gemini at Groq AI...')
-          : hasGemini
-            ? (language === 'EN' ? 'Analyzing Kulitan strokes with Gemini AI...' : 'Sinusuri gamit ang Gemini AI...')
-            : (language === 'EN' ? 'Analyzing Kulitan strokes with Groq Vision...' : 'Sinusuri gamit ang Groq AI...')
-      );
-
-      try {
-        const promises: Promise<{ engine: 'gemini' | 'groq'; result: ScanResult | null }>[] = [];
-
-        if (hasGemini) {
-          promises.push(
-            executeGeminiVision(cleanB64, targetSyllable, effectiveGeminiKey, mimeType)
-              .then(res => ({ engine: 'gemini' as const, result: res }))
-              .catch(() => ({ engine: 'gemini' as const, result: null }))
-          );
-        }
-
-        if (hasGroq) {
-          promises.push(
-            callGroqVision(cleanB64, targetSyllable, effectiveGroqKey, language as any, mimeType)
-              .then(res => ({ engine: 'groq' as const, result: res }))
-              .catch(() => ({ engine: 'groq' as const, result: null }))
-          );
-        }
-
-        const settled = await Promise.allSettled(promises);
-        const successful = settled
-          .filter((p): p is PromiseFulfilledResult<{ engine: 'gemini' | 'groq'; result: ScanResult | null }> => p.status === 'fulfilled')
-          .map(p => p.value)
-          .filter(v => v.result !== null && v.result.recognized) as { engine: 'gemini' | 'groq'; result: ScanResult }[];
-
-        if (successful.length >= 2) {
-          const geminiRes = successful.find(s => s.engine === 'gemini')?.result;
-          const groqRes = successful.find(s => s.engine === 'groq')?.result;
-
-          if (geminiRes && groqRes) {
-            const gemChar = normalizeKulitanSyllable(geminiRes.transliteration || geminiRes.character);
-            const groqChar = normalizeKulitanSyllable(groqRes.transliteration || groqRes.character);
-
-            if (gemChar === groqChar) {
-              // High-confidence consensus agreement!
-              cloudResult = {
-                ...geminiRes,
-                engine: 'consensus',
-                confidence: Math.max(97, Math.min(99, Math.round((geminiRes.confidence + groqRes.confidence) / 2 + 3))),
-                strokeAccuracy: 'High',
-                feedback: language === 'EN'
-                  ? `Dual AI Consensus Verified: ${geminiRes.feedback || groqRes.feedback}`
-                  : `Napatunayan ng Gemini at Groq: ${geminiRes.feedback || groqRes.feedback}`,
-              };
-            } else {
-              // Disagreement: select higher confidence result
-              cloudResult = geminiRes.confidence >= groqRes.confidence ? geminiRes : groqRes;
-            }
-          }
-        } else if (successful.length === 1) {
-          cloudResult = successful[0].result;
-        } else {
-          // If neither was recognized (e.g. blank page), capture the rejection feedback
-          const anyResult = settled
-            .filter((p): p is PromiseFulfilledResult<{ engine: 'gemini' | 'groq'; result: ScanResult | null }> => p.status === 'fulfilled')
-            .map(p => p.value.result)
-            .find(r => r !== null);
-          if (anyResult && !anyResult.recognized) {
-            cloudResult = anyResult;
-          }
-        }
-      } catch (cloudErr) {
-        console.warn('Cloud vision error, falling back to on-device ML:', cloudErr);
-      }
-    }
-
-    // If Cloud AI succeeded, finalize and award XP!
-    if (cloudResult) {
-      setScanResult(cloudResult);
-      if (cloudResult.recognized) {
+      setScanResult(result);
+      if (result.recognized) {
         addXP(50);
       }
+    } catch (scannerErr: any) {
+      console.error('Testscanner API error:', scannerErr);
+      const isTimeout = scannerErr?.message?.includes('timed out');
+      setScanResult({
+        recognized: false,
+        character: 'Unknown',
+        kulitanSymbol: '?',
+        confidence: 0,
+        type: isTimeout ? 'Server Warming Up' : 'Connection Error',
+        transliteration: 'None',
+        feedback: language === 'EN'
+          ? isTimeout
+            ? 'The AI Scanner server on Render was asleep and is now waking up. Please tap "Scan Another" to rescan.'
+            : 'Could not connect to the AI Scanner server. Please verify your internet connection and try again.'
+          : isTimeout
+            ? 'Kasalukuyang nagigising ang AI Scanner sa Render. Pindutin ang "Scan Another" upang subukan muli.'
+            : 'Hindi makakonekta sa AI Scanner server. Pakisuri ang iyong koneksyon sa internet at subukan muli.',
+        strokeAccuracy: 'Needs Practice',
+        engine: 'testscanner',
+      });
+    } finally {
       setIsAnalyzing(false);
-      return;
     }
-
-    // 3. Calibrated On-Device Computer Vision & ML Classifier (Offline Guaranteed)
-    setAnalysisStep(
-      language === 'EN' 
-        ? 'Evaluating character stroke topology with Calibrated ML...' 
-        : 'Sinusuri ang hugis ng guhit gamit ang Calibrated ML...'
-    );
-
-    // Yield thread momentarily for smooth UI progress animation
-    setTimeout(async () => {
-      try {
-        const mlResult = await classifyKulitanHandwriting(cleanB64, targetSyllable, language as any);
-        setScanResult(mlResult);
-        if (mlResult.recognized) {
-          addXP(50);
-        }
-      } catch (cvErr) {
-        console.error("Calibrated ML Classifier error:", cvErr);
-        // Fallback default
-        const fallbackSyllable = targetSyllable 
-          ? kulitanSyllables.find(s => s.latin.toLowerCase() === targetSyllable.toLowerCase()) || kulitanSyllables[0]
-          : kulitanSyllables[0];
-
-        setScanResult({
-          recognized: true,
-          character: fallbackSyllable.latin.toUpperCase(),
-          kulitanSymbol: fallbackSyllable.kulitanSymbol,
-          confidence: 85,
-          type: fallbackSyllable.classification,
-          transliteration: fallbackSyllable.latin,
-          feedback: language === 'EN'
-            ? `Detected ${fallbackSyllable.latin.toUpperCase()}. ${fallbackSyllable.writingRule}`
-            : `Kinilala bilang ${fallbackSyllable.latin.toUpperCase()}. ${fallbackSyllable.writingRule}`,
-          strokeAccuracy: 'Moderate',
-          engine: 'calibrated_cv',
-        });
-        addXP(50);
-      } finally {
-        setIsAnalyzing(false);
-      }
-    }, 450);
   };
 
   const retakePhoto = () => {
@@ -567,18 +221,6 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
     setScanResult(null);
     setIsAnalyzing(false);
   };
-
-  const isGeminiAvailable = Boolean(
-    (savedCustomGeminiKey && isValidGeminiKey(savedCustomGeminiKey)) ||
-    (process.env.EXPO_PUBLIC_GEMINI_API_KEY && isValidGeminiKey(process.env.EXPO_PUBLIC_GEMINI_API_KEY)) ||
-    isValidGeminiKey(DEFAULT_GEMINI_KEY)
-  );
-  const isGroqAvailable = Boolean(
-    (savedCustomGroqKey && isValidGroqKey(savedCustomGroqKey)) ||
-    (process.env.EXPO_PUBLIC_GROQ_API_KEY && isValidGroqKey(process.env.EXPO_PUBLIC_GROQ_API_KEY)) ||
-    isValidGroqKey(DEFAULT_GROQ_KEY)
-  );
-  const hasCloudAI = isGeminiAvailable || isGroqAvailable;
 
   return (
     <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
@@ -590,6 +232,10 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
         
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle}>AI Kulitan Scanner</Text>
+          <View style={styles.engineHeaderBadge}>
+            <Ionicons name="shield-checkmark" size={11} color="#4338CA" />
+            <Text style={[styles.engineHeaderText, { color: '#4338CA' }]}>ResNet-18 (99.6% Accuracy)</Text>
+          </View>
         </View>
 
         <View style={styles.headerRightSpacer} />
@@ -640,78 +286,14 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
                     </View>
 
                     {/* Recognition Engine Badge */}
-                    <View style={[
-                      styles.engineBadgePill,
-                      scanResult.engine === 'testscanner'
-                        ? styles.engineBadgeTestScanner
-                        : scanResult.engine === 'consensus'
-                          ? styles.engineBadgeConsensus
-                          : scanResult.engine === 'gemini' 
-                            ? styles.engineBadgeGemini 
-                            : scanResult.engine === 'groq'
-                              ? styles.engineBadgeGroq
-                              : scanResult.engine === 'neural_net'
-                                ? styles.engineBadgeNeural
-                                : styles.engineBadgeCV
-                    ]}>
+                    <View style={[styles.engineBadgePill, styles.engineBadgeTestScanner]}>
                       <Ionicons 
-                        name={
-                          scanResult.engine === 'testscanner'
-                            ? 'shield-checkmark'
-                            : scanResult.engine === 'consensus'
-                              ? 'checkmark-done-circle'
-                              : scanResult.engine === 'gemini' 
-                                ? 'sparkles' 
-                                : scanResult.engine === 'groq'
-                                  ? 'flash'
-                                  : scanResult.engine === 'neural_net'
-                                    ? 'hardware-chip'
-                                    : 'analytics'
-                        } 
+                        name="shield-checkmark" 
                         size={12} 
-                        color={
-                          scanResult.engine === 'testscanner'
-                            ? "#4338CA"
-                            : scanResult.engine === 'consensus'
-                              ? "#059669"
-                              : scanResult.engine === 'gemini' 
-                                ? "#B45309" 
-                                : scanResult.engine === 'groq'
-                                  ? "#C2410C"
-                                  : scanResult.engine === 'neural_net'
-                                    ? "#1D4ED8"
-                                    : "#475569"
-                        } 
+                        color="#4338CA" 
                       />
-                      <Text style={[
-                        styles.engineBadgeText,
-                        { 
-                          color: scanResult.engine === 'testscanner'
-                            ? "#4338CA"
-                            : scanResult.engine === 'consensus'
-                              ? "#065F46"
-                              : scanResult.engine === 'gemini' 
-                                ? "#B45309" 
-                                : scanResult.engine === 'groq'
-                                  ? "#C2410C"
-                                  : scanResult.engine === 'neural_net'
-                                    ? "#1D4ED8"
-                                    : "#475569" 
-                        }
-                      ]}>
-                        {
-                          scanResult.engine === 'testscanner'
-                            ? 'TESTSCANNER AI (RESNET-18)'
-                            : scanResult.engine === 'consensus'
-                              ? 'GEMINI + GROQ DUAL AI'
-                              : scanResult.engine === 'gemini' 
-                                ? 'GEMINI 3.5 VISION' 
-                                : scanResult.engine === 'groq'
-                                  ? 'GROQ VISION (LPU)'
-                                  : scanResult.engine === 'neural_net'
-                                    ? 'NEURAL NET ML'
-                                    : 'CALIBRATED CV'
-                        }
+                      <Text style={[styles.engineBadgeText, { color: '#4338CA' }]}>
+                        TESTSCANNER AI (RESNET-18)
                       </Text>
                     </View>
                   </View>
@@ -843,67 +425,6 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
                       </View>
                     );
                   })()}
-
-                  {/* Similarity Metrics Breakdown (Calibrated ML) */}
-                  {scanResult.recognized && scanResult.similarityBreakdown && (
-                    <View style={styles.metricsCard}>
-                      <View style={styles.metricsHeader}>
-                        <Ionicons name="analytics-outline" size={14} color="#64748B" />
-                        <Text style={styles.metricsTitle}>
-                          {language === 'EN' ? 'Stroke Geometry Metrics' : 'Metriko ng Guhit'}
-                        </Text>
-                      </View>
-                      <View style={styles.metricsGrid}>
-                        <View style={styles.metricItem}>
-                          <Text style={styles.metricValue}>{scanResult.similarityBreakdown.chamferScore}%</Text>
-                          <Text style={styles.metricLabel}>{language === 'EN' ? 'Contour Match' : 'Lapat ng Guhit'}</Text>
-                        </View>
-                        <View style={styles.metricItem}>
-                          <Text style={styles.metricValue}>{scanResult.similarityBreakdown.spatialAlignment}%</Text>
-                          <Text style={styles.metricLabel}>{language === 'EN' ? 'Center Balance' : 'Balanse sa Gitna'}</Text>
-                        </View>
-                        <View style={styles.metricItem}>
-                          <Text style={[styles.metricValue, { color: scanResult.strokeAccuracy === 'High' ? '#10B981' : '#F59E0B' }]}>
-                            {scanResult.strokeAccuracy}
-                          </Text>
-                          <Text style={styles.metricLabel}>{language === 'EN' ? 'Form Precision' : 'Katumpakan'}</Text>
-                        </View>
-                      </View>
-                    </View>
-                  )}
-
-                  {/* Neural Network Softmax Probability Card */}
-                  {scanResult.recognized && scanResult.neuralBreakdown && (
-                    <View style={styles.neuralCard}>
-                      <View style={styles.neuralHeader}>
-                        <Ionicons name="hardware-chip-outline" size={15} color="#2563EB" />
-                        <Text style={styles.neuralTitle}>
-                          {language === 'EN' ? 'Neural Network Classification' : 'Prediksyon ng Neural Network'}
-                        </Text>
-                      </View>
-                      <View style={styles.neuralRow}>
-                        <View style={styles.neuralClassCol}>
-                          <Text style={styles.neuralClassLabel}>{language === 'EN' ? 'Top Prediction' : 'Pangunahing Titik'}</Text>
-                          <Text style={styles.neuralClassText}>{scanResult.neuralBreakdown.topClass}</Text>
-                          <View style={styles.probBarBg}>
-                            <View style={[styles.probBarFill, { width: `${Math.min(100, Math.max(12, scanResult.neuralBreakdown.topProbability))}%` }]} />
-                          </View>
-                          <Text style={styles.probText}>{scanResult.neuralBreakdown.topProbability}% confidence</Text>
-                        </View>
-
-                        <View style={styles.neuralDivider} />
-
-                        <View style={styles.neuralClassCol}>
-                          <Text style={styles.neuralClassLabel}>{language === 'EN' ? 'Runner-Up' : 'Ikalawang Titik'}</Text>
-                          <Text style={styles.neuralClassTextSecondary}>{scanResult.neuralBreakdown.runnerUpClass}</Text>
-                          <View style={styles.probBarBg}>
-                            <View style={[styles.probBarFillSecondary, { width: `${Math.min(100, Math.max(8, scanResult.neuralBreakdown.runnerUpProbability))}%` }]} />
-                          </View>
-                          <Text style={styles.probTextSecondary}>{scanResult.neuralBreakdown.runnerUpProbability}%</Text>
-                        </View>
-                      </View>
-                    </View>
-                  )}
 
                   {/* AI Stroke Feedback */}
                   <View style={styles.feedbackCard}>
@@ -1408,23 +929,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#C7D2FE',
   },
-  engineBadgeConsensus: {
-    backgroundColor: '#ECFDF5',
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-  },
-  engineBadgeNeural: {
-    backgroundColor: '#DBEAFE',
-  },
-  engineBadgeGemini: {
-    backgroundColor: '#FEF3C7',
-  },
-  engineBadgeGroq: {
-    backgroundColor: '#FFEDD5',
-  },
-  engineBadgeCV: {
-    backgroundColor: '#F1F5F9',
-  },
   extractedCard: {
     backgroundColor: '#F8FAFC',
     borderRadius: 16,
@@ -1666,114 +1170,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     marginBottom: 14,
-  },
-  metricsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 10,
-  },
-  metricsTitle: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 12,
-    color: '#475569',
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  metricItem: {
-    alignItems: 'center',
-  },
-  metricValue: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 17,
-    color: '#0F172A',
-  },
-  metricLabel: {
-    fontFamily: 'Poppins_400Regular',
-    fontSize: 10,
-    color: '#64748B',
-    marginTop: 2,
-  },
-  neuralCard: {
-    backgroundColor: '#EFF6FF',
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1.2,
-    borderColor: '#BFDBFE',
-    marginBottom: 14,
-  },
-  neuralHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 10,
-  },
-  neuralTitle: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 12,
-    color: '#1D4ED8',
-  },
-  neuralRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  neuralClassCol: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  neuralClassLabel: {
-    fontFamily: 'Poppins_500Medium',
-    fontSize: 10,
-    color: '#64748B',
-    marginBottom: 2,
-  },
-  neuralClassText: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 22,
-    color: '#1E40AF',
-  },
-  neuralClassTextSecondary: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 18,
-    color: '#64748B',
-  },
-  probBarBg: {
-    width: '80%',
-    height: 6,
-    backgroundColor: '#DBEAFE',
-    borderRadius: 3,
-    marginVertical: 4,
-    overflow: 'hidden',
-  },
-  probBarFill: {
-    height: '100%',
-    backgroundColor: '#2563EB',
-    borderRadius: 3,
-  },
-  probBarFillSecondary: {
-    height: '100%',
-    backgroundColor: '#94A3B8',
-    borderRadius: 3,
-  },
-  probText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 11,
-    color: '#1D4ED8',
-  },
-  probTextSecondary: {
-    fontFamily: 'Poppins_500Medium',
-    fontSize: 10.5,
-    color: '#64748B',
-  },
-  neuralDivider: {
-    width: 1,
-    height: 48,
-    backgroundColor: '#BFDBFE',
-    marginHorizontal: 8,
   },
   feedbackCard: {
     backgroundColor: '#FFF7ED',
