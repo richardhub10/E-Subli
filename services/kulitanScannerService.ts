@@ -29,7 +29,11 @@ export interface TestScannerResponse {
 export function getScannerApiUrl(): string {
   const envUrl = process.env.EXPO_PUBLIC_SCANNER_API_URL;
   if (envUrl && envUrl.trim().length > 0) {
-    return envUrl.trim();
+    let clean = envUrl.trim().replace(/\/+$/, '');
+    if (!clean.endsWith('/api/scan')) {
+      clean += '/api/scan';
+    }
+    return clean;
   }
   return DEFAULT_SCANNER_API_URL;
 }
