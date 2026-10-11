@@ -24,6 +24,7 @@ import { normalizeKulitanSyllable } from '../data/kulitanDatasetExemplars';
 import KulitanGlyph from '../components/KulitanGlyph';
 import { cropViewfinderROI, ScanResult } from '../utils/kulitanClassifier';
 import { callTestScannerApi } from '../services/kulitanScannerService';
+import { BackgroundImages } from '../constants/backgrounds';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -224,28 +225,56 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
   };
 
   return (
-    <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
-      {/* Header */}
+    <View style={styles.container}>
+      {/* Authentic Watercolor Botanical Manuscript Background */}
+      <Image 
+        source={BackgroundImages.scanner} 
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
+        resizeMode="cover" 
+      />
+
+      {/* Header Bar matching Proposed Design */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerIconBtn} activeOpacity={0.7}>
-          <Ionicons name="arrow-back" size={24} color="#0F172A" />
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          style={styles.headerBackBtn} 
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={22} color="#0F172A" />
         </TouchableOpacity>
         
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>AI Kulitan Scanner</Text>
-          <View style={styles.engineHeaderBadge}>
-            <Ionicons name="shield-checkmark" size={11} color="#4338CA" />
-            <Text style={[styles.engineHeaderText, { color: '#4338CA' }]}>ResNet-18 (99.6% Accuracy)</Text>
-          </View>
+        <View style={styles.headerPill}>
+          <Ionicons name="sparkles" size={13} color="#CC6C46" style={{ marginRight: 6 }} />
+          <Text style={styles.headerPillText}>AI KULITAN SCANNER</Text>
         </View>
 
-        <View style={styles.headerRightSpacer} />
+        <TouchableOpacity 
+          style={styles.headerFlipBtn} 
+          onPress={() => setFacing(facing === 'back' ? 'front' : 'back')}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="camera-reverse-outline" size={20} color="#0F172A" />
+        </TouchableOpacity>
       </View>
 
-
-
-      {/* Main Viewport */}
+      {/* Main Viewport Card */}
       <View style={styles.content}>
+        {/* Botanical corner flourish accents matching proposed design */}
+        <View pointerEvents="none" style={styles.cardLeafTL}>
+          <Image 
+            source={BackgroundImages.scannerLeafTL} 
+            style={styles.leafImage} 
+            resizeMode="contain" 
+          />
+        </View>
+        <View pointerEvents="none" style={styles.cardLeafBR}>
+          <Image 
+            source={BackgroundImages.scannerLeafBR} 
+            style={styles.leafImage} 
+            resizeMode="contain" 
+          />
+        </View>
+
         {photoUri ? (
           <View style={styles.previewContainer}>
             <Image source={{ uri: photoUri }} style={styles.previewImage} />
@@ -474,28 +503,12 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
                 enableTorch={flash === 'on'}
                 ref={cameraRef}
               >
-                {/* Camera Top Controls */}
-                <View style={styles.cameraControls}>
-                  <TouchableOpacity 
-                    style={styles.controlBtn} 
-                    onPress={() => setFlash(flash === 'off' ? 'on' : 'off')}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons 
-                      name={flash === 'on' ? 'flash' : 'flash-off'} 
-                      size={22} 
-                      color={flash === 'on' ? '#FBBF24' : '#FFF'} 
-                    />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity 
-                    style={styles.controlBtn} 
-                    onPress={() => setFacing(facing === 'back' ? 'front' : 'back')}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name="camera-reverse" size={22} color="#FFF" />
-                  </TouchableOpacity>
-                </View>
+                {/* Center Camera Reticle Watermark matching Proposed Mockup */}
+                {!targetSyllable && (
+                  <View style={styles.centerCameraWatermark} pointerEvents="none">
+                    <Ionicons name="camera-outline" size={48} color="rgba(255, 255, 255, 0.75)" />
+                  </View>
+                )}
 
                 {/* Laser Scanning Reticle with Optional Target Watermark */}
                 <View style={styles.reticleOverlay}>
@@ -525,6 +538,18 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
                       : 'Align handwritten Kulitan inside frame'}
                   </Text>
                 </View>
+
+                {/* Terracotta Action Pill inside Card matching Mockup */}
+                <TouchableOpacity 
+                  style={styles.cardActionButton} 
+                  onPress={pickImage} 
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name="images" size={16} color="#FFFFFF" />
+                  <Text style={styles.cardActionText}>
+                    {language === 'EN' ? 'Upload from Gallery' : 'Pumili sa Galeriya'}
+                  </Text>
+                </TouchableOpacity>
               </CameraView>
             ) : (
               <View style={styles.noCameraFallback}>
@@ -542,23 +567,45 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
         )}
       </View>
 
-      {/* Footer Controls */}
+      {/* Botanical Footer Controls matching Proposed Mockup */}
       <View style={styles.footer}>
         {!photoUri ? (
           <View style={styles.footerRow}>
-            <View style={styles.sideFooterSpacer} />
-
-            <TouchableOpacity style={styles.shutterBtn} onPress={takePicture} activeOpacity={0.8}>
-              <View style={styles.shutterInner} />
+            {/* Flash / Torch Toggle */}
+            <TouchableOpacity 
+              style={styles.sideFooterBtn} 
+              onPress={() => setFlash(flash === 'off' ? 'on' : 'off')}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.sideIconCircle, flash === 'on' && styles.sideIconCircleActive]}>
+                <Ionicons 
+                  name={flash === 'on' ? "flash" : "flash-off"} 
+                  size={22} 
+                  color={flash === 'on' ? "#D97706" : "#475569"} 
+                />
+              </View>
+              <Text style={styles.sideFooterText}>{flash === 'on' ? 'Flash On' : 'Flash'}</Text>
             </TouchableOpacity>
 
+            {/* Concentric Triple-Ring Shutter Button */}
+            <TouchableOpacity style={styles.shutterHalo} onPress={takePicture} activeOpacity={0.8}>
+              <View style={styles.shutterWhiteRing}>
+                <View style={styles.shutterCore} />
+              </View>
+            </TouchableOpacity>
+
+            {/* Syllabary / Guide Button */}
             <TouchableOpacity 
               style={styles.sideFooterBtn} 
               onPress={() => navigation.navigate('KulitanGuide')}
               activeOpacity={0.7}
             >
-              <Ionicons name="book" size={24} color="#64748B" />
-              <Text style={styles.sideFooterText}>Guide</Text>
+              <View style={styles.sideIconCircle}>
+                <Ionicons name="book" size={24} color="#475569" />
+              </View>
+              <Text style={styles.sideFooterText}>
+                {language === 'EN' ? 'Guide' : 'Gabay'}
+              </Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -570,15 +617,14 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
           </View>
         )}
       </View>
-
-
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FAF5EE',
   },
   header: {
     flexDirection: 'row',
@@ -587,8 +633,9 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 56 : 40,
     paddingHorizontal: 20,
     paddingBottom: 10,
+    zIndex: 10,
   },
-  headerIconBtn: {
+  headerBackBtn: {
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -597,80 +644,93 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 3,
   },
-  headerTitleContainer: {
-    alignItems: 'center',
-  },
-  headerTitle: {
-    color: '#0F172A',
-    fontSize: 18,
-    fontFamily: 'Poppins_700Bold',
-  },
-  headerRightSpacer: {
-    width: 44,
-    height: 44,
-  },
-  sideFooterSpacer: {
-    width: 50,
-    height: 50,
-  },
-  engineHeaderBadge: {
+  headerPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-    marginTop: 2,
-  },
-  engineHeaderText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 10,
-  },
-  headerActionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  targetBarContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     paddingHorizontal: 16,
-    paddingBottom: 10,
-  },
-  targetBarContent: {
-    gap: 8,
-    alignItems: 'center',
-  },
-  targetChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
-    borderWidth: 1.2,
-    borderColor: '#FED7AA',
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  targetChipActive: {
-    backgroundColor: '#D1582D',
-    borderColor: '#B83814',
+  headerPillText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 12.5,
+    color: '#0F172A',
+    letterSpacing: 0.5,
   },
-  targetChipText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 12,
-    color: '#D1582D',
+  headerFlipBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  targetChipTextActive: {
+  cardLeafTL: {
+    position: 'absolute',
+    top: -4,
+    left: -4,
+    width: 100,
+    height: 80,
+    zIndex: 15,
+  },
+  cardLeafBR: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    width: 95,
+    height: 100,
+    zIndex: 15,
+  },
+  leafImage: {
+    width: '100%',
+    height: '100%',
+  },
+  centerCameraWatermark: {
+    position: 'absolute',
+    top: '38%',
+    alignSelf: 'center',
+    zIndex: 4,
+  },
+  cardActionButton: {
+    position: 'absolute',
+    bottom: 22,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#CC6C46',
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    borderRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 5,
+    zIndex: 14,
+  },
+  cardActionText: {
     color: '#FFFFFF',
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 13,
+    marginLeft: 7,
   },
   content: {
     flex: 1,
@@ -1228,21 +1288,52 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#64748B',
   },
-  shutterBtn: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    backgroundColor: 'rgba(209, 88, 45, 0.25)',
+  sideIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  sideIconCircleActive: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1.5,
+    borderColor: '#F59E0B',
+  },
+  shutterHalo: {
+    width: 82,
+    height: 82,
+    borderRadius: 41,
+    backgroundColor: 'rgba(229, 188, 168, 0.55)',
+    borderWidth: 3.5,
+    borderColor: '#E5BCA8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#CC6C46',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  shutterWhiteRing: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  shutterInner: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
-    backgroundColor: '#D1582D',
-    borderWidth: 4,
-    borderColor: '#FFFFFF',
+  shutterCore: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: '#CC6C46',
   },
   previewFooterRow: {
     alignItems: 'center',
