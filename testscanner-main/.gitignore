@@ -1,0 +1,29 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Training artifacts
+# (best_model.pt and summary files are included for deployment)
+!artifacts/best_model.pt
+!artifacts/*.json
+logs/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+
+# Data
+data/
+
+*.csv

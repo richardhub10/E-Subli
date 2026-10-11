@@ -1,6 +1,7 @@
 import { kulitanSyllables, SyllableData } from '../data/kulitanData';
 import { normalizeKulitanSyllable } from '../data/kulitanDatasetExemplars';
 import { ScanResult } from '../utils/kulitanClassifier';
+import { getDistilledFeedback } from '../data/distilledKulitanKnowledge';
 
 export const DEFAULT_SCANNER_API_URL = 'https://testscanner.onrender.com/api/scan';
 
@@ -182,9 +183,16 @@ export async function callTestScannerApi(
     const strokeAccuracy: 'High' | 'Moderate' | 'Needs Practice' =
       confidencePct >= 80 ? 'High' : confidencePct >= 55 ? 'Moderate' : 'Needs Practice';
 
+    const distilledTip = getDistilledFeedback(
+      transliterationDisplay,
+      strokeAccuracy,
+      language === 'EN' ? 'EN' : 'FIL',
+      confidencePct
+    );
+
     const feedbackText = language === 'EN'
-      ? `Testscanner AI (ResNet-18) accurately identified "${characterDisplay}" with ${confidencePct}% confidence.${matched?.writingRule ? ' ' + matched.writingRule : ''}`
-      : `Kinilala ng Testscanner AI (ResNet-18) ang "${characterDisplay}" nang may ${confidencePct}% kumpiyansa.${matched?.writingRule ? ' ' + matched.writingRule : ''}`;
+      ? `Testscanner AI (ResNet-18) identified "${characterDisplay}" (${confidencePct}% confidence). ${distilledTip}`
+      : `Natukoy ng Testscanner AI (ResNet-18) ang "${characterDisplay}" (${confidencePct}% kumpiyansa). ${distilledTip}`;
 
     return {
       recognized: true,

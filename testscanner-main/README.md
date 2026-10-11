@@ -1,0 +1,178 @@
+# Kulitan AI Scanner
+
+This project trains an image classifier that predicts which Kulitan symbol a glyph image represents.
+
+It is configured to focus on the glyph region only, so side text/labels are ignored during training and scanning.
+
+## What you get
+- Training pipeline with:
+  - transfer learning (`ResNet18`)
+  - class balancing (`WeightedRandomSampler` + class-weighted loss)
+  - data augmentation
+  - early stopping
+  - test report export
+- Scanner CLI for single-image prediction with confidence scores.
+
+## 1) Install
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## 2) Put your dataset here
+
+Expected structure:
+
+```text
+data/
+  raw/
+    na/
+      img1.png
+      img2.png
+    ke/
+      img1.png
+    do/
+      img1.png
+    ...
+```
+
+Rules:
+- Folder name = class label (example: `na`, `ke`, `do`, `ngi`, etc.)
+- Include as many examples per label as possible.
+- Keep images clear and tightly cropped around the symbol.
+
+## 3) Train
+
+```bash
+python train.py --data-dir data/raw --epochs 40 --batch-size 32
+```
+
+Outputs are saved in `artifacts/`:
+- `best_model.pt`
+- `summary.json`
+- `test_report.json`
+
+## 4) Scan a new image
+
+```bash
+python scan.py --image path/to/new_symbol.png --checkpoint artifacts/best_model.pt --top-k 5
+```
+
+Show popup result (example: `po`):
+
+```bash
+python scan.py --image path/to/new_symbol.png --checkpoint artifacts/best_model.pt --popup
+```
+
+Strict scan mode (recommended):
+
+```bash
+python scan.py --image path/to/new_symbol.png --min-confidence 0.70
+```
+
+When confidence is too low or no clear symbol is detected, prediction becomes `unknown` instead of forcing a wrong label.
+
+## 5) Live camera scanner
+
+```bash
+python live_scanner.py --checkpoint artifacts/best_model.pt --min-confidence 0.70 --show-crop
+```
+
+Controls:
+- Press `q` to quit.
+
+The live window continuously shows the detected Kulitan label (example: `po`) and confidence.
+
+## 6) Website scanner (upload + camera)
+
+Run:
+
+```bash
+python web_scanner.py --checkpoint artifacts/best_model.pt --host 127.0.0.1 --port 5000
+```
+
+Open in browser:
+
+```text
+http://127.0.0.1:5000
+```
+
+What you can do on the site:
+- Upload an image and scan.
+- Start camera and capture a frame to scan.
+- See top predictions and confidence.
+- Low-confidence results are returned as `unknown`.
+
+## 7) Deploy on Vercel
+
+Files already prepared for Vercel:
+- `vercel.json`
+- `api/index.py`
+
+Deploy steps:
+1. Push your latest code to GitHub.
+2. In Vercel, create a new project from your repository.
+3. Keep default framework settings (Other).
+4. Add environment variable `CHECKPOINT_PATH` with value `artifacts/best_model.pt`.
+5. Deploy.
+
+Optional environment variables:
+- `MIN_CONFIDENCE` (example: `0.70`)
+- `TOP_K` (example: `3`)
+- `UNKNOWN_LABEL` (example: `unknown`)
+- `ALLOW_NO_SYMBOL` (`true` or `false`)
+
+Important platform note:
+- Vercel serverless has strict execution and package size limits.
+- Large AI dependencies such as PyTorch can fail deployment or cold-start slowly.
+- If Vercel build fails because of model/runtime size, deploy backend API on Render/Railway and keep only the frontend on Vercel.
+
+### Vercel failure fix (recommended)
+
+If you see an error like "Total bundle size exceeds maximum", use Render for the Python backend.
+
+Render quick steps:
+1. Push latest code (includes `render.yaml`).
+2. In Render, create a new Web Service from this GitHub repo.
+3. Render reads `render.yaml` automatically.
+4. Add environment variable `MODEL_URL` pointing to a direct download URL of your `best_model.pt` file.
+5. Deploy.
+
+Why `MODEL_URL` is needed:
+- `artifacts/best_model.pt` is usually not committed to GitHub.
+- On startup, the app now auto-downloads the checkpoint to `artifacts/best_model.pt`.
+
+Example output:
+
+```json
+{
+  "image": "path/to/new_symbol.png",
+  "prediction": "na",
+  "confidence": 0.97,
+  "top_k": [
+    {"label": "na", "confidence": 0.97},
+    {"label": "ni", "confidence": 0.02},
+    {"label": "nu", "confidence": 0.01}
+  ]
+}
+```
+
+## Accuracy tips (important)
+- Keep class counts balanced. If one label has too few images, collect more for it.
+- Use at least 40-100 images per class to start.
+- Use consistent background and stroke thickness when possible.
+- Add hard examples: blurry, rotated, thinner/thicker strokes.
+- Keep only one Kulitan symbol per image for best results.
+- If accuracy plateaus, try:
+  - more epochs (`--epochs 60`)
+  - larger image size (`--image-size 256`)
+  - unfreezed training (default) and more data.
+
+## Next step with your data
+Once you send your full dataset, I can help you:
+1. Auto-clean labels and duplicates.
+2. Train and tune hyperparameters.
+3. Add a confidence threshold so uncertain symbols return `unknown`.
+4. Build a small desktop or web UI scanner.

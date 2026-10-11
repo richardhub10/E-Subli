@@ -1,0 +1,10 @@
+{
+  "num_classes": 93,
+  "num_samples": 2883,
+  "train_samples": 2162,
+  "val_samples": 432,
+  "test_samples": 289,
+  "best_val_acc": 1.0,
+  "test_acc": 0.9965397923875432,
+  "device": "cpu"
+}

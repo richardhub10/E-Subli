@@ -44,3 +44,10 @@ yarn-error.*
 scratch/
 /Datasets/
 
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+

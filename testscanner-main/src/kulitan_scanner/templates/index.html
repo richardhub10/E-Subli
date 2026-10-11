@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Kulitan AI Scanner</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="page">
+    <section class="card">
+      <header class="header">
+        <h1>Kulitan AI Scanner</h1>
+        <p>Ipatapat ang Kulitan character sa loob ng berdeng kahon para sa pinakatumpak na detection.</p>
+      </header>
+
+      <div class="camera-section">
+        <div class="camera-viewport" id="cameraViewport">
+          <video id="camera" autoplay playsinline muted></video>
+          <div class="viewfinder-overlay" id="viewfinderOverlay">
+            <div class="viewfinder-box" id="viewfinderBox">
+              <div class="corner tl"></div>
+              <div class="corner tr"></div>
+              <div class="corner bl"></div>
+              <div class="corner br"></div>
+              <div class="viewfinder-hint">Ipatapat ang Kulitan Dito</div>
+            </div>
+          </div>
+          <canvas id="captureCanvas" class="hidden"></canvas>
+        </div>
+
+        <div class="camera-actions">
+          <button id="startCameraBtn" class="btn btn-primary">Start Camera (Back Cam)</button>
+          <button id="flipCameraBtn" class="btn btn-secondary" style="display:none;">Flip Camera</button>
+          <button id="captureScanBtn" class="btn btn-accent" disabled>Capture & Scan</button>
+        </div>
+      </div>
+
+      <div class="upload-section">
+        <div class="divider"><span>O MAG-UPLOAD NG PICTURE</span></div>
+        <div class="upload-row">
+          <input id="fileInput" type="file" accept="image/*">
+          <button id="uploadScanBtn" class="btn btn-secondary">Scan Uploaded Image</button>
+        </div>
+      </div>
+
+      <div id="result" class="result-card">
+        <div class="result-header">
+          <h2>Scanner Result</h2>
+        </div>
+        <div class="result-body">
+          <div class="result-main">
+            <div class="prediction-badge" id="predictionBadge">
+              <span class="badge-label">Detected Character</span>
+              <span class="prediction-text" id="predictionText">-</span>
+            </div>
+            <div class="confidence-row">
+              <span>Confidence:</span>
+              <strong id="confidenceText">-</strong>
+            </div>
+            <div id="reasonText" class="warning-text"></div>
+            <div id="topkText" class="topk-box"></div>
+          </div>
+
+          <div class="preview-col" id="previewCol" style="display:none;">
+            <span class="preview-label">AI Extracted Glyph</span>
+            <img id="extractedPreview" class="glyph-preview" alt="Extracted Kulitan glyph" />
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
