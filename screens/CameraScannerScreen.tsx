@@ -20,7 +20,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 import { kulitanSyllables } from '../data/kulitanData';
-import { getKulitanExemplar, normalizeKulitanSyllable } from '../data/kulitanDatasetExemplars';
+import { normalizeKulitanSyllable } from '../data/kulitanDatasetExemplars';
 import KulitanGlyph from '../components/KulitanGlyph';
 import { cropViewfinderROI, ScanResult } from '../utils/kulitanClassifier';
 import { callTestScannerApi } from '../services/kulitanScannerService';
@@ -436,30 +436,6 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
                     <Text style={styles.feedbackText}>{scanResult.feedback}</Text>
                   </View>
 
-                  {/* Authentic Handwritten Exemplar Comparison */}
-                  {scanResult.recognized && (() => {
-                    const syllableKey = scanResult.transliteration || scanResult.character;
-                    const exemplar = getKulitanExemplar(syllableKey);
-                    if (!exemplar) return null;
-                    return (
-                      <View style={styles.exemplarCompareCard}>
-                        <View style={styles.exemplarCompareHeader}>
-                          <Ionicons name="ribbon" size={14} color="#D1582D" />
-                          <Text style={styles.exemplarCompareTitle}>
-                            {language === 'EN' ? 'Archival Handwritten Exemplar' : 'Orihinal na Batayan'}
-                          </Text>
-                        </View>
-                        <View style={styles.exemplarCompareFrame}>
-                          <Image source={exemplar} style={styles.exemplarCompareImg} resizeMode="contain" />
-                        </View>
-                        <Text style={styles.exemplarCompareCaption}>
-                          {language === 'EN' 
-                            ? `Authentic handwritten calligraphy card for "${syllableKey.toUpperCase()}".` 
-                            : `Orihinal na kard ng sulat-kamay para sa "${syllableKey.toUpperCase()}".`}
-                        </Text>
-                      </View>
-                    );
-                  })()}
 
                   {/* Action Buttons */}
                   <View style={styles.resultBtnRow}>
@@ -1396,52 +1372,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_600SemiBold',
     fontSize: 13,
     color: '#FFFFFF',
-  },
-  // Authentic Exemplar Comparison in Scan Result
-  exemplarCompareCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 14,
-    borderWidth: 1.5,
-    borderColor: '#FED7AA',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
-    alignItems: 'center',
-  },
-  exemplarCompareHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 10,
-  },
-  exemplarCompareTitle: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 11,
-    color: '#D1582D',
-    letterSpacing: 0.5,
-  },
-  exemplarCompareFrame: {
-    width: '100%',
-    height: 160,
-    backgroundColor: '#FAF5EE',
-    borderRadius: 12,
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  exemplarCompareImg: {
-    width: '90%',
-    height: '90%',
-  },
-  exemplarCompareCaption: {
-    fontFamily: 'Poppins_400Regular',
-    fontSize: 10.5,
-    color: '#64748B',
-    textAlign: 'center',
   },
 });
