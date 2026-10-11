@@ -620,6 +620,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAF5EE',
+    justifyContent: 'space-between',
   },
   header: {
     flexDirection: 'row',
@@ -730,10 +731,10 @@ const styles = StyleSheet.create({
   content: {
     width: '90%',
     alignSelf: 'center',
-    height: Math.min(SCREEN_WIDTH * 1.05, 430),
-    maxHeight: 450,
+    flex: 1,
+    maxHeight: 460,
     marginTop: 6,
-    marginBottom: 12,
+    marginBottom: 8,
     borderRadius: 28,
     overflow: 'hidden',
     backgroundColor: '#152238',
@@ -1276,7 +1277,8 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   footer: {
-    paddingVertical: 18,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 38 : 24,
     paddingHorizontal: 24,
   },
   footerRow: {
