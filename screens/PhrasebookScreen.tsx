@@ -1,13 +1,23 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView, Platform, TextInput } from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  FlatList, 
+  ScrollView, 
+  Platform, 
+  TextInput, 
+  Image 
+} from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { useLanguage } from '../context/LanguageContext';
 import { useQuest } from '../context/QuestContext';
 import { phrasebookData, PhraseCategory, Phrase } from '../data/phrasebookData';
+import { BackgroundImages } from '../constants/backgrounds';
 
 type PhrasebookScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -17,19 +27,19 @@ const CATEGORIES: { id: PhraseCategory; en: string; ph: string; kpm: string; ico
   { id: 'Greetings', en: 'Greetings', ph: 'Pagbati', kpm: 'Pamamuklat', icon: 'hand-left-outline' },
   { id: 'Basics', en: 'Basics', ph: 'Pang-araw-araw', kpm: 'Pang-alben', icon: 'sparkles-outline' },
   { id: 'Conversations', en: 'Conversations', ph: 'Pakikipag-usap', kpm: 'Pamiyabe', icon: 'chatbubbles-outline' },
+  { id: 'Culture & Proverbs', en: 'Culture & Proverbs', ph: 'Kultura & Kasabihan', kpm: 'Kultura & Kasabian', icon: 'book-outline' },
   { id: 'Food & Dining', en: 'Food & Dining', ph: 'Pagkain', kpm: 'Pamangan', icon: 'restaurant-outline' },
   { id: 'Family', en: 'Family', ph: 'Pamilya', kpm: 'Pamilia', icon: 'people-outline' },
   { id: 'Love & Emotions', en: 'Love & Emotions', ph: 'Pag-ibig & Damdamin', kpm: 'Lugud & Panamdaman', icon: 'heart-outline' },
   { id: 'Numbers', en: 'Numbers', ph: 'Mga Bilang', kpm: 'Pamamilang', icon: 'calculator-outline' },
   { id: 'Directions', en: 'Directions & Places', ph: 'Direksyon & Lugar', kpm: 'Lugal & Dalan', icon: 'compass-outline' },
-  { id: 'Culture & Proverbs', en: 'Culture & Proverbs', ph: 'Kultura & Kasabihan', kpm: 'Kultura & Kasabian', icon: 'book-outline' },
 ];
 
 export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) {
   const [activeCategory, setActiveCategory] = useState<PhraseCategory>('Greetings');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const { recordQuestAction } = useQuest();
 
   useEffect(() => {
@@ -63,21 +73,21 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
 
     return (
       <View style={styles.card}>
-        {/* Top Header Row: Kapampangan Title & Copy Button */}
+        {/* Top Header Row: Peach badge & Peach circular copy button */}
         <View style={styles.cardTopRow}>
-          <View style={styles.kapampanganTitleWrap}>
-            <Text style={styles.kapampanganText}>{item.kapampangan}</Text>
+          <View style={styles.cardBadge}>
+            <Text style={styles.cardBadgeText}>{item.kapampangan}</Text>
           </View>
           
           <TouchableOpacity 
-            style={[styles.iconButton, isCopied && styles.iconButtonCopied]} 
+            style={[styles.circleActionBtn, isCopied && styles.circleActionBtnCopied]} 
             onPress={() => handleCopy(item)}
-            activeOpacity={0.7}
+            activeOpacity={0.75}
           >
             <Ionicons 
               name={isCopied ? "checkmark" : "copy-outline"} 
-              size={16} 
-              color={isCopied ? "#FFF" : "#D1582D"} 
+              size={15} 
+              color={isCopied ? "#FFFFFF" : "#B97047"} 
             />
           </TouchableOpacity>
         </View>
@@ -99,24 +109,34 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
           </ScrollView>
         </View>
 
-        {/* Bottom: Translations */}
+        {/* Bottom: Stacked Outlined Translation Rows */}
         <View style={styles.translationsContainer}>
+          {/* Primary Translation */}
           <View style={styles.translationRow}>
-            <View style={styles.langFlagPill}>
-              <Text style={styles.langFlagText}>{language === 'PH' ? 'TAG' : 'ENG'}</Text>
+            <View style={styles.flagPillTerracotta}>
+              <Text style={styles.flagTextTerracotta}>
+                {language === 'PH' ? 'TAG' : 'ENG'}
+              </Text>
             </View>
-            <Text style={styles.primaryTranslation}>
-              {language === 'PH' ? item.tagalog : item.english}
-            </Text>
+            <View style={styles.translationTextBubble}>
+              <Text style={styles.primaryTranslation}>
+                {language === 'PH' ? item.tagalog : item.english}
+              </Text>
+            </View>
           </View>
 
-          <View style={[styles.translationRow, { marginTop: 4 }]}>
-            <View style={[styles.langFlagPill, { backgroundColor: '#F1F5F9' }]}>
-              <Text style={[styles.langFlagText, { color: '#64748B' }]}>{language === 'PH' ? 'ENG' : 'TAG'}</Text>
+          {/* Secondary Translation */}
+          <View style={styles.translationRow}>
+            <View style={styles.flagPillSage}>
+              <Text style={styles.flagTextSage}>
+                {language === 'PH' ? 'ENG' : 'TAG'}
+              </Text>
             </View>
-            <Text style={styles.secondaryTranslation}>
-              {language === 'PH' ? item.english : item.tagalog}
-            </Text>
+            <View style={styles.translationTextBubble}>
+              <Text style={styles.secondaryTranslation}>
+                {language === 'PH' ? item.english : item.tagalog}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -124,31 +144,36 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
   };
 
   return (
-    <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} activeOpacity={0.7}>
-          <Ionicons name="arrow-back" size={22} color="#0F172A" />
-        </TouchableOpacity>
-        
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerSubtitle}>
-            {phrasebookData.length} {language === 'EN' ? 'PHRASES & IDIOMS' : 'MGA PARIRALA AT KASABIHAN'}
-          </Text>
-          <Text style={styles.headerTitle}>
-            {language === 'EN' ? 'Phrasebook' : language === 'PH' ? 'Talasalitaan' : 'Talasalitan'}
-          </Text>
-        </View>
+    <View style={styles.container}>
+      {/* Authentic Phrasebook Organic Wave Background */}
+      <Image 
+        source={BackgroundImages.phrasebook} 
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
+        resizeMode="cover" 
+      />
 
-        <View style={styles.phraseCountBadge}>
-          <Ionicons name="library" size={14} color="#D1582D" />
-          <Text style={styles.phraseCountText}>{filteredData.length}</Text>
-        </View>
+      {/* Top Header Bar matching Proposed Design */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          style={styles.backButton} 
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={22} color="#1E1B18" />
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          onPress={() => navigation.navigate('KulitanGuide')} 
+          style={styles.guideButton} 
+          activeOpacity={0.7}
+        >
+          <Ionicons name="book" size={20} color="#B97047" />
+        </TouchableOpacity>
       </View>
 
-      {/* Live Search Input Bar */}
+      {/* Live Search Input Bar matching Proposed Mockup */}
       <View style={styles.searchBarContainer}>
-        <Ionicons name="search-outline" size={18} color="#94A3B8" style={{ marginRight: 8 }} />
+        <Ionicons name="search" size={19} color="#78716C" style={{ marginRight: 10 }} />
         <TextInput
           style={styles.searchInput}
           placeholder={
@@ -156,18 +181,18 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
               ? "Search Kapampangan, Tagalog, English..." 
               : "Maghanap sa Kapampangan, Tagalog, Ingles..."
           }
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor="#A8A29E"
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
         {searchQuery.length > 0 && (
           <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="close-circle" size={18} color="#CBD5E1" />
+            <Ionicons name="close-circle" size={18} color="#A8A29E" />
           </TouchableOpacity>
         )}
       </View>
 
-      {/* Categories Horizontal Scroll */}
+      {/* Category Filter Chips matching Proposed Mockup */}
       {!searchQuery && (
         <View style={styles.categoryContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
@@ -183,13 +208,13 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
                     if (Platform.OS !== 'web') Haptics.selectionAsync();
                     setActiveCategory(cat.id);
                   }}
-                  activeOpacity={0.7}
+                  activeOpacity={0.75}
                 >
                   <Ionicons 
                     name={cat.icon} 
-                    size={14} 
-                    color={isActive ? "#FFF" : "#64748B"} 
-                    style={{ marginRight: 5 }} 
+                    size={16} 
+                    color={isActive ? "#FFFFFF" : "#44403C"} 
+                    style={{ marginRight: 6 }} 
                   />
                   <Text style={[styles.categoryText, isActive && styles.categoryTextActive]}>
                     {label}
@@ -217,26 +242,28 @@ export default function PhrasebookScreen({ navigation }: PhrasebookScreenProps) 
           </View>
         }
       />
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F9F4EE',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: Platform.OS === 'ios' ? 56 : 36,
+    paddingTop: Platform.OS === 'ios' ? 56 : 38,
     paddingHorizontal: 20,
-    paddingBottom: 12,
+    paddingBottom: 10,
+    zIndex: 10,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -244,50 +271,32 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 3,
   },
-  headerTitleContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  headerSubtitle: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 10,
-    color: '#D1582D',
-    letterSpacing: 1,
-  },
-  headerTitle: {
-    color: '#0F172A',
-    fontSize: 20,
-    fontFamily: 'Poppins_700Bold',
-  },
-  phraseCountBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  guideButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 14,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  phraseCountText: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 12,
-    color: '#0F172A',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
   },
   searchBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     marginHorizontal: 20,
-    marginBottom: 10,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    marginBottom: 12,
+    borderRadius: 25,
+    height: 50,
+    paddingHorizontal: 16,
+    borderWidth: 1.2,
+    borderColor: '#ECE1D2',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
@@ -298,10 +307,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: 'Poppins_500Medium',
     fontSize: 13,
-    color: '#0F172A',
+    color: '#1C1917',
   },
   categoryContainer: {
-    marginBottom: 8,
+    marginBottom: 10,
   },
   categoryScroll: {
     paddingHorizontal: 20,
@@ -310,24 +319,29 @@ const styles = StyleSheet.create({
   categoryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 22,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderWidth: 1.2,
+    borderColor: '#ECE1D2',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 2,
+    elevation: 1,
   },
   categoryButtonActive: {
-    backgroundColor: '#0F172A',
-    borderColor: '#0F172A',
-    shadowColor: '#0F172A',
+    backgroundColor: '#414836',
+    borderColor: '#414836',
+    shadowColor: '#414836',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3,
   },
   categoryText: {
-    color: '#64748B',
+    color: '#44403C',
     fontFamily: 'Poppins_600SemiBold',
     fontSize: 12,
   },
@@ -338,63 +352,61 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 40,
     paddingTop: 4,
-    gap: 12,
+    gap: 14,
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: '#FAF5EE',
+    borderRadius: 24,
     padding: 16,
-    borderWidth: 1.5,
-    borderColor: '#EDE3D8',
+    borderWidth: 1.2,
+    borderColor: '#ECE1D2',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
   cardTopRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 12,
   },
-  kapampanganTitleWrap: {
-    flex: 1,
-    paddingRight: 10,
+  cardBadge: {
+    backgroundColor: '#F2D7C4',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 12,
   },
-  kapampanganText: {
-    color: '#1E1B18',
-    fontSize: 16,
+  cardBadgeText: {
+    color: '#7C2D12',
     fontFamily: 'Poppins_700Bold',
-    lineHeight: 22,
+    fontSize: 13.5,
   },
-  iconButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#FFF1EE',
+  circleActionBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F7DDCB',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#FED7AA',
   },
-  iconButtonCopied: {
+  circleActionBtnCopied: {
     backgroundColor: '#10B981',
-    borderColor: '#059669',
   },
   kulitanBox: {
-    backgroundColor: '#FFF9F4',
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderWidth: 1.2,
-    borderColor: '#EDE3D8',
-    marginBottom: 10,
+    backgroundColor: '#F4ECE1',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#E8DCCB',
+    marginBottom: 12,
   },
   kulitanScrollContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   verticalWordColumn: {
     flexDirection: 'column',
@@ -407,37 +419,56 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   translationsContainer: {
-    gap: 4,
+    gap: 7,
   },
   translationRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 6,
+    alignItems: 'center',
+    gap: 8,
   },
-  langFlagPill: {
-    backgroundColor: '#FFEFE6',
-    paddingHorizontal: 5,
-    paddingVertical: 1.5,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: '#FED7AA',
-    marginTop: 1,
+  flagPillTerracotta: {
+    backgroundColor: '#B97047',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 10,
+    width: 42,
+    alignItems: 'center',
   },
-  langFlagText: {
+  flagTextTerracotta: {
+    color: '#FFFFFF',
     fontFamily: 'Poppins_700Bold',
-    fontSize: 8.5,
-    color: '#D1582D',
+    fontSize: 9.5,
+  },
+  flagPillSage: {
+    backgroundColor: '#AFABA0',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 10,
+    width: 42,
+    alignItems: 'center',
+  },
+  flagTextSage: {
+    color: '#FFFFFF',
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 9.5,
+  },
+  translationTextBubble: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#EFE7DC',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 14,
   },
   primaryTranslation: {
-    flex: 1,
-    color: '#0F172A',
-    fontSize: 13,
+    color: '#1C1917',
+    fontSize: 12.5,
     fontFamily: 'Poppins_600SemiBold',
     lineHeight: 18,
   },
   secondaryTranslation: {
-    flex: 1,
-    color: '#64748B',
+    color: '#57534E',
     fontSize: 12,
     fontFamily: 'Poppins_400Regular',
     lineHeight: 17,
@@ -454,3 +485,4 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
   },
 });
+
