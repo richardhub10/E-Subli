@@ -64,21 +64,21 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
   const { addXP } = useProfile();
   const { language } = useLanguage();
   const cameraRef = useRef<CameraView>(null);
-  const scanLineAnim = useRef(new Animated.Value(0)).current;
+  const scanLineAnim = useRef(new Animated.Value(8)).current;
 
-  // Animated laser scan effect
+  // Animated laser scan effect - strictly constrained inside reticle frame
   useEffect(() => {
     if (!photoUri) {
       Animated.loop(
         Animated.sequence([
           Animated.timing(scanLineAnim, {
-            toValue: 240,
-            duration: 2000,
+            toValue: 198,
+            duration: 2200,
             useNativeDriver: true,
           }),
           Animated.timing(scanLineAnim, {
-            toValue: 0,
-            duration: 2000,
+            toValue: 8,
+            duration: 2200,
             useNativeDriver: true,
           }),
         ])
@@ -782,11 +782,14 @@ const styles = StyleSheet.create({
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+    borderRadius: 8,
   },
   laserLine: {
     position: 'absolute',
-    left: 8,
-    right: 8,
+    top: 0,
+    left: 6,
+    right: 6,
     height: 2,
     backgroundColor: '#F59E0B',
     shadowColor: '#F59E0B',
