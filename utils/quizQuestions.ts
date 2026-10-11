@@ -204,53 +204,53 @@ export const BASICS_POOL: QuizQuestion[] = [
     "syllables": "Nga"
   },
   {
-    "kapampangan": "Wa",
-    "correct": "Syllable Wa",
-    "options": [
-      "Syllable Wa",
-      "Syllable Ya",
-      "Syllable Ba",
-      "Syllable Da"
-    ],
-    "category": "basics",
-    "syllables": "Wa"
-  },
+  "kapampangan": "Le",
+  "correct": "La + Upper Garlit (Le / Li)",
+  "options": [
+    "La + Upper Garlit (Le / Li)",
+    "La + Lower Garlit (Lo / Lu)",
+    "Na + Upper Garlit (Ne / Ni)",
+    "Da + Upper Garlit (De / Di)"
+  ],
+  "category": "basics",
+  "syllables": "Le"
+},
   {
-    "kapampangan": "Ya",
-    "correct": "Syllable Ya",
-    "options": [
-      "Syllable Ya",
-      "Syllable Wa",
-      "Syllable La",
-      "Syllable Ga"
-    ],
-    "category": "basics",
-    "syllables": "Ya"
-  },
+  "kapampangan": "Lo",
+  "correct": "La + Lower Garlit (Lo / Lu)",
+  "options": [
+    "La + Lower Garlit (Lo / Lu)",
+    "La + Upper Garlit (Le / Li)",
+    "Na + Lower Garlit (No / Nu)",
+    "Ba + Lower Garlit (Bo / Bu)"
+  ],
+  "category": "basics",
+  "syllables": "Lo"
+},
   {
-    "kapampangan": "Ha",
-    "correct": "Syllable Ha",
-    "options": [
-      "Syllable Ha",
-      "Syllable Ka",
-      "Syllable Sa",
-      "Syllable Ta"
-    ],
-    "category": "basics",
-    "syllables": "Ha"
-  },
+  "kapampangan": "Se",
+  "correct": "Sa + Upper Garlit (Se / Si)",
+  "options": [
+    "Sa + Upper Garlit (Se / Si)",
+    "Sa + Lower Garlit (So / Su)",
+    "Ta + Upper Garlit (Te / Ti)",
+    "Ka + Upper Garlit (Ke / Ki)"
+  ],
+  "category": "basics",
+  "syllables": "Se"
+},
   {
-    "kapampangan": "Ra",
-    "correct": "Syllable Ra",
-    "options": [
-      "Syllable Ra",
-      "Syllable Da / Ra",
-      "Syllable La",
-      "Syllable Ta"
-    ],
-    "category": "basics",
-    "syllables": "Ra"
-  },
+  "kapampangan": "So",
+  "correct": "Sa + Lower Garlit (So / Su)",
+  "options": [
+    "Sa + Lower Garlit (So / Su)",
+    "Sa + Upper Garlit (Se / Si)",
+    "Ta + Lower Garlit (To / Tu)",
+    "Mo + Lower Garlit (Mo / Mu)"
+  ],
+  "category": "basics",
+  "syllables": "So"
+},
   {
     "kapampangan": "Kang",
     "correct": "Ka + Final Consonant Ng (Kang)",
@@ -892,53 +892,53 @@ export const KUDLITS_POOL: QuizQuestion[] = [
     "syllables": "Ngu"
   },
   {
-    "kapampangan": "Wi",
-    "correct": "Wa + Upper Garlit (Wi / We)",
-    "options": [
-      "Wa + Upper Garlit (Wi / We)",
-      "Wa + Lower Garlit (Wu / Wo)",
-      "Ya + Upper Garlit (Yi / Ye)",
-      "Ba + Upper Garlit (Bi / Be)"
-    ],
-    "category": "kudlits",
-    "syllables": "Wi"
-  },
+  "kapampangan": "Pe",
+  "correct": "Pa + Upper Garlit (Pe / Pi)",
+  "options": [
+    "Pa + Upper Garlit (Pe / Pi)",
+    "Pa + Lower Garlit (Po / Pu)",
+    "Ba + Upper Garlit (Be / Bi)",
+    "Ma + Upper Garlit (Me / Mi)"
+  ],
+  "category": "kudlits",
+  "syllables": "Pe"
+},
   {
-    "kapampangan": "Wu",
-    "correct": "Wa + Lower Garlit (Wu / Wo)",
-    "options": [
-      "Wa + Lower Garlit (Wu / Wo)",
-      "Wa + Upper Garlit (Wi / We)",
-      "Ba + Lower Garlit (Bu / Bo)",
-      "Lu + Lower Garlit (Lu / Lo)"
-    ],
-    "category": "kudlits",
-    "syllables": "Wu"
-  },
+  "kapampangan": "Po",
+  "correct": "Pa + Lower Garlit (Po / Pu)",
+  "options": [
+    "Pa + Lower Garlit (Po / Pu)",
+    "Pa + Upper Garlit (Pe / Pi)",
+    "Ba + Lower Garlit (Bo / Bu)",
+    "Ta + Lower Garlit (To / Tu)"
+  ],
+  "category": "kudlits",
+  "syllables": "Po"
+},
   {
-    "kapampangan": "Yi",
-    "correct": "Ya + Upper Garlit (Yi / Ye)",
-    "options": [
-      "Ya + Upper Garlit (Yi / Ye)",
-      "Ya + Lower Garlit (Yu / Yo)",
-      "Wa + Upper Garlit (Wi / We)",
-      "Da + Upper Garlit (Di / De)"
-    ],
-    "category": "kudlits",
-    "syllables": "Yi"
-  },
+  "kapampangan": "Be",
+  "correct": "Ba + Upper Garlit (Be / Bi)",
+  "options": [
+    "Ba + Upper Garlit (Be / Bi)",
+    "Ba + Lower Garlit (Bo / Bu)",
+    "Pa + Upper Garlit (Pe / Pi)",
+    "Da + Upper Garlit (De / Di)"
+  ],
+  "category": "kudlits",
+  "syllables": "Be"
+},
   {
-    "kapampangan": "Yu",
-    "correct": "Ya + Lower Garlit (Yu / Yo)",
-    "options": [
-      "Ya + Lower Garlit (Yu / Yo)",
-      "Ya + Upper Garlit (Yi / Ye)",
-      "Tu + Lower Garlit (Tu / To)",
-      "Lu + Lower Garlit (Lu / Lo)"
-    ],
-    "category": "kudlits",
-    "syllables": "Yu"
-  }
+  "kapampangan": "Bo",
+  "correct": "Ba + Lower Garlit (Bo / Bu)",
+  "options": [
+    "Ba + Lower Garlit (Bo / Bu)",
+    "Ba + Upper Garlit (Be / Bi)",
+    "Pa + Lower Garlit (Po / Pu)",
+    "Do + Lower Garlit (Do / Du)"
+  ],
+  "category": "kudlits",
+  "syllables": "Bo"
+}
 ];
 
 // 3. WORDS: Vocabulary Words & Phrases (166 Questions)

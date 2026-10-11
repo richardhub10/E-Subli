@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated, Easing, Dimensions, ScrollView, Platform, AppState } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated, Easing, Dimensions, ScrollView, Platform, AppState, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -11,6 +11,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { useOnlinePresence } from '../context/OnlinePresenceContext';
 import { getRandomQuestions } from '../utils/quizQuestions';
 import { AiOpponent } from '../utils/aiOpponents';
+import KulitanGlyph from '../components/KulitanGlyph';
+import { BackgroundImages } from '../constants/backgrounds';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -873,7 +875,13 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   if (!currentQ) return null;
 
   return (
-    <LinearGradient colors={['#FAF5EE', '#E2E8F0']} style={styles.container}>
+    <View style={styles.container}>
+      {/* ANCIENT ARENA PARCHMENT BACKGROUND */}
+      <Image 
+        source={BackgroundImages.ranksAndProfile} 
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
+        resizeMode="cover" 
+      />
       <SafeAreaView style={styles.safeArea}>
         
         {/* Floating Emojis */}
@@ -947,19 +955,42 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
             </View>
 
             <Text style={styles.questionPrompt}>
-              {currentQ.category === 'words' ? t('what_does_this_mean') : 'Identify Glyph'}
+              {currentQ.category === 'words' ? t('what_does_this_mean') : (language === 'EN' ? 'Identify This Glyph' : 'Tukuyin ang Glyph na Ito')}
             </Text>
-            <Text style={styles.kapampanganWord}>
-              {currentQ.category === 'words' ? currentQ.kapampangan : 'Read this Glyph'}
-            </Text>
-            
-            <View style={styles.kulitanContainer}>
-              {getKulitanSyllables(currentQ.kapampangan).map((syllables, index) => (
-                <View key={index} style={styles.verticalWordColumn}>
-                  <Text style={styles.kulitanText}>{syllables.join('\n')}</Text>
+
+            {currentQ.category === 'words' ? (
+              <>
+                <Text style={styles.kapampanganWord}>{currentQ.kapampangan}</Text>
+                <View style={styles.kulitanContainer}>
+                  {getKulitanSyllables(currentQ.kapampangan).map((syllables, index) => (
+                    <View key={index} style={styles.verticalWordColumn}>
+                      {syllables.map((syl: string, sIdx: number) => (
+                        <View key={sIdx} style={styles.syllableGlyphBox}>
+                          <KulitanGlyph symbol={syl} size={46} color="#B45309" strokeWidth={4} />
+                        </View>
+                      ))}
+                    </View>
+                  ))}
                 </View>
-              ))}
-            </View>
+              </>
+            ) : (
+              <View style={styles.glyphHeroWrapper}>
+                <View style={styles.glyphPedestalCircle}>
+                  <KulitanGlyph 
+                    symbol={currentQ.kapampangan} 
+                    size={110} 
+                    color="#B45309" 
+                    strokeWidth={4.8} 
+                  />
+                </View>
+                <View style={styles.glyphRunePill}>
+                  <MaterialCommunityIcons name="feather" size={13} color="#D97706" />
+                  <Text style={styles.glyphRunePillText}>
+                    {language === 'EN' ? 'ANCIENT SULAT KAPAMPANGAN' : 'SINAUNANG SULAT KAPAMPANGAN'}
+                  </Text>
+                </View>
+              </View>
+            )}
           </Animated.View>
 
           {/* Options in 2x2 Responsive Grid */}
@@ -1022,7 +1053,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         </View>
 
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -1053,7 +1084,11 @@ const FloatingEmojiComponent = ({ emoji, xPosition }: { emoji: string, xPosition
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#FAF5EE', 
+    overflow: 'hidden' 
+  },
   safeArea: { flex: 1 },
   centerContainer: {
     flex: 1,
@@ -1235,11 +1270,13 @@ const styles = StyleSheet.create({
     marginTop: Platform.OS === 'ios' ? 10 : 36,
     borderRadius: 20,
     padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
+    borderWidth: 1.5,
+    borderColor: '#FDE68A',
+    shadowColor: '#D97706',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+    elevation: 4,
   },
   battleHeaderRow: {
     flexDirection: 'row',
@@ -1253,32 +1290,32 @@ const styles = StyleSheet.create({
   playerScoreName: {
     fontFamily: 'Poppins_600SemiBold',
     fontSize: 13,
-    color: '#64748B',
+    color: '#78350F',
   },
   playerScoreValue: {
     fontFamily: 'Poppins_700Bold',
     fontSize: 22,
-    color: '#0284C7',
+    color: '#D97706',
   },
   battleSwordsCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#FFF7ED',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FEF3C7',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#FED7AA',
+    borderWidth: 1.5,
+    borderColor: '#FDE68A',
   },
   tugBarBackground: {
     height: 8,
-    backgroundColor: '#EF4444',
+    backgroundColor: '#FCA5A5',
     borderRadius: 4,
     overflow: 'hidden',
   },
   tugBarLeftFill: {
     height: '100%',
-    backgroundColor: '#0284C7',
+    backgroundColor: '#D97706',
     borderRadius: 4,
   },
   timerContainer: {
@@ -1325,49 +1362,97 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 20,
     alignItems: 'center',
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#FDE68A',
+    shadowColor: '#D97706',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
     elevation: 4,
   },
   questionBadge: {
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 8,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
     marginBottom: 6,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
   },
   questionBadgeText: {
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'Poppins_700Bold',
     fontSize: 10,
-    color: '#94A3B8',
+    color: '#B45309',
     letterSpacing: 1.2,
   },
   questionPrompt: {
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'Poppins_600SemiBold',
     fontSize: 13,
-    color: '#64748B',
+    color: '#78350F',
     marginBottom: 4,
   },
   kapampanganWord: {
     fontFamily: 'Poppins_700Bold',
     fontSize: 26,
-    color: '#0F172A',
+    color: '#1E1B18',
     textAlign: 'center',
     marginBottom: 8,
+  },
+  glyphHeroWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+    width: '100%',
+  },
+  glyphPedestalCircle: {
+    width: 144,
+    height: 144,
+    borderRadius: 72,
+    backgroundColor: '#FFFDF9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FDE68A',
+    shadowColor: '#D97706',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 4,
+    marginBottom: 10,
+  },
+  glyphRunePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    gap: 4,
+  },
+  glyphRunePillText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 9.5,
+    color: '#92400E',
+    letterSpacing: 0.8,
+  },
+  syllableGlyphBox: {
+    marginVertical: 2,
   },
   kulitanContainer: {
     flexDirection: 'row-reverse',
     justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 20,
-    backgroundColor: '#FAF5EE',
+    backgroundColor: '#FFFDF9',
     borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#FEF3C7',
     width: '100%',
   },
   verticalWordColumn: {
-    marginHorizontal: 12,
+    marginHorizontal: 10,
     alignItems: 'center',
   },
   kulitanText: {

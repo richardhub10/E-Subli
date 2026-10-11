@@ -8,6 +8,7 @@ import { getRandomQuestions, QuestionCategory, QuizQuestion } from '../utils/qui
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useQuest } from '../context/QuestContext';
+import KulitanGlyph from '../components/KulitanGlyph';
 
 type OfflineQuizScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -331,28 +332,52 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
               </Text>
             </View>
 
-            <Text style={styles.questionWord}>
-              {currentQ.category === 'words' 
-                ? currentQ.kapampangan 
-                : (language === 'EN' ? 'Read this Glyph' : 'Basahin ang Titik')}
-            </Text>
-
-            {/* Syllable Breakdown Indicator - Shown immediately for words, or revealed upon answer for basics/kudlits */}
-            {currentQ.syllables && (currentQ.category === 'words' || selectedOption !== null) && (
-              <View style={styles.syllablesChip}>
-                <Ionicons name="sparkles" size={12} color="#D1582D" />
-                <Text style={styles.syllablesChipText}>{currentQ.syllables}</Text>
+            {currentQ.category === 'words' ? (
+              <>
+                <Text style={styles.questionWord}>{currentQ.kapampangan}</Text>
+                {/* Syllable Breakdown Indicator */}
+                {currentQ.syllables && (
+                  <View style={styles.syllablesChip}>
+                    <Ionicons name="sparkles" size={12} color="#D1582D" />
+                    <Text style={styles.syllablesChipText}>{currentQ.syllables}</Text>
+                  </View>
+                )}
+                <View style={styles.kulitanContainer}>
+                  {getKulitanSyllables(currentQ.kapampangan).map((syllables, index) => (
+                    <View key={index} style={styles.verticalWordColumn}>
+                      {syllables.map((syl: string, sIdx: number) => (
+                        <View key={sIdx} style={{ marginVertical: 2 }}>
+                          <KulitanGlyph symbol={syl} size={44} color="#B45309" strokeWidth={4} />
+                        </View>
+                      ))}
+                    </View>
+                  ))}
+                </View>
+              </>
+            ) : (
+              <View style={styles.glyphHeroWrapper}>
+                <View style={styles.glyphPedestalCircle}>
+                  <KulitanGlyph 
+                    symbol={currentQ.kapampangan} 
+                    size={110} 
+                    color="#B45309" 
+                    strokeWidth={4.8} 
+                  />
+                </View>
+                <View style={styles.glyphRunePill}>
+                  <MaterialCommunityIcons name="feather" size={13} color="#D97706" />
+                  <Text style={styles.glyphRunePillText}>
+                    {language === 'EN' ? 'ANCIENT SULAT KAPAMPANGAN' : 'SINAUNANG SULAT KAPAMPANGAN'}
+                  </Text>
+                </View>
+                {selectedOption !== null && currentQ.syllables && (
+                  <View style={[styles.syllablesChip, { marginTop: 10 }]}>
+                    <Ionicons name="sparkles" size={12} color="#D1582D" />
+                    <Text style={styles.syllablesChipText}>{currentQ.syllables}</Text>
+                  </View>
+                )}
               </View>
             )}
-            
-            {/* Kulitan Vertical Glyph Display */}
-            <View style={styles.kulitanContainer}>
-              {getKulitanSyllables(currentQ.kapampangan).map((syllables, index) => (
-                <View key={index} style={styles.verticalWordColumn}>
-                  <Text style={styles.kulitanText}>{syllables.join('\n')}</Text>
-                </View>
-              ))}
-            </View>
           </Animated.View>
 
           {/* 2x2 Options Grid */}
@@ -706,6 +731,45 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_600SemiBold',
     fontSize: 12,
     color: '#C2410C',
+  },
+  glyphHeroWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+    width: '100%',
+  },
+  glyphPedestalCircle: {
+    width: 144,
+    height: 144,
+    borderRadius: 72,
+    backgroundColor: '#FFFDF9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FDE68A',
+    shadowColor: '#D97706',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 4,
+    marginBottom: 10,
+  },
+  glyphRunePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    gap: 4,
+  },
+  glyphRunePillText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 9.5,
+    color: '#92400E',
+    letterSpacing: 0.8,
   },
   kulitanContainer: {
     flexDirection: 'row-reverse',

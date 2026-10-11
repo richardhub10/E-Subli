@@ -13,6 +13,7 @@ import { getRandomQuestions } from '../utils/quizQuestions';
 import { checkAppVersion, VersionCheckResult } from '../services/versionService';
 import UpdateModal from '../components/UpdateModal';
 import { getRandomAiOpponent } from '../utils/aiOpponents';
+import { BackgroundImages } from '../constants/backgrounds';
 
 type MultiplayerLobbyScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -300,7 +301,13 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
   };
 
   return (
-    <LinearGradient colors={['#FAF6F0', '#F3EAE0', '#EAE0D3']} style={styles.container}>
+    <View style={styles.container}>
+      {/* ANCIENT ARENA LOBBY PARCHMENT BACKGROUND */}
+      <Image 
+        source={BackgroundImages.ranksAndProfile} 
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
+        resizeMode="cover" 
+      />
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
@@ -364,7 +371,7 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
           {/* Central Arena Shield Medallion */}
           <View style={styles.arenaMedallionWrap}>
             <LinearGradient 
-              colors={['#059669', '#047857', '#065F46']} 
+              colors={['#D97706', '#B45309', '#92400E']} 
               style={styles.arenaMedallion}
             >
               <MaterialCommunityIcons name="sword-cross" size={68} color="#FFFFFF" />
@@ -397,11 +404,11 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
           <View style={styles.matchContainer}>
             {isSearching ? (
               <Animated.View style={[styles.searchingBox, { transform: [{ scale: pulseAnim }] }]}>
-                <ActivityIndicator size="large" color="#059669" />
+                <ActivityIndicator size="large" color="#D97706" />
                 <Text style={styles.searchingText}>{statusMessage}</Text>
                 
                 <View style={styles.timerBadge}>
-                  <Ionicons name="timer-outline" size={14} color="#047857" />
+                  <Ionicons name="timer-outline" size={14} color="#B45309" />
                   <Text style={styles.timerBadgeText}>
                     {searchSeconds < 15
                       ? `${language === 'EN' ? 'Searching for match' : 'Naghahanap ng laban'}... ${Math.floor(searchSeconds / 60)}:${(searchSeconds % 60).toString().padStart(2, '0')}`
@@ -416,7 +423,7 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
             ) : (
               <TouchableOpacity style={styles.findMatchButtonWrap} onPress={findMatch} activeOpacity={0.88}>
                 <LinearGradient 
-                  colors={['#059669', '#047857']} 
+                  colors={['#D97706', '#B45309']} 
                   start={{ x: 0, y: 0 }} 
                   end={{ x: 1, y: 0 }} 
                   style={styles.findMatchButton}
@@ -524,13 +531,15 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
           </View>
         </Modal>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FAF5EE',
+    overflow: 'hidden',
   },
   safeArea: {
     flex: 1,
@@ -563,7 +572,7 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontFamily: 'Poppins_600SemiBold',
     fontSize: 9,
-    color: '#059669',
+    color: '#D97706',
     letterSpacing: 1,
   },
   headerTitle: {
