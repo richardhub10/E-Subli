@@ -97,7 +97,7 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
           setPhotoUri(photo.uri);
           setScanResult(null);
           // Auto-crop Region of Interest (ROI) matching the central reticle frame
-          const croppedB64 = await cropViewfinderROI(photo.base64 || '', 0.68);
+          const croppedB64 = await cropViewfinderROI(photo.base64 || '', 0.75);
           setBase64Data(croppedB64);
           analyzeImage(croppedB64);
         }
@@ -121,9 +121,10 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
         const asset = result.assets[0];
         setPhotoUri(asset.uri);
         setScanResult(null);
-        const croppedB64 = await cropViewfinderROI(asset.base64 || '', 0.90);
-        setBase64Data(croppedB64);
-        analyzeImage(croppedB64);
+        // Gallery images are already framed, preserve full strokes
+        const imgB64 = asset.base64 || '';
+        setBase64Data(imgB64);
+        analyzeImage(imgB64);
       }
     } catch (err) {
       console.error("Failed to pick image", err);
@@ -203,10 +204,10 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
         feedback: language === 'EN'
           ? isTimeout
             ? 'The AI Scanner server on Render was asleep and is now waking up. Please tap "Scan Another" to rescan.'
-            : 'Could not connect to the AI Scanner server. Please verify your internet connection and try again.'
+            : `Could not connect to AI Scanner server (${scannerErr?.message || 'Check connection/CORS'}). Tap "Scan Another" to retry.`
           : isTimeout
             ? 'Kasalukuyang nagigising ang AI Scanner sa Render. Pindutin ang "Scan Another" upang subukan muli.'
-            : 'Hindi makakonekta sa AI Scanner server. Pakisuri ang iyong koneksyon sa internet at subukan muli.',
+            : `Hindi makakonekta sa AI Scanner server (${scannerErr?.message || 'Suriin ang koneksyon'}). Pindutin ang "Scan Another" upang subukan muli.`,
         strokeAccuracy: 'Needs Practice',
         engine: 'testscanner',
       });

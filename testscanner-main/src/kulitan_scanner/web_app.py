@@ -196,8 +196,17 @@ def create_app(
     def index():
         return render_template("index.html")
 
-    @app.post("/api/scan")
+    @app.after_request
+    def add_cors_headers(response):
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept, X-Requested-With"
+        return response
+
+    @app.route("/api/scan", methods=["POST", "OPTIONS"])
     def scan_api():
+        if request.method == "OPTIONS":
+            return "", 204
         try:
             if predictor is None:
                 return (
