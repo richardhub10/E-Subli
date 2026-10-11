@@ -307,7 +307,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#C8420F',
+    backgroundColor: '#F5E8D8',
     overflow: 'hidden',
   },
   header: {

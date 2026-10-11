@@ -702,7 +702,7 @@ export default function WriteTraceScreen({ navigation, route }: WriteTraceScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1A191C',
+    backgroundColor: '#FAF5EE',
     overflow: 'hidden',
   },
   header: {
@@ -720,11 +720,11 @@ const styles = StyleSheet.create({
   headerSub: {
     fontFamily: 'Poppins_600SemiBold',
     fontSize: 9,
-    color: '#F97316',
+    color: '#D1582D',
     letterSpacing: 1,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: '#0F172A',
     fontSize: 17,
     fontFamily: 'Poppins_700Bold',
   },
