@@ -43,7 +43,6 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
   const [sourceLanguage, setSourceLanguage] = useState<LangType>('Tagalog');
   const [targetLanguage, setTargetLanguage] = useState<LangType>('Kapampangan');
   const [sourceText, setSourceText] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [translationSource, setTranslationSource] = useState<'gemini' | 'online' | 'local'>('local');
   const [isTranslating, setIsTranslating] = useState(false);
@@ -119,16 +118,11 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
     });
   };
 
-  // Filter or paginate phrases for the 2x2 Bento grid
+  // Paginate sample phrases for the 2x2 Bento grid
   const currentPhrases = useMemo(() => {
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      const filtered = ALL_SAMPLE_PHRASES.filter(p => p.toLowerCase().includes(q));
-      return filtered.slice(0, 4);
-    }
     const startIndex = (phrasePageIndex * 4) % ALL_SAMPLE_PHRASES.length;
     return ALL_SAMPLE_PHRASES.slice(startIndex, startIndex + 4);
-  }, [searchQuery, phrasePageIndex]);
+  }, [phrasePageIndex]);
 
   const handleNextPhrases = () => {
     if (Platform.OS !== 'web') Haptics.selectionAsync();
@@ -137,9 +131,9 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
 
   return (
     <View style={styles.container}>
-      {/* Authentic Parchment Organic Wave Background */}
+      {/* Authentic Seamless Parchment Organic Wave Background */}
       <Image 
-        source={BackgroundImages.phrasebook} 
+        source={BackgroundImages.translator} 
         style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
         resizeMode="cover" 
       />
@@ -171,36 +165,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
         contentContainerStyle={styles.scrollContent} 
         showsVerticalScrollIndicator={false}
       >
-        {/* ROW 1: SEARCH / LOOKUP CAPSULE BAR */}
-        <View style={styles.searchBarContainer}>
-          <Ionicons name="search" size={18} color="#78716C" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder={
-              language === 'EN' 
-                ? "Search or enter phrase to inscribe..." 
-                : "Maghanap o mag-type ng parirala..."
-            }
-            placeholderTextColor="#A8A29E"
-            value={searchQuery}
-            onChangeText={(text) => {
-              setSearchQuery(text);
-              if (text.trim() && !sourceText) {
-                setSourceText(text);
-              }
-            }}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity 
-              onPress={() => setSearchQuery('')} 
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Ionicons name="close-circle" size={18} color="#A8A29E" />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* ROW 2: SEGMENTED HORIZONTAL LANGUAGE BAR */}
+        {/* SEGMENTED HORIZONTAL LANGUAGE BAR */}
         <View style={styles.langSelectorBar}>
           {/* Source Language Chips (Olive when active) */}
           <View style={styles.langPillsGroup}>
@@ -526,7 +491,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F4EE',
+    backgroundColor: '#F3EADE',
   },
   header: {
     flexDirection: 'row',
@@ -579,32 +544,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 110,
     paddingTop: 4,
-  },
-  /* Search / Quick Lookup Capsule */
-  searchBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FAF5EE',
-    borderRadius: 25,
-    height: 48,
-    paddingHorizontal: 16,
-    borderWidth: 1.2,
-    borderColor: '#ECE1D2',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 1,
-  },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontFamily: 'Poppins_400Regular',
-    fontSize: 13,
-    color: '#1E1B18',
   },
   /* Segmented Horizontal Language Bar */
   langSelectorBar: {

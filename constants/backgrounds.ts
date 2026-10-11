@@ -14,6 +14,7 @@ export const BackgroundImages = {
   scannerLeafTL: require('../assets/background-image/leaf-card-tl.png') as ImageSourcePropType,
   scannerLeafBR: require('../assets/background-image/leaf-card-br.png') as ImageSourcePropType,
   phrasebook: require('../assets/background-image/phrasebook.jpg') as ImageSourcePropType,
+  translator: require('../assets/background-image/translator.jpg') as ImageSourcePropType,
 } as const;
 
 export type BackgroundKey = keyof typeof BackgroundImages;
