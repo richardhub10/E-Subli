@@ -15,7 +15,9 @@ export type ScanResult = {
   transliteration: string;
   feedback: string;
   strokeAccuracy: 'High' | 'Moderate' | 'Needs Practice';
-  engine?: 'gemini' | 'groq' | 'consensus' | 'neural_net' | 'calibrated_cv';
+  engine?: 'testscanner' | 'gemini' | 'groq' | 'consensus' | 'neural_net' | 'calibrated_cv';
+  extractedImageUrl?: string | null;
+  topK?: { label: string; confidence: number }[];
   similarityBreakdown?: {
     chamferScore: number;
     spatialAlignment: number;

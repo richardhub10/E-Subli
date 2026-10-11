@@ -27,6 +27,7 @@ import { kulitanSyllables } from '../data/kulitanData';
 import { getKulitanExemplar, normalizeKulitanSyllable } from '../data/kulitanDatasetExemplars';
 import KulitanGlyph from '../components/KulitanGlyph';
 import { classifyKulitanHandwriting, cropViewfinderROI, ScanResult } from '../utils/kulitanClassifier';
+import { callTestScannerApi } from '../services/kulitanScannerService';
 import { callGroqVision, getKulitanVisionPrompt } from '../services/groqVisionService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -390,6 +391,30 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
       } catch {}
     }
 
+    // 2. Primary Engine: High-Accuracy Testscanner ResNet-18 Model (Render Cloud API)
+    setAnalysisStep(
+      language === 'EN'
+        ? 'Scanning with Testscanner ResNet-18 AI Model...'
+        : 'Sinusuri gamit ang Testscanner AI Model...'
+    );
+
+    try {
+      const testScannerResult = await callTestScannerApi(cleanB64, language as any, { timeoutMs: 22000 });
+      if (testScannerResult) {
+        setScanResult(testScannerResult);
+        if (testScannerResult.recognized) {
+          addXP(50);
+        }
+        setIsAnalyzing(false);
+        return;
+      }
+    } catch (testScannerErr: any) {
+      console.warn(
+        'Testscanner API unavailable or timed out, falling back to backup models:',
+        testScannerErr?.message || testScannerErr
+      );
+    }
+
     const effectiveGeminiKey = (
       savedCustomGeminiKey ||
       process.env.EXPO_PUBLIC_GEMINI_API_KEY ||
@@ -617,65 +642,75 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
                     {/* Recognition Engine Badge */}
                     <View style={[
                       styles.engineBadgePill,
-                      scanResult.engine === 'consensus'
-                        ? styles.engineBadgeConsensus
-                        : scanResult.engine === 'gemini' 
-                          ? styles.engineBadgeGemini 
-                          : scanResult.engine === 'groq'
-                            ? styles.engineBadgeGroq
-                            : scanResult.engine === 'neural_net'
-                              ? styles.engineBadgeNeural
-                              : styles.engineBadgeCV
+                      scanResult.engine === 'testscanner'
+                        ? styles.engineBadgeTestScanner
+                        : scanResult.engine === 'consensus'
+                          ? styles.engineBadgeConsensus
+                          : scanResult.engine === 'gemini' 
+                            ? styles.engineBadgeGemini 
+                            : scanResult.engine === 'groq'
+                              ? styles.engineBadgeGroq
+                              : scanResult.engine === 'neural_net'
+                                ? styles.engineBadgeNeural
+                                : styles.engineBadgeCV
                     ]}>
                       <Ionicons 
                         name={
-                          scanResult.engine === 'consensus'
-                            ? 'checkmark-done-circle'
-                            : scanResult.engine === 'gemini' 
-                              ? 'sparkles' 
-                              : scanResult.engine === 'groq'
-                                ? 'flash'
-                                : scanResult.engine === 'neural_net'
-                                  ? 'hardware-chip'
-                                  : 'analytics'
+                          scanResult.engine === 'testscanner'
+                            ? 'shield-checkmark'
+                            : scanResult.engine === 'consensus'
+                              ? 'checkmark-done-circle'
+                              : scanResult.engine === 'gemini' 
+                                ? 'sparkles' 
+                                : scanResult.engine === 'groq'
+                                  ? 'flash'
+                                  : scanResult.engine === 'neural_net'
+                                    ? 'hardware-chip'
+                                    : 'analytics'
                         } 
                         size={12} 
                         color={
-                          scanResult.engine === 'consensus'
-                            ? "#059669"
-                            : scanResult.engine === 'gemini' 
-                              ? "#B45309" 
-                              : scanResult.engine === 'groq'
-                                ? "#C2410C"
-                                : scanResult.engine === 'neural_net'
-                                  ? "#1D4ED8"
-                                  : "#475569"
+                          scanResult.engine === 'testscanner'
+                            ? "#4338CA"
+                            : scanResult.engine === 'consensus'
+                              ? "#059669"
+                              : scanResult.engine === 'gemini' 
+                                ? "#B45309" 
+                                : scanResult.engine === 'groq'
+                                  ? "#C2410C"
+                                  : scanResult.engine === 'neural_net'
+                                    ? "#1D4ED8"
+                                    : "#475569"
                         } 
                       />
                       <Text style={[
                         styles.engineBadgeText,
                         { 
-                          color: scanResult.engine === 'consensus'
-                            ? "#065F46"
-                            : scanResult.engine === 'gemini' 
-                              ? "#B45309" 
-                              : scanResult.engine === 'groq'
-                                ? "#C2410C"
-                                : scanResult.engine === 'neural_net'
-                                  ? "#1D4ED8"
-                                  : "#475569" 
+                          color: scanResult.engine === 'testscanner'
+                            ? "#4338CA"
+                            : scanResult.engine === 'consensus'
+                              ? "#065F46"
+                              : scanResult.engine === 'gemini' 
+                                ? "#B45309" 
+                                : scanResult.engine === 'groq'
+                                  ? "#C2410C"
+                                  : scanResult.engine === 'neural_net'
+                                    ? "#1D4ED8"
+                                    : "#475569" 
                         }
                       ]}>
                         {
-                          scanResult.engine === 'consensus'
-                            ? 'GEMINI + GROQ DUAL AI'
-                            : scanResult.engine === 'gemini' 
-                              ? 'GEMINI 3.5 VISION' 
-                              : scanResult.engine === 'groq'
-                                ? 'GROQ VISION (LPU)'
-                                : scanResult.engine === 'neural_net'
-                                  ? 'NEURAL NET ML'
-                                  : 'CALIBRATED CV'
+                          scanResult.engine === 'testscanner'
+                            ? 'TESTSCANNER AI (RESNET-18)'
+                            : scanResult.engine === 'consensus'
+                              ? 'GEMINI + GROQ DUAL AI'
+                              : scanResult.engine === 'gemini' 
+                                ? 'GEMINI 3.5 VISION' 
+                                : scanResult.engine === 'groq'
+                                  ? 'GROQ VISION (LPU)'
+                                  : scanResult.engine === 'neural_net'
+                                    ? 'NEURAL NET ML'
+                                    : 'CALIBRATED CV'
                         }
                       </Text>
                     </View>
@@ -683,21 +718,60 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
 
                   {/* Character Comparison Box */}
                   {scanResult.recognized ? (
-                    <View style={styles.charComparisonRow}>
-                      <View style={styles.charBox}>
-                        <Text style={styles.charLabel}>Recognized Kulitan</Text>
-                        <KulitanGlyph symbol={scanResult.transliteration || scanResult.character} size={58} color="#D1582D" strokeWidth={4} />
+                    <>
+                      <View style={styles.charComparisonRow}>
+                        <View style={styles.charBox}>
+                          <Text style={styles.charLabel}>Recognized Kulitan</Text>
+                          <KulitanGlyph symbol={scanResult.transliteration || scanResult.character} size={58} color="#D1582D" strokeWidth={4} />
+                        </View>
+
+                        <View style={styles.charDivider}>
+                          <Ionicons name="swap-horizontal" size={22} color="#94A3B8" />
+                        </View>
+
+                        <View style={styles.charBox}>
+                          <Text style={styles.charLabel}>Transliteration</Text>
+                          <Text style={styles.latinDisplay}>{scanResult.character}</Text>
+                        </View>
                       </View>
 
-                      <View style={styles.charDivider}>
-                        <Ionicons name="swap-horizontal" size={22} color="#94A3B8" />
-                      </View>
+                      {/* AI Extracted & Cleaned Glyph Preview */}
+                      {scanResult.extractedImageUrl && (
+                        <View style={styles.extractedCard}>
+                          <View style={styles.extractedHeader}>
+                            <Ionicons name="sparkles" size={13} color="#4338CA" />
+                            <Text style={styles.extractedHeaderTitle}>
+                              {language === 'EN' ? 'AI Isolated Glyph (Background Cleaned)' : 'Nahiwalay na Titik mula sa AI'}
+                            </Text>
+                          </View>
+                          <View style={styles.extractedImageContainer}>
+                            <Image
+                              source={{ uri: scanResult.extractedImageUrl }}
+                              style={styles.extractedImage}
+                              resizeMode="contain"
+                            />
+                          </View>
+                        </View>
+                      )}
 
-                      <View style={styles.charBox}>
-                        <Text style={styles.charLabel}>Transliteration</Text>
-                        <Text style={styles.latinDisplay}>{scanResult.character}</Text>
-                      </View>
-                    </View>
+                      {/* Top Model Predictions */}
+                      {scanResult.topK && scanResult.topK.length > 1 && (
+                        <View style={styles.topKContainer}>
+                          <Text style={styles.topKTitle}>
+                            {language === 'EN' ? 'Top Predictions:' : 'Mga Nangungunang Hula:'}
+                          </Text>
+                          <View style={styles.topKPillsRow}>
+                            {scanResult.topK.slice(0, 3).map((item, idx) => (
+                              <View key={idx} style={[styles.topKPill, idx === 0 && styles.topKPillActive]}>
+                                <Text style={[styles.topKPillText, idx === 0 && styles.topKPillTextActive]}>
+                                  {item.label.toUpperCase()}: {Math.round(item.confidence <= 1 ? item.confidence * 100 : item.confidence)}%
+                                </Text>
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      )}
+                    </>
                   ) : (
                     <View style={styles.unrecognizedCard}>
                       <Ionicons name="help-circle-outline" size={44} color="#D97706" />
@@ -1329,6 +1403,11 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
   },
+  engineBadgeTestScanner: {
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+  },
   engineBadgeConsensus: {
     backgroundColor: '#ECFDF5',
     borderWidth: 1,
@@ -1345,6 +1424,86 @@ const styles = StyleSheet.create({
   },
   engineBadgeCV: {
     backgroundColor: '#F1F5F9',
+  },
+  extractedCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+  },
+  extractedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  extractedHeaderTitle: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 11,
+    color: '#4338CA',
+  },
+  extractedImageContainer: {
+    width: 104,
+    height: 104,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  extractedImage: {
+    width: 96,
+    height: 96,
+  },
+  topKContainer: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 10,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  topKTitle: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 11,
+    color: '#64748B',
+    marginBottom: 6,
+  },
+  topKPillsRow: {
+    flexDirection: 'row',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  topKPill: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+  },
+  topKPillActive: {
+    backgroundColor: '#EEF2FF',
+    borderColor: '#818CF8',
+  },
+  topKPillText: {
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 10,
+    color: '#475569',
+  },
+  topKPillTextActive: {
+    color: '#4338CA',
+    fontFamily: 'Poppins_600SemiBold',
   },
   engineBadgeText: {
     fontFamily: 'Poppins_600SemiBold',
