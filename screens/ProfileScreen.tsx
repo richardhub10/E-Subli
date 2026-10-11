@@ -12,6 +12,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { Language } from '../utils/translations';
 import { CURRENT_APP_VERSION } from '../services/versionService';
+import { BackgroundImages } from '../constants/backgrounds';
 
 type ProfileScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -118,7 +119,21 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const progressPercent = Math.min(100, Math.max(0, currentLevelProgress));
 
   return (
-    <LinearGradient colors={['#FAF6F0', '#F3EAE0', '#EAE0D3']} style={styles.container}>
+    <View style={styles.container}>
+      {/* AUTHENTIC PROFILE & SCHOLAR BACKGROUND */}
+      <Image 
+        source={BackgroundImages.ranksAndProfile} 
+        style={StyleSheet.absoluteFill} 
+        resizeMode="cover" 
+      />
+      <LinearGradient 
+        colors={['rgba(250, 246, 240, 0.45)', 'rgba(243, 234, 224, 0.60)', 'rgba(234, 224, 211, 0.70)']} 
+        start={{ x: 0, y: 0 }} 
+        end={{ x: 0.8, y: 1 }} 
+        style={StyleSheet.absoluteFill} 
+        pointerEvents="none"
+      />
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} activeOpacity={0.7}>
@@ -448,7 +463,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           </View>
         </View>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 }
 

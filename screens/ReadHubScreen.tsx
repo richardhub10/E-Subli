@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Modal, Animated, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Modal, Animated, Switch, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -9,6 +9,7 @@ import { kulitanSyllables } from '../data/kulitanData';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useQuest } from '../context/QuestContext';
+import { BackgroundImages } from '../constants/backgrounds';
 
 type ReadHubScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -110,7 +111,21 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
   };
 
   return (
-    <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
+    <View style={styles.container}>
+      {/* AUTHENTIC READ HUB HERITAGE BACKGROUND */}
+      <Image 
+        source={BackgroundImages.readHub} 
+        style={StyleSheet.absoluteFill} 
+        resizeMode="cover" 
+      />
+      <LinearGradient 
+        colors={['rgba(250, 245, 238, 0.50)', 'rgba(232, 218, 201, 0.65)', 'rgba(184, 56, 20, 0.25)']} 
+        start={{ x: 0, y: 0 }} 
+        end={{ x: 0.8, y: 1 }} 
+        style={StyleSheet.absoluteFill} 
+        pointerEvents="none"
+      />
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} activeOpacity={0.7}>
@@ -292,7 +307,7 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
           </View>
         </View>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 }
 

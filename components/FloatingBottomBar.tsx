@@ -1,9 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Dimensions, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Dimensions, Pressable, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useLanguage } from '../context/LanguageContext';
+import { BackgroundImages } from '../constants/backgrounds';
 
 const { width } = Dimensions.get('window');
 
@@ -136,6 +137,13 @@ export default function FloatingBottomBar({ activeTab, navigation }: FloatingBot
               },
             ]}
           >
+            {/* HERITAGE LEARN HUB TEXTURE BACKDROP */}
+            <Image 
+              source={BackgroundImages.learnHub} 
+              style={[StyleSheet.absoluteFill, { borderRadius: 28, opacity: 0.12 }]} 
+              resizeMode="cover" 
+            />
+
             {/* Header */}
             <View style={styles.modalHeader}>
               <View>

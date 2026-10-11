@@ -9,6 +9,7 @@ import { getKulitanExemplar } from '../data/kulitanDatasetExemplars';
 import { useLanguage } from '../context/LanguageContext';
 import { useQuest } from '../context/QuestContext';
 import KulitanGlyph from '../components/KulitanGlyph';
+import { BackgroundImages } from '../constants/backgrounds';
 
 const { width } = Dimensions.get('window');
 
@@ -68,7 +69,20 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
   const sandboxExemplar = getKulitanExemplar(currentModified);
 
   return (
-    <LinearGradient colors={['#FAF5EE', '#F3E9DD', '#EDE2D3']} style={styles.container}>
+    <View style={styles.container}>
+      {/* AUTHENTIC LEARN HUB HERITAGE BACKGROUND */}
+      <Image 
+        source={BackgroundImages.learnHub} 
+        style={StyleSheet.absoluteFill} 
+        resizeMode="cover" 
+      />
+      <LinearGradient 
+        colors={['rgba(250, 245, 238, 0.40)', 'rgba(243, 233, 221, 0.60)', 'rgba(237, 226, 211, 0.70)']} 
+        start={{ x: 0, y: 0 }} 
+        end={{ x: 0.8, y: 1 }} 
+        style={StyleSheet.absoluteFill} 
+        pointerEvents="none"
+      />
       
       {/* BACKGROUND WATERMARK GLYPHS */}
       <View style={styles.watermarkContainer} pointerEvents="none">
@@ -686,7 +700,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
           </View>
         </View>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 }
 

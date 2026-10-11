@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { BackgroundImages } from '../constants/backgrounds';
 
 type LeaderboardScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -156,7 +157,21 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
   };
 
   return (
-    <LinearGradient colors={['#FAF6F0', '#F3EAE0', '#EAE0D3']} style={styles.container}>
+    <View style={styles.container}>
+      {/* AUTHENTIC RANKS & LEADERBOARD BACKGROUND */}
+      <Image 
+        source={BackgroundImages.ranksAndProfile} 
+        style={StyleSheet.absoluteFill} 
+        resizeMode="cover" 
+      />
+      <LinearGradient 
+        colors={['rgba(250, 246, 240, 0.45)', 'rgba(243, 234, 224, 0.60)', 'rgba(234, 224, 211, 0.70)']} 
+        start={{ x: 0, y: 0 }} 
+        end={{ x: 0.8, y: 1 }} 
+        style={StyleSheet.absoluteFill} 
+        pointerEvents="none"
+      />
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} activeOpacity={0.7}>
@@ -337,7 +352,7 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
           </Pressable>
         </Pressable>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 }
 

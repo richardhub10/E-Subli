@@ -12,6 +12,7 @@ import { kulitanPoints } from '../data/kulitanPoints';
 import { getKulitanExemplar } from '../data/kulitanDatasetExemplars';
 import { useLanguage } from '../context/LanguageContext';
 import { useQuest } from '../context/QuestContext';
+import { BackgroundImages } from '../constants/backgrounds';
 
 type WriteTraceScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -295,7 +296,21 @@ export default function WriteTraceScreen({ navigation, route }: WriteTraceScreen
   };
 
   return (
-    <LinearGradient colors={['#FAF5EE', '#E8DAC9']} style={styles.container}>
+    <View style={styles.container}>
+      {/* AUTHENTIC WRITE-TRACE STUDIO BACKGROUND */}
+      <Image 
+        source={BackgroundImages.writeTrace} 
+        style={StyleSheet.absoluteFill} 
+        resizeMode="cover" 
+      />
+      <LinearGradient 
+        colors={['rgba(250, 245, 238, 0.40)', 'rgba(232, 218, 201, 0.60)', 'rgba(15, 23, 42, 0.20)']} 
+        start={{ x: 0, y: 0 }} 
+        end={{ x: 0.8, y: 1 }} 
+        style={StyleSheet.absoluteFill} 
+        pointerEvents="none"
+      />
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} activeOpacity={0.7}>
@@ -687,7 +702,7 @@ export default function WriteTraceScreen({ navigation, route }: WriteTraceScreen
           </View>
         </View>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 }
 

@@ -11,6 +11,7 @@ import { Language } from '../utils/translations';
 import { kulitanSyllables } from '../data/kulitanData';
 import { checkAppVersion, VersionCheckResult } from '../services/versionService';
 import UpdateModal from '../components/UpdateModal';
+import { BackgroundImages } from '../constants/backgrounds';
 
 const { width, height } = Dimensions.get('window');
 
@@ -113,12 +114,18 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   return (
     <View style={styles.container}>
-      {/* 1. ATMOSPHERIC PARCHMENT GRADIENT BACKGROUND */}
+      {/* 1. AUTHENTIC HERITAGE HOMEPAGE BACKGROUND */}
+      <Image 
+        source={BackgroundImages.homepage} 
+        style={StyleSheet.absoluteFill} 
+        resizeMode="cover" 
+      />
       <LinearGradient 
-        colors={['#FFFBF6', '#F8EFE4', '#EFE0CE', '#E8D5BF']} 
+        colors={['rgba(255, 251, 246, 0.40)', 'rgba(248, 239, 228, 0.55)', 'rgba(239, 224, 206, 0.65)']} 
         start={{ x: 0, y: 0 }} 
         end={{ x: 0.8, y: 1 }} 
         style={StyleSheet.absoluteFill} 
+        pointerEvents="none"
       />
 
       {/* 2. AMBIENT GLOW RADIAL ORBS */}
