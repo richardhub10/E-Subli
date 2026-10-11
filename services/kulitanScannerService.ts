@@ -27,7 +27,10 @@ export interface TestScannerResponse {
  * Resolves the active Testscanner API endpoint URL.
  */
 export function getScannerApiUrl(): string {
-  const envUrl = process.env.EXPO_PUBLIC_SCANNER_API_URL;
+  const envUrl =
+    process.env.EXPO_PUBLIC_SCANNER_API_URL ||
+    (process.env as any)?.EXPO_PUBLIC_SCANNER_APT_URL ||
+    (process.env as any)?.EXPO_PUBLIC_SCANNER_URL;
   if (envUrl && envUrl.trim().length > 0) {
     let clean = envUrl.trim().replace(/\/+$/, '');
     if (!clean.endsWith('/api/scan')) {
