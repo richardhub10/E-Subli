@@ -73,15 +73,8 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
       {/* AUTHENTIC LEARN HUB HERITAGE BACKGROUND */}
       <Image 
         source={BackgroundImages.learnHub} 
-        style={StyleSheet.absoluteFill} 
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
         resizeMode="cover" 
-      />
-      <LinearGradient 
-        colors={['rgba(250, 245, 238, 0.40)', 'rgba(243, 233, 221, 0.60)', 'rgba(237, 226, 211, 0.70)']} 
-        start={{ x: 0, y: 0 }} 
-        end={{ x: 0.8, y: 1 }} 
-        style={StyleSheet.absoluteFill} 
-        pointerEvents="none"
       />
       
       {/* BACKGROUND WATERMARK GLYPHS */}
@@ -707,6 +700,8 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#EEDEC8',
+    overflow: 'hidden',
   },
   watermarkContainer: {
     position: 'absolute',

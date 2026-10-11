@@ -300,15 +300,8 @@ export default function WriteTraceScreen({ navigation, route }: WriteTraceScreen
       {/* AUTHENTIC WRITE-TRACE STUDIO BACKGROUND */}
       <Image 
         source={BackgroundImages.writeTrace} 
-        style={StyleSheet.absoluteFill} 
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
         resizeMode="cover" 
-      />
-      <LinearGradient 
-        colors={['rgba(250, 245, 238, 0.40)', 'rgba(232, 218, 201, 0.60)', 'rgba(15, 23, 42, 0.20)']} 
-        start={{ x: 0, y: 0 }} 
-        end={{ x: 0.8, y: 1 }} 
-        style={StyleSheet.absoluteFill} 
-        pointerEvents="none"
       />
 
       {/* Header */}
@@ -709,6 +702,8 @@ export default function WriteTraceScreen({ navigation, route }: WriteTraceScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#1A191C',
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
@@ -725,11 +720,11 @@ const styles = StyleSheet.create({
   headerSub: {
     fontFamily: 'Poppins_600SemiBold',
     fontSize: 9,
-    color: '#D1582D',
+    color: '#F97316',
     letterSpacing: 1,
   },
   headerTitle: {
-    color: '#0F172A',
+    color: '#FFFFFF',
     fontSize: 17,
     fontFamily: 'Poppins_700Bold',
   },

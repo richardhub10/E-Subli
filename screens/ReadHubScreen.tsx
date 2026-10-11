@@ -115,15 +115,8 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
       {/* AUTHENTIC READ HUB HERITAGE BACKGROUND */}
       <Image 
         source={BackgroundImages.readHub} 
-        style={StyleSheet.absoluteFill} 
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
         resizeMode="cover" 
-      />
-      <LinearGradient 
-        colors={['rgba(250, 245, 238, 0.50)', 'rgba(232, 218, 201, 0.65)', 'rgba(184, 56, 20, 0.25)']} 
-        start={{ x: 0, y: 0 }} 
-        end={{ x: 0.8, y: 1 }} 
-        style={StyleSheet.absoluteFill} 
-        pointerEvents="none"
       />
 
       {/* Header */}
@@ -314,6 +307,8 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#C8420F',
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',

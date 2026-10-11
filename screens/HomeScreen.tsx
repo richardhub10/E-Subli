@@ -117,21 +117,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       {/* 1. AUTHENTIC HERITAGE HOMEPAGE BACKGROUND */}
       <Image 
         source={BackgroundImages.homepage} 
-        style={StyleSheet.absoluteFill} 
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
         resizeMode="cover" 
       />
-      <LinearGradient 
-        colors={['rgba(255, 251, 246, 0.40)', 'rgba(248, 239, 228, 0.55)', 'rgba(239, 224, 206, 0.65)']} 
-        start={{ x: 0, y: 0 }} 
-        end={{ x: 0.8, y: 1 }} 
-        style={StyleSheet.absoluteFill} 
-        pointerEvents="none"
-      />
-
-      {/* 2. AMBIENT GLOW RADIAL ORBS */}
-      <View style={styles.topRightGlowOrb} pointerEvents="none" />
-      <View style={styles.midLeftGlowOrb} pointerEvents="none" />
-      <View style={styles.bottomRightGlowOrb} pointerEvents="none" />
 
       {/* 3. SUBTLE WATERMARK KULITAN MANUSCRIPT GLYPHS */}
       <View style={styles.watermarkContainer} pointerEvents="none">
@@ -638,7 +626,8 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFBF6',
+    backgroundColor: '#F6ECE0',
+    overflow: 'hidden',
   },
   topRightGlowOrb: {
     position: 'absolute',

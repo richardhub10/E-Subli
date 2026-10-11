@@ -123,15 +123,8 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       {/* AUTHENTIC PROFILE & SCHOLAR BACKGROUND */}
       <Image 
         source={BackgroundImages.ranksAndProfile} 
-        style={StyleSheet.absoluteFill} 
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
         resizeMode="cover" 
-      />
-      <LinearGradient 
-        colors={['rgba(250, 246, 240, 0.45)', 'rgba(243, 234, 224, 0.60)', 'rgba(234, 224, 211, 0.70)']} 
-        start={{ x: 0, y: 0 }} 
-        end={{ x: 0.8, y: 1 }} 
-        style={StyleSheet.absoluteFill} 
-        pointerEvents="none"
       />
 
       {/* Header */}
@@ -470,6 +463,8 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FAF5EE',
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
