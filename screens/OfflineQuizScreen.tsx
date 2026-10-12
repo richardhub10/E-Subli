@@ -261,6 +261,54 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
 
   const accuracyRate = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
 
+  const renderOptionItem = (opt: string, index: number) => {
+    if (!currentQ || !opt) return null;
+    const isSelected = selectedOption === opt;
+    const isCorrectSelection = isSelected && isCorrectSelected === true;
+    const isWrongSelection = isSelected && isCorrectSelected === false;
+    const isRevealedCorrect = selectedOption !== null && isCorrectSelected === false && opt === currentQ.correct;
+    
+    const isGreen = isCorrectSelection || isRevealedCorrect;
+    const isRed = isWrongSelection;
+    
+    return (
+      <View key={index} style={styles.optionGridItem}>
+        <TouchableOpacity
+          style={[
+            styles.optionButton,
+            isGreen && styles.optionCorrect,
+            isRed && styles.optionWrong
+          ]}
+          onPress={() => handleAnswer(opt)}
+          activeOpacity={0.75}
+          disabled={selectedOption !== null}
+        >
+          {/* SOLID CARAMEL/TERRACOTTA CIRCLE BADGE ON LEFT */}
+          <View style={[
+            styles.optionCircleBadge,
+            isGreen && styles.optionCircleBadgeCorrect,
+            isRed && styles.optionCircleBadgeWrong
+          ]}>
+            <Text style={styles.optionCircleBadgeText}>
+              {isGreen ? '✓' : isRed ? '✗' : ['A', 'B', 'C', 'D'][index]}
+            </Text>
+          </View>
+
+          {/* OPTION TEXT ON RIGHT */}
+          <Text 
+            style={[
+              styles.optionText,
+              (isGreen || isRed) && styles.optionTextActive
+            ]}
+            numberOfLines={2}
+          >
+            {opt}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   if (!currentQ) return null;
 
   return (
@@ -373,82 +421,45 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
               ) : (
                 <KulitanGlyph 
                   symbol={currentQ.kapampangan} 
-                  size={96} 
+                  size={88} 
                   color="#A94828" 
                   strokeWidth={4.5} 
                 />
               )}
             </View>
 
-            {/* BOTTOM PILL BADGE INSIDE CARD */}
+            {/* BOTTOM QUESTION PROMPT PILL INSIDE CARD */}
             <View style={styles.questionCluePill}>
               <Text style={styles.questionClueText}>
-                {currentQ.syllables 
-                  ? (language === 'EN' ? `Syllable: "${currentQ.syllables}"` : `Pantig: "${currentQ.syllables}"`)
-                  : (language === 'EN' ? 'Choose the matching answer below:' : 'Piliin ang tamang sagot sa ibaba:')}
+                {currentQ.category === 'words'
+                  ? (language === 'EN' ? 'Choose the matching meaning:' : 'Piliin ang wastong kahulugan:')
+                  : currentQ.category === 'kudlits'
+                  ? (language === 'EN' ? 'Identify the character & garlit:' : 'Kilalanin ang titik at garlit:')
+                  : (language === 'EN' ? 'Choose the matching syllable:' : 'Piliin ang wastong pantig:')
+                }
               </Text>
             </View>
           </Animated.View>
 
           {/* 2x2 OPTIONS BENTO GRID MATCHING MOCKUP */}
-          <View style={styles.optionsGrid}>
-            {currentQ.options.map((opt: string, index: number) => {
-              const isSelected = selectedOption === opt;
-              const isCorrectSelection = isSelected && isCorrectSelected === true;
-              const isWrongSelection = isSelected && isCorrectSelected === false;
-              const isRevealedCorrect = selectedOption !== null && isCorrectSelected === false && opt === currentQ.correct;
-              
-              const isGreen = isCorrectSelection || isRevealedCorrect;
-              const isRed = isWrongSelection;
-              
-              return (
-                <Animated.View 
-                  key={index}
-                  style={[
-                    styles.optionGridItem,
-                    {
-                      transform: [{ translateY: optionsSlideAnim }],
-                      opacity: optionsOpacityAnim
-                    }
-                  ]}
-                >
-                  <TouchableOpacity
-                    style={[
-                      styles.optionButton,
-                      isGreen && styles.optionCorrect,
-                      isRed && styles.optionWrong
-                    ]}
-                    onPress={() => handleAnswer(opt)}
-                    activeOpacity={0.75}
-                    disabled={selectedOption !== null}
-                  >
-                    {/* SOLID CARAMEL/TERRACOTTA CIRCLE BADGE ON LEFT */}
-                    <View style={[
-                      styles.optionCircleBadge,
-                      isGreen && styles.optionCircleBadgeCorrect,
-                      isRed && styles.optionCircleBadgeWrong
-                    ]}>
-                      <Text style={styles.optionCircleBadgeText}>
-                        {isGreen ? '✓' : isRed ? '✗' : ['A', 'B', 'C', 'D'][index]}
-                      </Text>
-                    </View>
-
-                    {/* OPTION TEXT ON RIGHT */}
-                    <Text 
-                      style={[
-                        styles.optionText,
-                        (isGreen || isRed) && styles.optionTextActive
-                      ]}
-                      numberOfLines={2}
-                      adjustsFontSizeToFit
-                    >
-                      {opt}
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
-              );
-            })}
-          </View>
+          <Animated.View 
+            style={[
+              styles.optionsContainer,
+              {
+                transform: [{ translateY: optionsSlideAnim }],
+                opacity: optionsOpacityAnim
+              }
+            ]}
+          >
+            <View style={styles.optionsRow}>
+              {renderOptionItem(currentQ.options[0], 0)}
+              {renderOptionItem(currentQ.options[1], 1)}
+            </View>
+            <View style={styles.optionsRow}>
+              {renderOptionItem(currentQ.options[2], 2)}
+              {renderOptionItem(currentQ.options[3], 3)}
+            </View>
+          </Animated.View>
 
           {/* Feedback Explanation Banners */}
           {selectedOption !== null && isCorrectSelected === false && (
@@ -628,11 +639,11 @@ const styles = StyleSheet.create({
   },
   mountArayatIllustration: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 42 : 24,
-    right: -4,
-    width: 220,
-    height: 90,
-    opacity: 0.95,
+    top: Platform.OS === 'ios' ? 12 : 0,
+    right: 0,
+    width: 175,
+    height: 65,
+    opacity: 0.85,
     zIndex: 1,
   },
   headerRow: {
@@ -640,8 +651,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 44 : 28,
-    paddingBottom: 8,
+    paddingTop: Platform.OS === 'ios' ? 44 : 24,
+    paddingBottom: 6,
     zIndex: 10,
   },
   exitButton: {
@@ -662,7 +673,7 @@ const styles = StyleSheet.create({
   headerCapsuleBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 20,
@@ -696,24 +707,30 @@ const styles = StyleSheet.create({
   },
   categoryContainer: {
     paddingHorizontal: 20,
-    marginTop: 4,
-    marginBottom: 8,
-    zIndex: 10,
+    marginTop: 6,
+    marginBottom: 10,
+    zIndex: 20,
+    elevation: 5,
   },
   categoryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 6,
+    gap: 8,
   },
   categoryCapsule: {
     flex: 1,
-    paddingVertical: 7,
+    paddingVertical: 8,
     borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: '#EDE3D8',
+    borderColor: '#DFD2C2',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 2,
   },
   categoryCapsuleActive: {
     backgroundColor: '#A94828',
@@ -721,13 +738,13 @@ const styles = StyleSheet.create({
     shadowColor: '#A94828',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
-    shadowRadius: 6,
+    shadowRadius: 5,
     elevation: 3,
   },
   categoryCapsuleText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 11.5,
-    color: '#6E5D4F',
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 12,
+    color: '#334155',
   },
   categoryCapsuleTextActive: {
     color: '#FFFFFF',
@@ -801,16 +818,17 @@ const styles = StyleSheet.create({
   },
   questionCluePill: {
     backgroundColor: '#FAF5EE',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#EDE3D8',
-    width: '100%',
+    alignSelf: 'center',
     alignItems: 'center',
+    maxWidth: '92%',
   },
   questionClueText: {
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'Poppins_600SemiBold',
     fontSize: 12,
     color: '#6E5D4F',
     textAlign: 'center',
@@ -833,22 +851,24 @@ const styles = StyleSheet.create({
   verticalWordCol: {
     alignItems: 'center',
   },
-  optionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+  optionsContainer: {
     paddingHorizontal: 20,
-    marginTop: 12,
+    marginTop: 14,
+    gap: 10,
+  },
+  optionsRow: {
+    flexDirection: 'row',
     gap: 10,
   },
   optionGridItem: {
-    width: '48.5%',
+    flex: 1,
   },
   optionButton: {
+    flex: 1,
     backgroundColor: '#FFFFFF',
     paddingVertical: 12,
     paddingHorizontal: 10,
-    minHeight: 68,
+    minHeight: 74,
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: '#EDE3D8',
@@ -868,6 +888,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
+    flexShrink: 0,
   },
   optionCircleBadgeCorrect: {
     backgroundColor: '#10B981',
@@ -883,9 +904,9 @@ const styles = StyleSheet.create({
   optionText: {
     flex: 1,
     fontFamily: 'Poppins_600SemiBold',
-    fontSize: 13,
+    fontSize: 12.5,
     color: '#1E1B18',
-    lineHeight: 18,
+    lineHeight: 17,
   },
   optionTextActive: {
     color: '#0F172A',
