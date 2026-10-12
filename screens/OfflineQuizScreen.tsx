@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Easing, Platform, Dimensions, ScrollView, Modal, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Easing, Platform, Dimensions, ScrollView, Modal, Image, BackHandler } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -89,6 +89,21 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
+
+  // Hardware Back Button Handler (Android)
+  useEffect(() => {
+    const onBackPress = () => {
+      if (isRecapModalVisible) {
+        setIsRecapModalVisible(false);
+      } else {
+        handleOpenRecap();
+      }
+      return true;
+    };
+
+    const backSub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => backSub.remove();
+  }, [isRecapModalVisible]);
 
   // Floating Card Animation
   useEffect(() => {
@@ -470,7 +485,7 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
           )}
         </ScrollView>
 
-        {/* Session Performance Recap Modal */}
+        {/* Session Performance Recap / Quit Confirmation Modal Matching Heritage Wireframe */}
         <Modal
           visible={isRecapModalVisible}
           transparent
@@ -479,65 +494,115 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
         >
           <View style={styles.recapModalOverlay}>
             <View style={styles.recapModalCard}>
+              
+              {/* FAINT SPANISH COLONIAL CHURCH ON TOP RIGHT */}
+              <Image 
+                source={BackgroundImages.quitChurch} 
+                style={styles.recapChurchArt} 
+                resizeMode="contain" 
+              />
+
+              {/* FAINT MOUNTAINS & CLOUDS ON TOP LEFT */}
+              <Image 
+                source={BackgroundImages.quitMountains} 
+                style={styles.recapMountainsArt} 
+                resizeMode="contain" 
+              />
+
               <View style={styles.recapModalContent}>
                 
-                {/* Trophy Icon & Header */}
-                <View style={styles.recapTrophyCircle}>
-                  <Ionicons name="trophy" size={38} color="#D1582D" />
+                {/* CENTER CIRCULAR GOLD-BORDERED TROPHY MEDALLION */}
+                <View style={styles.recapTrophyWrapper}>
+                  <Image 
+                    source={BackgroundImages.quitTrophy} 
+                    style={styles.recapTrophyImage} 
+                    resizeMode="contain" 
+                  />
                 </View>
 
+                {/* MODAL TITLE & SUBTITLE */}
                 <Text style={styles.recapModalTitle}>
-                  {language === 'EN' ? 'Practice Recap' : 'Pagsasanay Buod'}
+                  {language === 'EN' ? 'End Practice Session?' : 'Tapusin ang Pagsasanay?'}
                 </Text>
                 <Text style={styles.recapModalSubtitle}>
-                  {language === 'EN' ? 'Great progress today, Scholar!' : 'Magandang simula, Mag-aaral!'}
+                  {language === 'EN' 
+                    ? 'Your earned XP and performance have been saved.' 
+                    : 'Nai-save ang iyong nakuhang XP at progreso sa sesyon.'}
                 </Text>
 
-                {/* Performance Stats Grid */}
-                <View style={styles.recapStatsGrid}>
-                  <View style={styles.recapStatBox}>
-                    <Ionicons name="flash" size={20} color="#A94828" />
-                    <Text style={styles.recapStatValue}>+{sessionXP}</Text>
-                    <Text style={styles.recapStatLabel}>XP Earned</Text>
+                {/* 3-COLUMN BENTO METRIC SUMMARY CARD */}
+                <View style={styles.recapBentoContainer}>
+                  {/* Column 1: Flash / XP Badge */}
+                  <View style={styles.recapBentoCol}>
+                    <View style={styles.recapBentoIconBadgeXP}>
+                      <Ionicons name="flash" size={20} color="#FFFFFF" />
+                    </View>
+                    <Text style={styles.recapBentoValue}>+{sessionXP}</Text>
+                    <Text style={styles.recapBentoLabel}>
+                      {language === 'EN' ? 'XP Gained' : 'Karanasan'}
+                    </Text>
                   </View>
 
-                  <View style={styles.recapStatBox}>
-                    <Ionicons name="checkmark-done" size={20} color="#10B981" />
-                    <Text style={styles.recapStatValue}>{accuracyRate}%</Text>
-                    <Text style={styles.recapStatLabel}>{correctCount}/{answeredCount} Correct</Text>
+                  <View style={styles.recapBentoDivider} />
+
+                  {/* Column 2: Accuracy / Checkmark Badge */}
+                  <View style={styles.recapBentoCol}>
+                    <View style={styles.recapBentoIconBadgeAccuracy}>
+                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                    </View>
+                    <Text style={styles.recapBentoValue}>{accuracyRate}%</Text>
+                    <Text style={styles.recapBentoLabel}>
+                      {correctCount}/{answeredCount} {language === 'EN' ? 'Correct' : 'Wasto'}
+                    </Text>
                   </View>
 
-                  <View style={styles.recapStatBox}>
-                    <Ionicons name="flame" size={20} color="#EF4444" />
-                    <Text style={styles.recapStatValue}>{maxStreak}x</Text>
-                    <Text style={styles.recapStatLabel}>Max Streak</Text>
+                  <View style={styles.recapBentoDivider} />
+
+                  {/* Column 3: Streak / Flame Badge */}
+                  <View style={styles.recapBentoCol}>
+                    <View style={styles.recapBentoIconBadgeStreak}>
+                      <Ionicons name="flame" size={20} color="#FFFFFF" />
+                    </View>
+                    <Text style={styles.recapBentoValue}>{maxStreak}x</Text>
+                    <Text style={styles.recapBentoLabel}>
+                      {language === 'EN' ? 'Max Streak' : 'Sunod-sunod'}
+                    </Text>
                   </View>
                 </View>
 
-                {/* Modal Action Buttons */}
+                {/* TWO ACTION BUTTONS (LEFT: OUTLINE, RIGHT: SOLID TERRACOTTA) */}
                 <View style={styles.recapActionRow}>
                   <TouchableOpacity 
                     style={styles.recapSecondaryBtn}
-                    onPress={handleExitToHome}
+                    onPress={() => {
+                      setIsRecapModalVisible(false);
+                      nextQuestion();
+                    }}
                     activeOpacity={0.75}
                   >
                     <Text style={styles.recapSecondaryBtnText}>
-                      {language === 'EN' ? 'Exit' : 'Lumabas'}
+                      {language === 'EN' ? 'Keep Going' : 'Magpatuloy'}
                     </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity 
                     style={styles.recapPrimaryBtn}
-                    onPress={() => {
-                      setIsRecapModalVisible(false);
-                      nextQuestion();
-                    }}
+                    onPress={handleExitToHome}
                     activeOpacity={0.85}
                   >
                     <Text style={styles.recapPrimaryBtnText}>
-                      {language === 'EN' ? 'Keep Going' : 'Magpatuloy'}
+                      {language === 'EN' ? 'Exit' : 'Lumabas'}
                     </Text>
                   </TouchableOpacity>
+                </View>
+
+                {/* BOTTOM HERITAGE FLOWER ORNAMENT WITH GUIDE LINE */}
+                <View style={styles.recapBottomOrnamentWrap}>
+                  <Image 
+                    source={BackgroundImages.quitOrnament} 
+                    style={styles.recapBottomOrnamentImage} 
+                    resizeMode="contain" 
+                  />
                 </View>
 
               </View>
@@ -899,116 +964,205 @@ const styles = StyleSheet.create({
   },
   recapModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 20,
   },
   recapModalCard: {
     width: '100%',
-    maxWidth: 340,
+    maxWidth: 346,
     borderRadius: 28,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAF5EE',
     borderWidth: 1.5,
-    borderColor: '#EDE3D8',
+    borderColor: '#E8DCB8',
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.22,
     shadowRadius: 20,
-    elevation: 10,
+    elevation: 12,
+    position: 'relative',
+  },
+  recapChurchArt: {
+    position: 'absolute',
+    top: 8,
+    right: 0,
+    width: 120,
+    height: 135,
+    opacity: 0.85,
+    zIndex: 1,
+  },
+  recapMountainsArt: {
+    position: 'absolute',
+    top: 36,
+    left: 0,
+    width: 90,
+    height: 105,
+    opacity: 0.75,
+    zIndex: 1,
   },
   recapModalContent: {
-    padding: 24,
+    paddingTop: 20,
+    paddingBottom: 14,
+    paddingHorizontal: 16,
     alignItems: 'center',
+    zIndex: 2,
   },
-  recapTrophyCircle: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    backgroundColor: '#FFF1EE',
+  recapTrophyWrapper: {
+    width: 92,
+    height: 92,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
-    borderWidth: 2,
-    borderColor: '#FED7AA',
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  recapTrophyImage: {
+    width: 92,
+    height: 92,
   },
   recapModalTitle: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 20,
-    color: '#0F172A',
-    marginBottom: 2,
+    fontSize: 18,
+    color: '#1E293B',
+    textAlign: 'center',
+    marginBottom: 4,
   },
   recapModalSubtitle: {
-    fontFamily: 'Poppins_400Regular',
-    fontSize: 13,
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 11.5,
     color: '#64748B',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
+    paddingHorizontal: 10,
+    lineHeight: 17,
   },
-  recapStatsGrid: {
+  recapBentoContainer: {
     flexDirection: 'row',
     width: '100%',
-    backgroundColor: '#FAF5EE',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#EDE3D8',
-    padding: 12,
-    marginBottom: 22,
-    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E8DCB8',
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    marginBottom: 18,
   },
-  recapStatBox: {
+  recapBentoCol: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 4,
   },
-  recapStatValue: {
+  recapBentoIconBadgeXP: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#C2410C',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+    shadowColor: '#C2410C',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  recapBentoIconBadgeAccuracy: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#1B2E4B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+    shadowColor: '#1B2E4B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  recapBentoIconBadgeStreak: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#D9480F',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+    shadowColor: '#D9480F',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  recapBentoValue: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 17,
-    color: '#0F172A',
-    marginTop: 4,
+    fontSize: 15,
+    color: '#1E293B',
   },
-  recapStatLabel: {
+  recapBentoLabel: {
     fontFamily: 'Poppins_500Medium',
     fontSize: 10.5,
-    color: '#64748B',
+    color: '#78716C',
+    marginTop: 2,
+  },
+  recapBentoDivider: {
+    width: 1,
+    height: 46,
+    backgroundColor: '#E8DCB8',
   },
   recapActionRow: {
     flexDirection: 'row',
-    gap: 12,
     width: '100%',
+    gap: 12,
+    marginBottom: 8,
   },
   recapSecondaryBtn: {
     flex: 1,
-    paddingVertical: 13,
-    borderRadius: 16,
+    paddingVertical: 12,
+    borderRadius: 24,
     backgroundColor: '#FAF5EE',
     borderWidth: 1.5,
-    borderColor: '#EDE3D8',
+    borderColor: '#1B2E4B',
     justifyContent: 'center',
     alignItems: 'center',
   },
   recapSecondaryBtnText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 14,
-    color: '#64748B',
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 13,
+    color: '#1B2E4B',
   },
   recapPrimaryBtn: {
-    flex: 1.3,
-    borderRadius: 16,
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 24,
     backgroundColor: '#A94828',
-    paddingVertical: 13,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#A94828',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
-    shadowRadius: 6,
+    shadowRadius: 5,
     elevation: 3,
   },
   recapPrimaryBtnText: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 14,
+    fontSize: 13,
     color: '#FFFFFF',
+  },
+  recapBottomOrnamentWrap: {
+    width: '100%',
+    height: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  recapBottomOrnamentImage: {
+    width: '88%',
+    height: 18,
   },
 });

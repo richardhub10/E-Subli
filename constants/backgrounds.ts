@@ -19,6 +19,10 @@ export const BackgroundImages = {
   translator: require('../assets/background-image/heritage-unified.jpg') as ImageSourcePropType,
   soloPractice: require('../assets/background-image/heritage-unified.jpg') as ImageSourcePropType,
   mountArayat: require('../assets/background-image/mount-arayat.png') as ImageSourcePropType,
+  quitTrophy: require('../assets/background-image/quiz-quit-trophy.png') as ImageSourcePropType,
+  quitChurch: require('../assets/background-image/quiz-quit-church.png') as ImageSourcePropType,
+  quitMountains: require('../assets/background-image/quiz-quit-mountains.png') as ImageSourcePropType,
+  quitOrnament: require('../assets/background-image/quiz-quit-ornament.png') as ImageSourcePropType,
 } as const;
 
 export type BackgroundKey = keyof typeof BackgroundImages;
