@@ -506,30 +506,17 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
           <View style={styles.recapModalOverlay}>
             <View style={styles.recapModalCard}>
               
-              {/* FAINT SPANISH COLONIAL CHURCH ON TOP RIGHT */}
+              {/* AUTHENTIC SEAMLESS HERITAGE BACKGROUND ART (CHURCH, MOUNTAINS, TROPHY & ORNAMENT) */}
               <Image 
-                source={BackgroundImages.quitChurch} 
-                style={styles.recapChurchArt} 
-                resizeMode="contain" 
-              />
-
-              {/* FAINT MOUNTAINS & CLOUDS ON TOP LEFT */}
-              <Image 
-                source={BackgroundImages.quitMountains} 
-                style={styles.recapMountainsArt} 
-                resizeMode="contain" 
+                source={BackgroundImages.quitCardBg} 
+                style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
+                resizeMode="cover" 
               />
 
               <View style={styles.recapModalContent}>
                 
-                {/* CENTER CIRCULAR GOLD-BORDERED TROPHY MEDALLION */}
-                <View style={styles.recapTrophyWrapper}>
-                  <Image 
-                    source={BackgroundImages.quitTrophy} 
-                    style={styles.recapTrophyImage} 
-                    resizeMode="contain" 
-                  />
-                </View>
+                {/* TOP SPACING TO FRAME THE PAINTED TROPHY MEDALLION */}
+                <View style={styles.recapTrophySpacer} />
 
                 {/* MODAL TITLE & SUBTITLE */}
                 <Text style={styles.recapModalTitle}>
@@ -607,14 +594,8 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
                   </TouchableOpacity>
                 </View>
 
-                {/* BOTTOM HERITAGE FLOWER ORNAMENT WITH GUIDE LINE */}
-                <View style={styles.recapBottomOrnamentWrap}>
-                  <Image 
-                    source={BackgroundImages.quitOrnament} 
-                    style={styles.recapBottomOrnamentImage} 
-                    resizeMode="contain" 
-                  />
-                </View>
+                {/* BOTTOM SPACING TO FRAME THE PAINTED HERITAGE FLOWER ORNAMENT */}
+                <View style={styles.recapBottomSpacer} />
 
               </View>
             </View>
@@ -992,11 +973,11 @@ const styles = StyleSheet.create({
   },
   recapModalCard: {
     width: '100%',
-    maxWidth: 346,
+    maxWidth: 348,
     borderRadius: 28,
-    backgroundColor: '#FAF5EE',
+    backgroundColor: '#F7EFE4',
     borderWidth: 1.5,
-    borderColor: '#E8DCB8',
+    borderColor: '#DFC6A7',
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
@@ -1005,46 +986,14 @@ const styles = StyleSheet.create({
     elevation: 12,
     position: 'relative',
   },
-  recapChurchArt: {
-    position: 'absolute',
-    top: 8,
-    right: 0,
-    width: 120,
-    height: 135,
-    opacity: 0.85,
-    zIndex: 1,
-  },
-  recapMountainsArt: {
-    position: 'absolute',
-    top: 36,
-    left: 0,
-    width: 90,
-    height: 105,
-    opacity: 0.75,
-    zIndex: 1,
-  },
   recapModalContent: {
-    paddingTop: 20,
-    paddingBottom: 14,
+    paddingTop: 16,
+    paddingBottom: 10,
     paddingHorizontal: 16,
     alignItems: 'center',
-    zIndex: 2,
   },
-  recapTrophyWrapper: {
-    width: 92,
-    height: 92,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  recapTrophyImage: {
-    width: 92,
-    height: 92,
+  recapTrophySpacer: {
+    height: 80,
   },
   recapModalTitle: {
     fontFamily: 'Poppins_700Bold',
@@ -1068,11 +1017,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.75)',
     borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: '#E8DCB8',
+    borderColor: '#DFC6A7',
     paddingVertical: 14,
     paddingHorizontal: 8,
     alignItems: 'center',
-    marginBottom: 18,
+    marginBottom: 16,
   },
   recapBentoCol: {
     flex: 1,
@@ -1110,11 +1059,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#D9480F',
+    backgroundColor: '#C2410C',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 6,
-    shadowColor: '#D9480F',
+    shadowColor: '#C2410C',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -1134,13 +1083,13 @@ const styles = StyleSheet.create({
   recapBentoDivider: {
     width: 1,
     height: 46,
-    backgroundColor: '#E8DCB8',
+    backgroundColor: '#DFC6A7',
   },
   recapActionRow: {
     flexDirection: 'row',
     width: '100%',
     gap: 12,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   recapSecondaryBtn: {
     flex: 1,
@@ -1161,10 +1110,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 24,
-    backgroundColor: '#A94828',
+    backgroundColor: '#BA4825',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#A94828',
+    shadowColor: '#BA4825',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 5,
@@ -1175,15 +1124,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#FFFFFF',
   },
-  recapBottomOrnamentWrap: {
-    width: '100%',
-    height: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  recapBottomOrnamentImage: {
-    width: '88%',
-    height: 18,
+  recapBottomSpacer: {
+    height: 24,
   },
 });

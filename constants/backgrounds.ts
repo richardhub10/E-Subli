@@ -23,6 +23,7 @@ export const BackgroundImages = {
   quitChurch: require('../assets/background-image/quiz-quit-church.png') as ImageSourcePropType,
   quitMountains: require('../assets/background-image/quiz-quit-mountains.png') as ImageSourcePropType,
   quitOrnament: require('../assets/background-image/quiz-quit-ornament.png') as ImageSourcePropType,
+  quitCardBg: require('../assets/background-image/quiz-quit-card-bg.png') as ImageSourcePropType,
 } as const;
 
 export type BackgroundKey = keyof typeof BackgroundImages;
