@@ -17,6 +17,8 @@ export const BackgroundImages = {
   kulitanGuide: require('../assets/background-image/heritage-unified.jpg') as ImageSourcePropType,
   phrasebook: require('../assets/background-image/heritage-unified.jpg') as ImageSourcePropType,
   translator: require('../assets/background-image/heritage-unified.jpg') as ImageSourcePropType,
+  soloPractice: require('../assets/background-image/heritage-unified.jpg') as ImageSourcePropType,
+  mountArayat: require('../assets/background-image/mount-arayat.png') as ImageSourcePropType,
 } as const;
 
 export type BackgroundKey = keyof typeof BackgroundImages;
