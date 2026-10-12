@@ -57,7 +57,7 @@ function AppNavigator() {
 
   // The persistent bottom bar only belongs on the primary root tabs.
   // Sub-screens (Multiplayer, Tracing Studio, Phrasebook, Guide, etc.) have full-screen layouts with their own back buttons.
-  const mainTabRoutes = ['Home', 'ReadHub', 'Leaderboard', 'Profile'];
+  const mainTabRoutes = ['Home', 'ReadHub', 'Leaderboard', 'Profile', 'KulitanGuide', 'Phrasebook', 'Translator'];
   const showBottomBar = Boolean(user && mainTabRoutes.includes(currentRoute));
 
   // Determine active tab highlighting for the current screen

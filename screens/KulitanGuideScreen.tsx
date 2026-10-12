@@ -10,6 +10,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { useQuest } from '../context/QuestContext';
 import KulitanGlyph from '../components/KulitanGlyph';
 import { BackgroundImages } from '../constants/backgrounds';
+import HeritageCornerOrnament from '../components/HeritageCornerOrnament';
+import HeritageDividerOrnament from '../components/HeritageDividerOrnament';
 
 const { width } = Dimensions.get('window');
 
@@ -70,21 +72,17 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
 
   return (
     <View style={styles.container}>
-      {/* AUTHENTIC LEARN HUB HERITAGE BACKGROUND */}
+      {/* AUTHENTIC UNIFIED HERITAGE BACKGROUND */}
       <Image 
-        source={BackgroundImages.learnHub} 
+        source={BackgroundImages.heritageUnified} 
         style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
         resizeMode="cover" 
       />
-      
-      {/* BACKGROUND WATERMARK GLYPHS */}
-      <View style={styles.watermarkContainer} pointerEvents="none">
-        <Text style={[styles.watermarkGlyph, { top: 70, left: -15, transform: [{ rotate: '-10deg' }] }]}>ka</Text>
-        <Text style={[styles.watermarkGlyph, { top: 260, right: -25, transform: [{ rotate: '12deg' }] }]}>ga</Text>
-        <Text style={[styles.watermarkGlyph, { top: 540, left: -20, transform: [{ rotate: '-8deg' }] }]}>ta</Text>
-      </View>
 
-      {/* MODERN E-SUBLI HEADER */}
+      {/* TOP ORNAMENTAL ACCENT LINE MATCHING MOCKUP */}
+      <HeritageDividerOrnament style={{ marginTop: Platform.OS === 'ios' ? 44 : 28, marginBottom: 4 }} />
+
+      {/* MODERN E-SUBLI UNIFIED HEADER */}
       <View style={styles.header}>
         <TouchableOpacity 
           onPress={() => navigation.goBack()} 
@@ -96,29 +94,33 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
         
         <View style={styles.headerTitleContainer}>
           <View style={styles.headerPillTag}>
-            <Ionicons name="sparkles" size={10} color="#D1582D" />
+            <Ionicons name="sparkles" size={11} color="#D1582D" style={{ marginRight: 6 }} />
             <Text style={styles.headerSubtitle}>
-              {language === 'EN' ? 'HERITAGE IN SCRIPT' : 'SINAUNANG PAMAMARAAN'}
+              {language === 'EN' ? 'KULITAN GUIDE & HISTORY' : 'GABAY SA KULITAN'}
             </Text>
           </View>
-          <Text style={styles.headerTitle}>
-            {language === 'EN' ? 'Kulitan Guide & History' : 'Gabay sa Kulitan'}
-          </Text>
         </View>
 
-        <View style={styles.guideBadgeIcon}>
-          <Ionicons name="school" size={18} color="#D1582D" />
-        </View>
+        <TouchableOpacity 
+          style={styles.guideBadgeIcon} 
+          onPress={() => {
+            if (Platform.OS !== 'web') Haptics.selectionAsync();
+            setActiveTab('history');
+          }}
+          activeOpacity={0.75}
+        >
+          <Ionicons name="school" size={20} color="#D1582D" />
+        </TouchableOpacity>
       </View>
 
       {/* LIQUID FROSTED TAB SELECTOR */}
       <View style={styles.tabsContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
           {[
-            { id: 'rules', labelEn: 'Writing Rules', labelPh: 'Mga Panuntunan', icon: 'book-outline' },
+            { id: 'rules', labelEn: 'Writing Rules', labelPh: 'Mga Panuntunan', icon: 'book' },
             { id: 'sandbox', labelEn: 'Garlit Sandbox', labelPh: 'Garlit Simulator', icon: 'sparkles' },
-            { id: 'history', labelEn: 'History & Roots', labelPh: 'Kasaysayan', icon: 'time-outline' },
-            { id: 'syllabary', labelEn: 'Syllabary Grid', labelPh: 'Talaan ng Titik', icon: 'grid-outline' },
+            { id: 'history', labelEn: 'History & Roots', labelPh: 'Kasaysayan', icon: 'time' },
+            { id: 'syllabary', labelEn: 'Syllabary Grid', labelPh: 'Talaan ng Titik', icon: 'grid' },
           ].map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -132,15 +134,15 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
                 activeOpacity={0.75}
               >
                 {isActive ? (
-                  <LinearGradient colors={['#D1582D', '#B83814']} style={styles.tabGradientActive}>
+                  <View style={styles.tabGradientActive}>
                     <Ionicons name={tab.icon as any} size={14} color="#FFFFFF" />
                     <Text style={styles.tabBtnTextActive}>
                       {language === 'EN' ? tab.labelEn : tab.labelPh}
                     </Text>
-                  </LinearGradient>
+                  </View>
                 ) : (
                   <View style={styles.tabInnerInactive}>
-                    <Ionicons name={tab.icon as any} size={14} color="#64748B" />
+                    <Ionicons name={tab.icon as any} size={14} color="#8C7A6B" />
                     <Text style={styles.tabBtnText}>
                       {language === 'EN' ? tab.labelEn : tab.labelPh}
                     </Text>
@@ -166,6 +168,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
             
             {/* 1. Indû & Anak Concept */}
             <View style={styles.card}>
+              <HeritageCornerOrnament position="topRight" />
               <View style={styles.cardHeaderRow}>
                 <View style={[styles.cardHeaderIcon, { backgroundColor: '#FFF1EE' }]}>
                   <Ionicons name="git-branch" size={17} color="#D1582D" />
@@ -185,6 +188,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
               
               <View style={styles.conceptBoxRow}>
                 <View style={styles.conceptBox}>
+                  <HeritageCornerOrnament position="bottomRight" color="#E8C3B0" size={20} />
                   <View style={styles.conceptPillTag}>
                     <Text style={styles.conceptPillText}>MOTHER</Text>
                   </View>
@@ -196,11 +200,12 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
                   </Text>
                 </View>
 
-                <View style={[styles.conceptBox, { borderColor: '#DDD6FE', backgroundColor: '#FAF5FF' }]}>
-                  <View style={[styles.conceptPillTag, { backgroundColor: '#7C3AED' }]}>
+                <View style={[styles.conceptBox, { borderColor: '#C7D1BF', backgroundColor: '#F8FAF6' }]}>
+                  <HeritageCornerOrnament position="bottomRight" color="#C7D1BF" size={20} />
+                  <View style={[styles.conceptPillTag, { backgroundColor: '#4B5E40' }]}>
                     <Text style={styles.conceptPillText}>CHILD</Text>
                   </View>
-                  <Text style={[styles.conceptBoxTitle, { color: '#5B21B6' }]}>Anak Sulat</Text>
+                  <Text style={[styles.conceptBoxTitle, { color: '#3A4F35' }]}>Anak Sulat</Text>
                   <Text style={styles.conceptBoxDesc}>
                     {language === 'EN' 
                       ? 'Standalone vowels (A, I, U) and trailing codas stacked beneath the mother character.'
@@ -212,6 +217,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
 
             {/* 2. Tinduk (Vertical Stacking) */}
             <View style={styles.card}>
+              <HeritageCornerOrnament position="topRight" />
               <View style={styles.cardHeaderRow}>
                 <View style={[styles.cardHeaderIcon, { backgroundColor: '#EFF6FF' }]}>
                   <Ionicons name="swap-vertical" size={17} color="#2563EB" />
@@ -264,6 +270,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
 
             {/* 3. The Garlit (Kudlit) Marks */}
             <View style={styles.card}>
+              <HeritageCornerOrnament position="topRight" />
               <View style={styles.cardHeaderRow}>
                 <View style={[styles.cardHeaderIcon, { backgroundColor: '#FEF3C7' }]}>
                   <Ionicons name="sparkles" size={17} color="#D97706" />
@@ -326,6 +333,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
         {activeTab === 'sandbox' && (
           <View style={styles.tabContentGroup}>
             <View style={styles.sandboxCard}>
+              <HeritageCornerOrnament position="topRight" />
               <View style={styles.cardHeaderRow}>
                 <View style={[styles.cardHeaderIcon, { backgroundColor: '#FEF3C7' }]}>
                   <Ionicons name="flask" size={17} color="#D97706" />
@@ -469,6 +477,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
           <View style={styles.tabContentGroup}>
             
             <View style={styles.card}>
+              <HeritageCornerOrnament position="topRight" />
               <View style={styles.cardHeaderRow}>
                 <View style={[styles.cardHeaderIcon, { backgroundColor: '#FFF1EE' }]}>
                   <Ionicons name="compass-outline" size={17} color="#D1582D" />
@@ -488,6 +497,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
             </View>
 
             <View style={styles.card}>
+              <HeritageCornerOrnament position="topRight" />
               <View style={styles.cardHeaderRow}>
                 <View style={[styles.cardHeaderIcon, { backgroundColor: '#FEF3C7' }]}>
                   <Ionicons name="document-text-outline" size={17} color="#B45309" />
@@ -507,6 +517,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
             </View>
 
             <View style={styles.card}>
+              <HeritageCornerOrnament position="topRight" />
               <View style={styles.cardHeaderRow}>
                 <View style={[styles.cardHeaderIcon, { backgroundColor: '#ECFDF5' }]}>
                   <Ionicons name="shield-checkmark-outline" size={17} color="#059669" />
@@ -534,6 +545,7 @@ export default function KulitanGuideScreen({ navigation }: KulitanGuideScreenPro
         {activeTab === 'syllabary' && (
           <View style={styles.tabContentGroup}>
             <View style={styles.card}>
+              <HeritageCornerOrnament position="topRight" />
               <View style={styles.gridHeaderRow}>
                 <View>
                   <Text style={styles.gridSectionTitle}>
@@ -721,9 +733,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: Platform.OS === 'ios' ? 56 : Platform.OS === 'android' ? 44 : 26,
+    paddingTop: Platform.OS === 'ios' ? 4 : 2,
     paddingHorizontal: 20,
-    paddingBottom: 14,
+    paddingBottom: 10,
+    zIndex: 10,
   },
   backButton: {
     width: 42,
@@ -749,19 +762,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF1EE',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-    gap: 4,
-    marginBottom: 3,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#FED7AA',
   },
   headerSubtitle: {
     fontFamily: 'Poppins_700Bold',
-    fontSize: 8.5,
+    fontSize: 9,
     color: '#D1582D',
-    letterSpacing: 1.2,
+    letterSpacing: 1.1,
   },
   headerTitle: {
     fontSize: 18,
@@ -1055,12 +1066,12 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 20,
     borderWidth: 1.5,
-    borderColor: '#FED7AA',
-    shadowColor: '#D1582D',
+    borderColor: '#EDE3D8',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
   },
   sandboxHeaderTitle: {
     fontFamily: 'Poppins_700Bold',

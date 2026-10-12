@@ -21,6 +21,8 @@ import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useQuest } from '../context/QuestContext';
 import { BackgroundImages } from '../constants/backgrounds';
+import HeritageCornerOrnament from '../components/HeritageCornerOrnament';
+import HeritageDividerOrnament from '../components/HeritageDividerOrnament';
 
 type TranslatorScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -131,32 +133,41 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
 
   return (
     <View style={styles.container}>
-      {/* Authentic Seamless Parchment Organic Wave Background */}
+      {/* AUTHENTIC UNIFIED HERITAGE BACKGROUND */}
       <Image 
-        source={BackgroundImages.translator} 
+        source={BackgroundImages.heritageUnified} 
         style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
         resizeMode="cover" 
       />
 
-      {/* TOP HEADER */}
+      {/* TOP ORNAMENTAL ACCENT LINE MATCHING MOCKUP */}
+      <HeritageDividerOrnament style={{ marginTop: Platform.OS === 'ios' ? 44 : 28, marginBottom: 4 }} />
+
+      {/* MODERN E-SUBLI UNIFIED HEADER */}
       <View style={styles.header}>
         <TouchableOpacity 
           onPress={() => navigation.goBack()} 
           style={styles.backButton} 
           activeOpacity={0.75}
         >
-          <Ionicons name="arrow-back" size={20} color="#1E1B18" />
+          <Ionicons name="arrow-back" size={20} color="#0F172A" />
         </TouchableOpacity>
+
+        <View style={styles.headerTitleContainer}>
+          <View style={styles.headerPillTag}>
+            <Ionicons name="sparkles" size={11} color="#D1582D" style={{ marginRight: 6 }} />
+            <Text style={styles.headerSubtitle}>
+              {language === 'EN' ? 'AI KULITAN TRANSLATOR' : 'AI TAGASALIN NG KULITAN'}
+            </Text>
+          </View>
+        </View>
 
         <TouchableOpacity 
           onPress={() => navigation.navigate('KulitanGuide')} 
-          style={styles.guidePillBtn} 
+          style={styles.guideBadgeIcon} 
           activeOpacity={0.75}
         >
-          <Ionicons name="book-outline" size={15} color="#B97047" />
-          <Text style={styles.guidePillText}>
-            {language === 'EN' ? 'Guide' : 'Gabay'}
-          </Text>
+          <Ionicons name="school" size={20} color="#D1582D" />
         </TouchableOpacity>
       </View>
 
@@ -223,6 +234,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
 
         {/* ROW 3: MAIN TEXT INPUT BENTO CARD (WITH SPEECH BUBBLE) */}
         <View style={styles.bentoCard}>
+          <HeritageCornerOrnament position="topRight" />
           <View style={styles.bentoHeaderRow}>
             <Ionicons name="chatbubble-outline" size={20} color="#78716C" />
           </View>
@@ -264,8 +276,9 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
 
         {/* ROW 4: SUGGESTED PHRASES BENTO CARD (2x2 GRID WITH SPARKLE & COPY ICONS) */}
         <View style={styles.bentoCard}>
+          <HeritageCornerOrnament position="topRight" />
           <View style={styles.bentoHeaderRow}>
-            <Ionicons name="sparkles" size={18} color="#B97047" />
+            <Ionicons name="sparkles" size={18} color="#D1582D" />
             <TouchableOpacity onPress={handleNextPhrases} activeOpacity={0.7} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Ionicons name="chevron-forward" size={18} color="#A8A29E" />
             </TouchableOpacity>
@@ -310,9 +323,10 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
 
         {/* ROW 5: SCRIPT RENDERING PREFERENCES BENTO CARD */}
         <View style={styles.bentoCard}>
+          <HeritageCornerOrnament position="topRight" />
           <View style={styles.bentoHeaderRow}>
             <View style={styles.preferenceLabelRow}>
-              <Ionicons name="sparkles" size={18} color="#B97047" />
+              <Ionicons name="sparkles" size={18} color="#D1582D" />
               <Text style={styles.preferenceTitleText}>
                 {language === 'EN' ? 'Render in Kulitan Script' : 'Ipakita sa Sulat Kulitan'}
               </Text>
@@ -321,7 +335,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
             <Switch
               value={showKulitan}
               onValueChange={setShowKulitan}
-              trackColor={{ false: '#D6C8B8', true: '#454E3C' }}
+              trackColor={{ false: '#D6C8B8', true: '#4B5E40' }}
               thumbColor="#FFFFFF"
             />
           </View>
@@ -394,6 +408,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
         {/* ROW 7: TRANSLATION RESULT CARD */}
         {translatedText ? (
           <View style={styles.resultBentoCard}>
+            <HeritageCornerOrnament position="topRight" />
             {/* Result Header */}
             <View style={styles.resultHeader}>
               <View style={styles.resultBadgeRow}>
@@ -427,7 +442,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
                 <Ionicons 
                   name={isCopied ? "checkmark" : "copy-outline"} 
                   size={15} 
-                  color={isCopied ? "#FFFFFF" : "#B97047"} 
+                  color={isCopied ? "#FFFFFF" : "#D1582D"} 
                 />
                 <Text style={[styles.copyBtnText, isCopied && styles.copyBtnTextSuccess]}>
                   {isCopied ? (language === 'EN' ? 'Copied!' : 'Kopyado!') : (language === 'EN' ? 'Copy' : 'Kopyahin')}
@@ -441,11 +456,12 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
             {/* Kulitan Manuscript Script Box */}
             {showKulitan && (
               <View style={styles.kulitanManuscriptBox}>
+                <HeritageCornerOrnament position="bottomRight" color="#E8C3B0" size={18} />
                 <View style={styles.manuscriptHeaderRow}>
                   <Text style={styles.manuscriptLabel}>
                     {orientation === 'Vertical' ? 'TRADITIONAL VERTICAL (TINDUK)' : 'HORIZONTAL (PADRON)'}
                   </Text>
-                  <Ionicons name="brush" size={13} color="#B97047" />
+                  <Ionicons name="brush" size={13} color="#D1582D" />
                 </View>
 
                 {orientation === 'Horizontal' ? (
@@ -474,7 +490,7 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
               onPress={() => navigation.navigate('WriteTrace')}
               activeOpacity={0.8}
             >
-              <MaterialCommunityIcons name="draw-pen" size={18} color="#B97047" />
+              <MaterialCommunityIcons name="draw-pen" size={18} color="#D1582D" />
               <Text style={styles.traceActionText}>
                 {language === 'EN' ? 'Practice writing these glyphs in Studio →' : 'Sanayin ang pagsulat sa Studio →'}
               </Text>
@@ -491,15 +507,17 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3EADE',
+    backgroundColor: '#EEDEC8',
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: Platform.OS === 'ios' ? 56 : Platform.OS === 'android' ? 44 : 26,
+    paddingTop: Platform.OS === 'ios' ? 4 : 2,
     paddingHorizontal: 20,
     paddingBottom: 10,
+    zIndex: 10,
   },
   backButton: {
     width: 42,
@@ -508,41 +526,56 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
     borderWidth: 1.5,
-    borderColor: '#ECE1D2',
+    borderColor: '#EDE3D8',
   },
-  guidePillBtn: {
-    height: 38,
-    paddingHorizontal: 16,
-    borderRadius: 19,
-    backgroundColor: '#FAF5EE',
-    borderWidth: 1.5,
-    borderColor: '#ECE1D2',
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 8,
+  },
+  headerPillTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
+    backgroundColor: '#FFF1EE',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
   },
-  guidePillText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 12,
-    color: '#B97047',
+  headerSubtitle: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 9,
+    color: '#D1582D',
+    letterSpacing: 1.1,
+  },
+  guideBadgeIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#FFF1EE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   scrollArea: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 110,
+    paddingBottom: 120, // Ample room above persistent floating bottom bar!
     paddingTop: 4,
   },
   /* Segmented Horizontal Language Bar */
@@ -550,18 +583,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FAF5EE',
+    backgroundColor: '#FFFFFF',
     borderRadius: 24,
-    borderWidth: 1.2,
-    borderColor: '#ECE1D2',
+    borderWidth: 1.5,
+    borderColor: '#EDE3D8',
     paddingHorizontal: 8,
     paddingVertical: 7,
     marginBottom: 14,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   langPillsGroup: {
     flexDirection: 'row',
@@ -572,13 +605,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 14,
-    backgroundColor: '#F3ECE2',
+    backgroundColor: '#FAF7F2',
+    borderWidth: 1,
+    borderColor: '#EDE3D8',
   },
   langChipSourceActive: {
-    backgroundColor: '#454E3C', // Deep olive green matching mockup
+    backgroundColor: '#4B5E40', // Deep olive green matching mockup
+    borderColor: '#4B5E40',
   },
   langChipTargetActive: {
-    backgroundColor: '#B97047', // Terracotta matching mockup
+    backgroundColor: '#D1582D', // Terracotta matching mockup
+    borderColor: '#D1582D',
   },
   langChipText: {
     fontFamily: 'Poppins_600SemiBold',
@@ -592,9 +629,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.2,
-    borderColor: '#ECE1D2',
+    backgroundColor: '#FFF1EE',
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 4,
@@ -606,17 +643,17 @@ const styles = StyleSheet.create({
   },
   /* Common Bento Card Style */
   bentoCard: {
-    backgroundColor: '#FAF5EE',
-    borderRadius: 22,
-    borderWidth: 1.2,
-    borderColor: '#ECE1D2',
-    padding: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: '#EDE3D8',
+    padding: 16,
     marginBottom: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
   },
   bentoHeaderRow: {
     flexDirection: 'row',
@@ -626,10 +663,10 @@ const styles = StyleSheet.create({
   },
   /* Text Input Bento Area */
   textInputBox: {
-    backgroundColor: '#F3ECE2',
+    backgroundColor: '#FAF7F2',
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E7DDD0',
+    borderWidth: 1.2,
+    borderColor: '#EDE3D8',
     padding: 12,
     minHeight: 110,
     justifyContent: 'space-between',
@@ -648,7 +685,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#EBE2D5',
+    borderTopColor: '#EDE3D8',
   },
   charCounterText: {
     fontFamily: 'Poppins_500Medium',
@@ -673,10 +710,10 @@ const styles = StyleSheet.create({
   },
   promptPill: {
     width: '48.5%',
-    backgroundColor: '#F3ECE2',
+    backgroundColor: '#FAF7F2',
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E7DDD0',
+    borderWidth: 1.2,
+    borderColor: '#EDE3D8',
     paddingHorizontal: 10,
     paddingVertical: 10,
     flexDirection: 'row',
@@ -703,10 +740,10 @@ const styles = StyleSheet.create({
   },
   segmentedSlider: {
     flexDirection: 'row',
-    backgroundColor: '#F3ECE2',
+    backgroundColor: '#FAF7F2',
     borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#E7DDD0',
+    borderWidth: 1.2,
+    borderColor: '#EDE3D8',
     padding: 3,
     marginTop: 4,
   },
@@ -720,7 +757,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   segmentHalfActive: {
-    backgroundColor: '#B97047', // Terracotta matching mockup
+    backgroundColor: '#D1582D', // Terracotta matching mockup
   },
   segmentHalfText: {
     fontFamily: 'Poppins_600SemiBold',
@@ -732,7 +769,7 @@ const styles = StyleSheet.create({
   },
   /* Primary Action Terracotta Button */
   primaryActionBtn: {
-    backgroundColor: '#B97047',
+    backgroundColor: '#D1582D',
     borderRadius: 26,
     height: 52,
     alignItems: 'center',
@@ -740,11 +777,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 4,
     marginBottom: 16,
-    shadowColor: '#B97047',
+    shadowColor: '#D1582D',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 4,
   },
   primaryActionBtnDisabled: {
     backgroundColor: '#D6C8B8',
@@ -764,15 +801,15 @@ const styles = StyleSheet.create({
   },
   /* Result Card */
   resultBentoCard: {
-    backgroundColor: '#FAF5EE',
+    backgroundColor: '#FFFFFF',
     borderRadius: 24,
-    padding: 16,
+    padding: 18,
     borderWidth: 1.5,
-    borderColor: '#ECE1D2',
+    borderColor: '#EDE3D8',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
     elevation: 3,
     marginBottom: 20,
   },
@@ -788,7 +825,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   resultBadgePill: {
-    backgroundColor: '#B97047',
+    backgroundColor: '#D1582D',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
@@ -819,13 +856,13 @@ const styles = StyleSheet.create({
   copyBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FFF1EE',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
     gap: 4,
     borderWidth: 1,
-    borderColor: '#ECE1D2',
+    borderColor: '#FED7AA',
   },
   copyBtnSuccess: {
     backgroundColor: '#059669',
@@ -834,7 +871,7 @@ const styles = StyleSheet.create({
   copyBtnText: {
     fontFamily: 'Poppins_600SemiBold',
     fontSize: 11,
-    color: '#B97047',
+    color: '#D1582D',
   },
   copyBtnTextSuccess: {
     color: '#FFFFFF',
@@ -847,11 +884,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   kulitanManuscriptBox: {
-    backgroundColor: '#F3ECE2',
+    backgroundColor: '#FFFDFB',
     borderRadius: 18,
     padding: 14,
-    borderWidth: 1,
-    borderColor: '#E7DDD0',
+    borderWidth: 1.5,
+    borderColor: '#EDE3D8',
     marginBottom: 12,
   },
   manuscriptHeaderRow: {
@@ -860,13 +897,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#E6DCCF',
+    borderBottomColor: '#EDE3D8',
     paddingBottom: 6,
   },
   manuscriptLabel: {
     fontFamily: 'Poppins_700Bold',
     fontSize: 8.5,
-    color: '#B97047',
+    color: '#D1582D',
     letterSpacing: 0.8,
   },
   kulitanHorizontalWrap: {
@@ -877,7 +914,7 @@ const styles = StyleSheet.create({
   kulitanResultText: {
     fontFamily: 'Kulitan',
     fontSize: 48,
-    color: '#B97047',
+    color: '#D1582D',
     textAlign: 'center',
     lineHeight: 52,
   },
@@ -898,18 +935,19 @@ const styles = StyleSheet.create({
   traceActionTile: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3ECE2',
+    backgroundColor: '#FFF1EE',
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 14,
     gap: 8,
     borderWidth: 1,
-    borderColor: '#E7DDD0',
+    borderColor: '#FED7AA',
   },
   traceActionText: {
     flex: 1,
     fontFamily: 'Poppins_600SemiBold',
     fontSize: 11.5,
-    color: '#B97047',
+    color: '#D1582D',
   },
 });
+

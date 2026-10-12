@@ -13,8 +13,10 @@ export const BackgroundImages = {
   scanner: require('../assets/background-image/scanner-botanical-v3.jpg') as ImageSourcePropType,
   scannerLeafTL: require('../assets/background-image/leaf-card-tl.png') as ImageSourcePropType,
   scannerLeafBR: require('../assets/background-image/leaf-card-br-clean.png') as ImageSourcePropType,
-  phrasebook: require('../assets/background-image/phrasebook.jpg') as ImageSourcePropType,
-  translator: require('../assets/background-image/translator-v2.jpg') as ImageSourcePropType,
+  heritageUnified: require('../assets/background-image/heritage-unified.jpg') as ImageSourcePropType,
+  kulitanGuide: require('../assets/background-image/heritage-unified.jpg') as ImageSourcePropType,
+  phrasebook: require('../assets/background-image/heritage-unified.jpg') as ImageSourcePropType,
+  translator: require('../assets/background-image/heritage-unified.jpg') as ImageSourcePropType,
 } as const;
 
 export type BackgroundKey = keyof typeof BackgroundImages;
