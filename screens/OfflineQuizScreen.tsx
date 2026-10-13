@@ -993,7 +993,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   recapTrophySpacer: {
-    height: 80,
+    height: 116,
   },
   recapModalTitle: {
     fontFamily: 'Poppins_700Bold',
@@ -1007,7 +1007,7 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: '#64748B',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
     paddingHorizontal: 10,
     lineHeight: 17,
   },
@@ -1021,7 +1021,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 8,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   recapBentoCol: {
     flex: 1,
@@ -1089,7 +1089,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: '100%',
     gap: 12,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   recapSecondaryBtn: {
     flex: 1,
@@ -1125,6 +1125,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   recapBottomSpacer: {
-    height: 24,
+    height: 12,
   },
 });
