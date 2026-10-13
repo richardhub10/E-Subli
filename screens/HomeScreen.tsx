@@ -132,15 +132,21 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       {/* 4. TOP STATUS / GREETING BAR */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.greetingSub}>{greeting},</Text>
-          <View style={styles.nameRow}>
-            <Text style={styles.scholarName} numberOfLines={1}>
-              {profile.firstName || profile.email?.split('@')[0] || 'Scholar'}
-            </Text>
-            <View style={styles.verifiedDot}>
-              <Ionicons name="sparkles" size={10} color="#D1582D" />
+          <TouchableOpacity 
+            style={styles.greetingGlassCard}
+            onPress={() => navigation.navigate('Profile')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.greetingSub}>{greeting},</Text>
+            <View style={styles.nameRow}>
+              <Text style={styles.scholarName} numberOfLines={1}>
+                {profile.firstName || profile.email?.split('@')[0] || 'Scholar'}
+              </Text>
+              <View style={styles.verifiedDot}>
+                <Ionicons name="sparkles" size={10} color="#D1582D" />
+              </View>
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.headerRight}>
@@ -684,29 +690,50 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingRight: 8,
   },
+  greetingGlassCard: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    maxWidth: '100%',
+  },
   greetingSub: {
-    color: '#9E8E81',
-    fontSize: 12,
-    fontFamily: 'Poppins_500Medium',
+    color: '#8C7E72',
+    fontSize: 11,
+    fontFamily: 'Poppins_600SemiBold',
+    letterSpacing: 0.2,
+    lineHeight: 14,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
+    marginTop: 1,
   },
   scholarName: {
     color: '#1E1B18',
-    fontSize: 22,
+    fontSize: 20,
     fontFamily: 'Poppins_700Bold',
     letterSpacing: -0.4,
+    lineHeight: 25,
   },
   verifiedDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: '#FFEFE6',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FED7AA',
   },
   headerRight: {
     flexDirection: 'row',
