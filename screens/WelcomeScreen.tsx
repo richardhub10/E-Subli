@@ -194,22 +194,6 @@ export default function WelcomeScreen({ navigation }: WelcomeScreenProps) {
               ? 'Tuklasin muli ang sinaunang sulat Kapampangan sa pagsasanay, studio at labanan.' 
               : 'Abalu mu pasibayu ing matwang sulat Kapampangan king pamagaral, studio at labanan.'}
           </Text>
-
-          {/* CULTURAL HIGHLIGHT CHIPS */}
-          <View style={styles.highlightPillsRow}>
-            <View style={styles.highlightPill}>
-              <Ionicons name="create-outline" size={12} color="#FBBF24" />
-              <Text style={styles.highlightPillText}>Trace Studio</Text>
-            </View>
-            <View style={styles.highlightPill}>
-              <Ionicons name="flash-outline" size={12} color="#F97316" />
-              <Text style={styles.highlightPillText}>PvP Battle</Text>
-            </View>
-            <View style={styles.highlightPill}>
-              <Ionicons name="book-outline" size={12} color="#38BDF8" />
-              <Text style={styles.highlightPillText}>Syllabary</Text>
-            </View>
-          </View>
         </View>
 
         {/* LIQUID FROSTED LANGUAGE SELECTOR */}
@@ -466,27 +450,6 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     marginBottom: 14,
     maxWidth: 330,
-  },
-  highlightPillsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    justifyContent: 'center',
-  },
-  highlightPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    gap: 5,
-  },
-  highlightPillText: {
-    fontFamily: 'Poppins_500Medium',
-    fontSize: 10.5,
-    color: '#E2E8F0',
   },
   langSelectorWrapper: {
     marginVertical: 12,
