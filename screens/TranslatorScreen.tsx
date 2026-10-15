@@ -53,10 +53,33 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
   const [isCopied, setIsCopied] = useState(false);
   const [phrasePageIndex, setPhrasePageIndex] = useState(0);
   const [copiedPromptIdx, setCopiedPromptIdx] = useState<number | null>(null);
+  const [zoomLevel, setZoomLevel] = useState<'auto' | 'compact' | 'regular' | 'large'>('auto');
 
   const { addXP } = useProfile();
   const { recordQuestAction } = useQuest();
   const { t, language } = useLanguage();
+
+  // Compute syllables and word breakdown
+  const words = useMemo(() => getKulitanSyllables(translatedText), [translatedText]);
+  const rawWordList = useMemo(() => {
+    if (!translatedText) return [];
+    return translatedText.replace(/[^a-zA-Z\s]/g, ' ').trim().split(/\s+/).filter(Boolean);
+  }, [translatedText]);
+
+  // Responsive dynamic glyph size
+  const activeFontSize = useMemo(() => {
+    if (zoomLevel === 'compact') return 24;
+    if (zoomLevel === 'regular') return 34;
+    if (zoomLevel === 'large') return 46;
+
+    // 'auto' adaptive sizing based on text length
+    if (words.length >= 10 || translatedText.length > 80) return 26;
+    if (words.length >= 5 || translatedText.length > 35) return 34;
+    return 46;
+  }, [zoomLevel, words.length, translatedText.length]);
+
+  const activeLineHeight = Math.round(activeFontSize * 1.14);
+  const columnGap = Math.max(12, Math.min(22, Math.round(activeFontSize * 0.4)));
 
   const handleSwapLanguages = () => {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -251,11 +274,11 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
               placeholderTextColor="#A8A29E"
               value={sourceText}
               onChangeText={setSourceText}
-              maxLength={300}
+              maxLength={500}
             />
 
             <View style={styles.inputFooterRow}>
-              <Text style={styles.charCounterText}>{sourceText.length} / 300</Text>
+              <Text style={styles.charCounterText}>{sourceText.length} / 500</Text>
               {sourceText.length > 0 ? (
                 <TouchableOpacity 
                   onPress={() => setSourceText('')}
@@ -457,27 +480,129 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
             {showKulitan && (
               <View style={styles.kulitanManuscriptBox}>
                 <HeritageCornerOrnament position="bottomRight" color="#E8C3B0" size={18} />
+                
+                {/* Header with Title, Word count & Zoom Controls */}
                 <View style={styles.manuscriptHeaderRow}>
-                  <Text style={styles.manuscriptLabel}>
-                    {orientation === 'Vertical' ? 'TRADITIONAL VERTICAL (TINDUK)' : 'HORIZONTAL (PADRON)'}
-                  </Text>
-                  <Ionicons name="brush" size={13} color="#D1582D" />
+                  <View style={styles.manuscriptHeaderLeft}>
+                    <Ionicons name="brush" size={13} color="#D1582D" style={{ marginRight: 5 }} />
+                    <Text style={styles.manuscriptLabel}>
+                      {orientation === 'Vertical' ? 'TRADITIONAL VERTICAL (TINDUK)' : 'HORIZONTAL (PADRON)'}
+                    </Text>
+                    {words.length > 0 && (
+                      <View style={styles.wordCountBadge}>
+                        <Text style={styles.wordCountText}>
+                          {words.length} {language === 'EN' ? (words.length === 1 ? 'col' : 'cols') : 'kolum'}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Dynamic Zoom Size Buttons */}
+                  <View style={styles.zoomControlRow}>
+                    <TouchableOpacity 
+                      style={[styles.zoomBtn, zoomLevel === 'compact' && styles.zoomBtnActive]} 
+                      onPress={() => {
+                        if (Platform.OS !== 'web') Haptics.selectionAsync();
+                        setZoomLevel(prev => prev === 'compact' ? 'auto' : 'compact');
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.zoomBtnText, zoomLevel === 'compact' && styles.zoomBtnTextActive]}>A-</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                      style={[styles.zoomBtn, zoomLevel === 'regular' && styles.zoomBtnActive]} 
+                      onPress={() => {
+                        if (Platform.OS !== 'web') Haptics.selectionAsync();
+                        setZoomLevel(prev => prev === 'regular' ? 'auto' : 'regular');
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.zoomBtnText, zoomLevel === 'regular' && styles.zoomBtnTextActive]}>A</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                      style={[styles.zoomBtn, zoomLevel === 'large' && styles.zoomBtnActive]} 
+                      onPress={() => {
+                        if (Platform.OS !== 'web') Haptics.selectionAsync();
+                        setZoomLevel(prev => prev === 'large' ? 'auto' : 'large');
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.zoomBtnText, zoomLevel === 'large' && styles.zoomBtnTextActive]}>A+</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
+
+                {/* Reading Direction Banner for Vertical Tinduk */}
+                {orientation === 'Vertical' && words.length > 1 && (
+                  <View style={styles.readingDirectionBar}>
+                    <Ionicons name="arrow-back" size={12} color="#92400E" />
+                    <Text style={styles.readingDirectionText}>
+                      {language === 'EN' 
+                        ? 'Read right-to-left (columns), top-to-bottom (syllables)' 
+                        : 'Basa: kanan-pakaliwa (kolum), itaas-pababa (pantig)'}
+                    </Text>
+                    <Ionicons name="arrow-down" size={12} color="#92400E" />
+                  </View>
+                )}
 
                 {orientation === 'Horizontal' ? (
                   <View style={styles.kulitanHorizontalWrap}>
-                    <Text style={styles.kulitanResultText}>
-                      {getKulitanSyllables(translatedText).map(word => word.join('')).join(' ')}
+                    <Text 
+                      style={[
+                        styles.kulitanResultText,
+                        { 
+                          fontSize: activeFontSize, 
+                          lineHeight: Math.round(activeFontSize * 1.2),
+                          textAlign: 'center' 
+                        }
+                      ]}
+                    >
+                      {words.map(word => word.join('')).join(' ')}
                     </Text>
                   </View>
                 ) : (
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.verticalScrollContent}>
-                    <View style={styles.verticalKulitanContainer}>
-                      {getKulitanSyllables(translatedText).map((syllables, index) => (
-                        <View key={index} style={styles.verticalWordColumn}>
-                          <Text style={styles.kulitanResultText}>{syllables.join('\n')}</Text>
-                        </View>
-                      ))}
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={true} 
+                    contentContainerStyle={[
+                      styles.verticalScrollContent,
+                      words.length <= 3 && { justifyContent: 'center' }
+                    ]}
+                  >
+                    <View style={[
+                      styles.verticalKulitanContainer,
+                      { gap: columnGap },
+                      words.length > 3 ? { justifyContent: 'flex-start' } : { justifyContent: 'center' }
+                    ]}>
+                      {words.map((syllables, index) => {
+                        const originalWord = rawWordList[index] || '';
+                        return (
+                          <View key={index} style={[styles.verticalWordColumn, { minWidth: activeFontSize + 8 }]}>
+                            <Text 
+                              style={[
+                                styles.kulitanResultText,
+                                {
+                                  fontSize: activeFontSize,
+                                  lineHeight: activeLineHeight,
+                                }
+                              ]}
+                            >
+                              {syllables.join('\n')}
+                            </Text>
+
+                            {/* Subscript Latin Word Label */}
+                            {originalWord ? (
+                              <View style={styles.wordSubscriptPill}>
+                                <Text style={styles.wordSubscriptText} numberOfLines={1}>
+                                  {originalWord}
+                                </Text>
+                              </View>
+                            ) : null}
+                          </View>
+                        );
+                      })}
                     </View>
                   </ScrollView>
                 )}
@@ -900,6 +1025,71 @@ const styles = StyleSheet.create({
     borderBottomColor: '#EDE3D8',
     paddingBottom: 6,
   },
+  manuscriptHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  wordCountBadge: {
+    backgroundColor: '#FFF1EE',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginLeft: 6,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+  },
+  wordCountText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 8.5,
+    color: '#D1582D',
+  },
+  zoomControlRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FAF7F2',
+    padding: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#EDE3D8',
+  },
+  zoomBtn: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 8,
+    backgroundColor: 'transparent',
+  },
+  zoomBtnActive: {
+    backgroundColor: '#D1582D',
+  },
+  zoomBtnText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 9.5,
+    color: '#78716C',
+  },
+  zoomBtnTextActive: {
+    color: '#FFFFFF',
+  },
+  readingDirectionBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  readingDirectionText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 9,
+    color: '#92400E',
+    letterSpacing: 0.3,
+  },
   manuscriptLabel: {
     fontFamily: 'Poppins_700Bold',
     fontSize: 8.5,
@@ -921,6 +1111,7 @@ const styles = StyleSheet.create({
   verticalScrollContent: {
     flexGrow: 1,
     paddingVertical: 8,
+    paddingHorizontal: 6,
   },
   verticalKulitanContainer: {
     flexDirection: 'row-reverse',
@@ -931,6 +1122,22 @@ const styles = StyleSheet.create({
   },
   verticalWordColumn: {
     alignItems: 'center',
+  },
+  wordSubscriptPill: {
+    marginTop: 6,
+    backgroundColor: '#FAF7F2',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#EDE3D8',
+    maxWidth: 70,
+  },
+  wordSubscriptText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 9,
+    color: '#78716C',
+    textAlign: 'center',
   },
   traceActionTile: {
     flexDirection: 'row',

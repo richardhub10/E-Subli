@@ -207,7 +207,7 @@ function getFromEntry(entry: DictEntry, targetLang: string): string {
 
 function cleanTranslationText(text: string): string {
   if (!text) return '';
-  return text
+  let cleaned = text
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
@@ -215,7 +215,29 @@ function cleanTranslationText(text: string): string {
     .replace(/&#39;/g, "'")
     .replace(/&apos;/g, "'")
     .replace(/&#x2F;/g, '/')
-    .replace(/^["'`]+|["'`]+$/g, '')
+    .trim();
+
+  // If the model output conversational headers like "Here is the Kapampangan translation:"
+  if (/here is the|narito ang|translation:/i.test(cleaned)) {
+    const quoteMatch = cleaned.match(/["“]([^"”]+)["”]/);
+    if (quoteMatch && quoteMatch[1]) {
+      cleaned = quoteMatch[1];
+    } else {
+      const boldMatch = cleaned.match(/\*\*([^*]+)\*\*/);
+      if (boldMatch && boldMatch[1]) {
+        cleaned = boldMatch[1];
+      } else {
+        const lines = cleaned.split('\n').map(l => l.trim()).filter(Boolean);
+        const nonHeaderLines = lines.filter(l => !/^(here is|narito|note:|vocabulary|\*)/i.test(l));
+        if (nonHeaderLines.length > 0) {
+          cleaned = nonHeaderLines[0];
+        }
+      }
+    }
+  }
+
+  return cleaned
+    .replace(/^[*"'`]+|[*"'`]+$/g, '')
     .trim();
 }
 
@@ -392,6 +414,10 @@ export async function geminiTranslate(
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.1,
+              thinkingConfig: { thinkingBudget: 0 }
+            }
           }),
           signal: controller ? controller.signal : undefined,
         });
