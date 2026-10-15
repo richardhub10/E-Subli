@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Easing, Platform, Dimensions, ScrollView, Modal, Image, BackHandler } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Easing, Platform, Dimensions, ScrollView, Modal, Image, BackHandler, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -309,7 +309,22 @@ export default function OfflineQuizScreen({ navigation }: OfflineQuizScreenProps
     );
   };
 
-  if (!currentQ) return null;
+  if (!currentQ) {
+    return (
+      <View style={styles.container}>
+        <Image 
+          source={BackgroundImages.soloPractice} 
+          style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
+          resizeMode="cover" 
+        />
+        <SafeAreaView style={styles.safeArea}>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#A94828" />
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

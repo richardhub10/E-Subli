@@ -102,8 +102,9 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   const myAnswerWrongRef = useRef(false);
   const opponentWrongRef = useRef(false);
 
-  // Parse Kulitan
+  // Parse Kulitan safely
   const getKulitanSyllables = (text: string): string[][] => {
+    if (!text || typeof text !== 'string') return [['a']];
     const words = text.toLowerCase().split(/\s+/);
     return words.map(word => {
       const parts = word.match(/(?:ng|[bcdfghjklmnpqrstvwxyz])?[aeiou]|(?:ng|[bcdfghjklmnpqrstvwxyz])/gi);
@@ -114,6 +115,13 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       });
     });
   };
+
+  // Failsafe: if status is playing but questions is empty, immediately populate questions
+  useEffect(() => {
+    if (status === 'playing' && questions.length === 0) {
+      setQuestions(getRandomQuestions(30));
+    }
+  }, [status, questions.length]);
 
   // Update Tug of war animation when scores change
   useEffect(() => {
@@ -165,8 +173,12 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         if (roomError) throw roomError;
         
         if (room) {
-          const qList = (room.questions && Array.isArray(room.questions) && room.questions.length > 0)
-            ? room.questions
+          let parsedQuestions = room.questions;
+          if (typeof parsedQuestions === 'string') {
+            try { parsedQuestions = JSON.parse(parsedQuestions); } catch {}
+          }
+          const qList = (parsedQuestions && Array.isArray(parsedQuestions) && parsedQuestions.length > 0)
+            ? parsedQuestions
             : getRandomQuestions(30);
           setQuestions(prev => (prev.length === 0 ? qList : prev));
           setCurrentQuestionIndex(prev => Math.max(prev, room.current_question_index || 0));
@@ -196,7 +208,9 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           }
         }
       } catch (e) {
-        console.error(e);
+        console.error('QuizBattle fetchState error:', e);
+        // Guaranteed fallback so battle never loads with 0 questions:
+        setQuestions(prev => (prev.length === 0 ? getRandomQuestions(30) : prev));
       } finally {
         setIsLoading(false);
       }
@@ -209,13 +223,20 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         const newRecord = payload.new;
         if (!newRecord) return;
 
+        let parsedPayloadQs = newRecord.questions;
+        if (typeof parsedPayloadQs === 'string') {
+          try { parsedPayloadQs = JSON.parse(parsedPayloadQs); } catch {}
+        }
+
         if (newRecord.status !== undefined) {
           if (newRecord.status === 'playing' && statusRef.current === 'finished') {
              // Reset state for rematch
              currentQuestionIndexRef.current = 0;
              setCurrentQuestionIndex(0);
-             if (newRecord.questions && Array.isArray(newRecord.questions) && newRecord.questions.length > 0) {
-               setQuestions(newRecord.questions);
+             if (parsedPayloadQs && Array.isArray(parsedPayloadQs) && parsedPayloadQs.length > 0) {
+               setQuestions(parsedPayloadQs);
+             } else {
+               setQuestions(getRandomQuestions(30));
              }
              setHasShownVsScreen(false);
              setHasAwardedXP(false);
@@ -227,8 +248,8 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         }
 
         // Only populate questions once if empty to avoid breaking active round animations
-        if (newRecord.questions && Array.isArray(newRecord.questions) && newRecord.questions.length > 0) {
-          setQuestions(prev => (prev.length === 0 ? newRecord.questions : prev));
+        if (parsedPayloadQs && Array.isArray(parsedPayloadQs) && parsedPayloadQs.length > 0) {
+          setQuestions(prev => (prev.length === 0 ? parsedPayloadQs : prev));
         }
 
         // Strictly monotonic forward progress: never jump backward to an old question!
@@ -311,21 +332,23 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
 
   // VS Screen Countdown Timer
   useEffect(() => {
-    if (status === 'playing' && !hasShownVsScreen && opponentId && questions.length > 0) {
+    if (status === 'playing' && !hasShownVsScreen) {
+      if (questions.length === 0) {
+        setQuestions(getRandomQuestions(30));
+      }
       setVsCountdown(3);
+      let count = 3;
       const interval = setInterval(() => {
-        setVsCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            setHasShownVsScreen(true);
-            return 0;
-          }
-          return prev - 1;
-        });
+        count -= 1;
+        setVsCountdown(count > 0 ? count : 0);
+        if (count <= 0) {
+          clearInterval(interval);
+          setHasShownVsScreen(true);
+        }
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [status, hasShownVsScreen, opponentId, questions.length]);
+  }, [status, hasShownVsScreen]);
 
   // Game Timer (Urgency)
   useEffect(() => {
@@ -764,7 +787,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   }
 
   // Waiting Room View
-  if (status === 'waiting') {
+  if (status === 'waiting' || status === 'private_waiting') {
     return (
       <LinearGradient colors={['#0F172A', '#1E1B4B']} style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
@@ -930,7 +953,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   }
 
   // Cinematic VS Screen Countdown
-  if (status === 'playing' && !hasShownVsScreen && opponentId) {
+  if (status === 'playing' && !hasShownVsScreen) {
     return (
       <LinearGradient colors={['#0F172A', '#1E1B4B']} style={styles.container}>
         <View style={styles.vsScreenContainer}>
@@ -953,9 +976,9 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
 
           <View style={styles.vsPlayerCard}>
             <View style={[styles.vsAvatarCircle, { borderColor: '#F43F5E' }]}>
-              <Text style={styles.vsAvatarInitial}>{opponentName.charAt(0)}</Text>
+              <Text style={styles.vsAvatarInitial}>{(opponentName || 'O').charAt(0)}</Text>
             </View>
-            <Text style={styles.vsPlayerText} numberOfLines={1}>{opponentName}</Text>
+            <Text style={styles.vsPlayerText} numberOfLines={1}>{opponentName || 'OPPONENT'}</Text>
             <Text style={styles.vsPlayerSub}>Lvl {aiOpponent?.level || 1} • {aiOpponent?.elo || 1000} RP</Text>
           </View>
         </View>
@@ -963,14 +986,39 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     );
   }
 
-  const currentQ = questions[currentQuestionIndex] || questions[0];
+  const currentQ = (questions && questions.length > 0)
+    ? (questions[currentQuestionIndex] || questions[0])
+    : null;
 
   const currentKulitanSyllables = useMemo(() => {
     if (!currentQ?.kapampangan || currentQ.category !== 'words') return [];
-    return getKulitanSyllables(currentQ.kapampangan);
+    try {
+      return getKulitanSyllables(String(currentQ.kapampangan));
+    } catch {
+      return [];
+    }
   }, [currentQ?.kapampangan, currentQ?.category]);
 
-  if (!currentQ) return null;
+  // NEVER return a blank white screen (null)! Always show parchment arena with loader if waiting for question:
+  if (!currentQ) {
+    return (
+      <View style={styles.container}>
+        <Image 
+          source={BackgroundImages.ranksAndProfile} 
+          style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
+          resizeMode="cover" 
+        />
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color="#D1582D" />
+            <Text style={{ marginTop: 16, fontFamily: 'Poppins_600SemiBold', color: '#78350F', fontSize: 14 }}>
+              {language === 'EN' ? 'Entering Battle Arena...' : 'Pumapasok sa Arena...'}
+            </Text>
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -1003,7 +1051,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
 
             {/* Opponent Info */}
             <View style={[styles.playerScoreBox, { alignItems: 'flex-end' }]}>
-              <Text style={styles.playerScoreName} numberOfLines={1}>{opponentName}</Text>
+              <Text style={styles.playerScoreName} numberOfLines={1}>{opponentName || 'OPPONENT'}</Text>
               <Text style={[styles.playerScoreValue, { color: '#DC2626' }]}>{opponentScore}</Text>
             </View>
           </View>
@@ -1015,7 +1063,8 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
               {
                 width: tugAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: ['0%', '100%']
+                  outputRange: ['0%', '100%'],
+                  extrapolate: 'clamp',
                 })
               }
             ]} />
@@ -1027,8 +1076,16 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           <Animated.View style={[
             styles.timerBarFill,
             { 
-              width: timerAnim.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }),
-              backgroundColor: timerAnim.interpolate({ inputRange: [0, 30, 100], outputRange: ['#EF4444', '#F59E0B', '#10B981'] })
+              width: timerAnim.interpolate({ 
+                inputRange: [0, 100], 
+                outputRange: ['0%', '100%'],
+                extrapolate: 'clamp',
+              }),
+              backgroundColor: timerAnim.interpolate({ 
+                inputRange: [0, 30, 100], 
+                outputRange: ['#EF4444', '#F59E0B', '#10B981'],
+                extrapolate: 'clamp',
+              })
             }
           ]} />
         </View>
@@ -1058,7 +1115,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
 
             {currentQ.category === 'words' ? (
               <>
-                <Text style={styles.kapampanganWord}>{currentQ.kapampangan}</Text>
+                <Text style={styles.kapampanganWord}>{currentQ.kapampangan || ''}</Text>
                 <View style={styles.kulitanContainer}>
                   {currentKulitanSyllables.map((syllables, index) => (
                     <View key={index} style={styles.verticalWordColumn}>
@@ -1075,7 +1132,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
               <View style={styles.glyphHeroWrapper}>
                 <View style={styles.glyphPedestalCircle}>
                   <KulitanGlyph 
-                    symbol={currentQ.kapampangan} 
+                    symbol={currentQ.kapampangan || 'a'} 
                     size={110} 
                     color="#B45309" 
                     strokeWidth={4.8} 
@@ -1093,7 +1150,10 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
 
           {/* Options in 2x2 Responsive Grid */}
           <View style={styles.optionsGrid}>
-            {currentQ.options.map((opt: string, i: number) => {
+            {(Array.isArray(currentQ?.options) && currentQ.options.length > 0 
+              ? currentQ.options 
+              : ['Option A', 'Option B', 'Option C', 'Option D']
+            ).map((opt: string, i: number) => {
               const isSelected = selectedOption === opt;
               const isCorrect = isSelected && isCorrectSelected;
               const isWrong = isSelected && !isCorrectSelected;

@@ -16,9 +16,9 @@ export default function KulitanGlyph({
   color = '#0B2046',
   strokeWidth = 4.5,
 }: KulitanGlyphProps) {
-  // Normalize symbol lookup
-  const cleanKey = symbol.toLowerCase().trim();
-  const pathData = kulitanSvgPaths[cleanKey] || kulitanSvgPaths[cleanKey.split(' ')[0]] || kulitanSvgPaths['a'];
+  // Normalize symbol lookup safely
+  const cleanKey = (symbol ? String(symbol) : 'a').toLowerCase().trim();
+  const pathData = kulitanSvgPaths[cleanKey] || kulitanSvgPaths[cleanKey.split(' ')[0]] || kulitanSvgPaths['a'] || '';
 
   // ViewBox: 0 0 100 100 for normal syllables, 0 0 130 100 for ligatures with trailing -ng
   const isLigature = cleanKey.includes('ang') || cleanKey.includes('ank') || cleanKey.includes('gang');
