@@ -41,6 +41,20 @@ const ALL_SAMPLE_PHRASES = [
   'Nukarin ya ing dalan papuntang Angeles?'
 ];
 
+function getKulitanSyllables(text: string): string[][] {
+  if (!text) return [];
+  // Clean punctuation
+  const clean = text.replace(/[^a-zA-Z\s]/g, ' ').trim();
+  const words = clean.split(/\s+/).filter(Boolean);
+
+  return words.map(word => {
+    // Map 'ng' to uppercase 'N' for Bay_K_Pamagkulit font which maps 'N' to Nga
+    const formattedWord = word.replace(/ng/gi, 'N');
+    const parts = formattedWord.match(/(?:[bcdfghjklmnpqrstvwxyzN])?[aeiou]+|(?:[bcdfghjklmnpqrstvwxyzN])+/gi);
+    return parts && parts.length > 0 ? parts : [formattedWord];
+  });
+}
+
 export default function TranslatorScreen({ navigation }: TranslatorScreenProps) {
   const [sourceLanguage, setSourceLanguage] = useState<LangType>('Tagalog');
   const [targetLanguage, setTargetLanguage] = useState<LangType>('Kapampangan');
@@ -127,20 +141,6 @@ export default function TranslatorScreen({ navigation }: TranslatorScreenProps) 
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     }
-  };
-
-  const getKulitanSyllables = (text: string): string[][] => {
-    if (!text) return [];
-    // Clean punctuation
-    const clean = text.replace(/[^a-zA-Z\s]/g, ' ').trim();
-    const words = clean.split(/\s+/).filter(Boolean);
-
-    return words.map(word => {
-      // Map 'ng' to uppercase 'N' for Bay_K_Pamagkulit font which maps 'N' to Nga
-      const formattedWord = word.replace(/ng/gi, 'N');
-      const parts = formattedWord.match(/(?:[bcdfghjklmnpqrstvwxyzN])?[aeiou]+|(?:[bcdfghjklmnpqrstvwxyzN])+/gi);
-      return parts && parts.length > 0 ? parts : [formattedWord];
-    });
   };
 
   // Paginate sample phrases for the 2x2 Bento grid
