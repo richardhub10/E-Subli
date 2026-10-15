@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, ActivityIndicator, Alert, FlatList, Image, Platform, Modal, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
@@ -23,26 +24,15 @@ type FriendProfile = {
   avatar_url?: string;
 };
 
-type FriendRequestItem = {
-  id: string;
-  sender_id: string;
-  receiver_id: string;
-  created_at: string;
-  sender_profile?: FriendProfile;
-};
-
 export default function FriendsScreen({ navigation }: FriendsScreenProps) {
   const [activeTab, setActiveTab] = useState<'List' | 'Add'>('List');
   const [friends, setFriends] = useState<FriendProfile[]>([]);
-  const [friendRequests, setFriendRequests] = useState<FriendRequestItem[]>([]);
-  const [isRequestsModalVisible, setIsRequestsModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [loadingRequests, setLoadingRequests] = useState(false);
-  const [processingRequestId, setProcessingRequestId] = useState<string | null>(null);
 
   const [searchName, setSearchName] = useState('');
   const [searchResults, setSearchResults] = useState<FriendProfile[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [addingFriendId, setAddingFriendId] = useState<string | null>(null);
   const [challengeModalFriend, setChallengeModalFriend] = useState<FriendProfile | null>(null);
   
   const { user } = useAuth();
@@ -51,40 +41,29 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
 
   useEffect(() => {
     fetchFriends();
-    fetchFriendRequests();
-  }, []);
 
-  const getTimePassed = (dateString?: string): string => {
-    if (!dateString) return 'Recently';
-    const created = new Date(dateString).getTime();
-    if (isNaN(created)) return 'Recently';
-    const now = Date.now();
-    const diffMs = Math.max(0, now - created);
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
-    if (diffDays >= 1) {
-      return diffDays === 1 ? '1 day ago' : `${diffDays} days ago`;
-    }
-    if (diffHours >= 1) {
-      return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
-    }
-    if (diffMinutes >= 1) {
-      return diffMinutes === 1 ? '1 minute ago' : `${diffMinutes} minutes ago`;
-    }
-    return 'Just now';
-  };
+    if (!user) return;
+    const friendsChannel = supabase
+      .channel('public_friends_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'friends' }, () => {
+        fetchFriends();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(friendsChannel);
+    };
+  }, [user?.id]);
 
   const fetchFriends = async () => {
     if (!user) return;
     setLoading(true);
     try {
-      // 1. Get friend IDs
+      // 1. Get friend IDs where user is either user_id or friend_id (bidirectional)
       const { data: friendsData, error: friendsError } = await supabase
         .from('friends')
-        .select('friend_id')
-        .eq('user_id', user.id);
+        .select('user_id, friend_id')
+        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`);
         
       if (friendsError) throw friendsError;
       
@@ -94,7 +73,20 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
         return;
       }
       
-      const friendIds = friendsData.map(f => f.friend_id);
+      const friendIdSet = new Set<string>();
+      friendsData.forEach(f => {
+        const otherId = f.user_id === user.id ? f.friend_id : f.user_id;
+        if (otherId && otherId !== user.id) {
+          friendIdSet.add(otherId);
+        }
+      });
+
+      const friendIds = Array.from(friendIdSet);
+      if (friendIds.length === 0) {
+        setFriends([]);
+        setLoading(false);
+        return;
+      }
       
       // 2. Fetch profiles for those IDs
       const { data: profiles, error: profilesError } = await supabase
@@ -113,104 +105,37 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
     }
   };
 
-  const fetchFriendRequests = async () => {
-    if (!user) return;
-    setLoadingRequests(true);
-    try {
-      const { data: requests, error } = await supabase
-        .from('friend_requests')
-        .select('id, sender_id, receiver_id, created_at')
-        .eq('receiver_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.log("Friend requests notice:", error.message);
-        setFriendRequests([]);
-        return;
-      }
-
-      if (requests && requests.length > 0) {
-        const senderIds = requests.map(r => r.sender_id);
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name, xp, level, elo_rating, avatar_url')
-          .in('id', senderIds);
-
-        const profilesMap = new Map((profiles || []).map(p => [p.id, p]));
-        const enriched: FriendRequestItem[] = requests.map(r => ({
-          ...r,
-          sender_profile: profilesMap.get(r.sender_id)
-        }));
-        setFriendRequests(enriched);
-      } else {
-        setFriendRequests([]);
-      }
-    } catch (err) {
-      console.error("Error fetching friend requests:", err);
-    } finally {
-      setLoadingRequests(false);
-    }
-  };
-
-  const acceptFriendRequest = async (request: FriendRequestItem) => {
-    if (!user) return;
-    setProcessingRequestId(request.id);
-    try {
-      // 1. Add reciprocal friendship
-      await supabase.from('friends').insert([
-        { user_id: user.id, friend_id: request.sender_id },
-        { user_id: request.sender_id, friend_id: user.id }
-      ]);
-
-      // 2. Remove the request
-      await supabase.from('friend_requests').delete().eq('id', request.id);
-
-      Alert.alert(
-        "Friend Added!",
-        language === 'EN' 
-          ? `${request.sender_profile?.first_name || 'Scholar'} is now your friend!`
-          : `Kaibigan mo na si ${request.sender_profile?.first_name || 'Scholar'}!`
-      );
-      
-      fetchFriends();
-      fetchFriendRequests();
-    } catch (err) {
-      console.error("Accept error:", err);
-      Alert.alert("Error", "Could not accept friend request.");
-    } finally {
-      setProcessingRequestId(null);
-    }
-  };
-
-  const declineFriendRequest = async (requestId: string) => {
-    setProcessingRequestId(requestId);
-    try {
-      await supabase.from('friend_requests').delete().eq('id', requestId);
-      setFriendRequests(prev => prev.filter(r => r.id !== requestId));
-    } catch (err) {
-      console.error("Decline error:", err);
-    } finally {
-      setProcessingRequestId(null);
-    }
-  };
-
   const searchFriend = async () => {
-    if (!searchName.trim()) return;
+    const q = searchName.trim();
+    if (!q) return;
     
     setIsSearching(true);
     setSearchResults([]);
     try {
-      const { data, error } = await supabase
+      const words = q.split(/\s+/);
+      let queryBuilder = supabase
         .from('profiles')
-        .select('id, first_name, last_name, xp, level, elo_rating, avatar_url')
-        .ilike('first_name', `%${searchName}%`)
-        .limit(5);
+        .select('id, first_name, last_name, xp, level, elo_rating, avatar_url');
+
+      if (words.length > 1) {
+        const first = words[0];
+        const second = words.slice(1).join(' ');
+        queryBuilder = queryBuilder.or(`and(first_name.ilike.%${first}%,last_name.ilike.%${second}%),first_name.ilike.%${q}%,last_name.ilike.%${q}%`);
+      } else {
+        queryBuilder = queryBuilder.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%`);
+      }
+
+      const { data, error } = await queryBuilder.limit(10);
         
       if (error) throw error;
       
       if (data && data.length > 0) {
         const filteredData = data.filter(u => u.id !== user?.id);
-        setSearchResults(filteredData);
+        if (filteredData.length > 0) {
+          setSearchResults(filteredData);
+        } else {
+          Alert.alert("Info", language === 'EN' ? "That is your own account." : "Iyan ang sarili mong account.");
+        }
       } else {
         Alert.alert("Not Found", language === 'EN' ? "No user found with that name." : "Walang gumagamit na natagpuan sa pangalang iyon.");
       }
@@ -224,53 +149,48 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
 
   const addFriend = async (friendId: string) => {
     if (!user) return;
+    setAddingFriendId(friendId);
     try {
-      // Check if already friends
+      // Check if already friends in either direction
       const { data: existing } = await supabase
         .from('friends')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('friend_id', friendId);
+        .select('id')
+        .or(`and(user_id.eq.${user.id},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${user.id})`);
         
       if (existing && existing.length > 0) {
         Alert.alert("Info", language === 'EN' ? "You are already friends!" : "Magkaibigan na kayo!");
         return;
       }
-
-      // Check if already requested
-      const { data: existingReq } = await supabase
-        .from('friend_requests')
-        .select('*')
-        .eq('sender_id', user.id)
-        .eq('receiver_id', friendId);
-
-      if (existingReq && existingReq.length > 0) {
-        Alert.alert("Info", language === 'EN' ? "Friend request already sent!" : "Naipadala na ang kahilingan!");
-        return;
-      }
       
-      // Send request with created_at timestamp
-      const { error } = await supabase
-        .from('friend_requests')
+      // Insert single friendship record (allowed by Supabase RLS: auth.uid() = user_id)
+      const { error: insertError } = await supabase
+        .from('friends')
         .insert([{ 
-          sender_id: user.id, 
-          receiver_id: friendId,
-          created_at: new Date().toISOString() 
+          user_id: user.id, 
+          friend_id: friendId 
         }]);
         
-      if (error) {
-        // Fallback: direct insert to friends if table doesn't exist
-        await supabase.from('friends').insert([
-          { user_id: user.id, friend_id: friendId },
-          { user_id: friendId, friend_id: user.id }
-        ]);
+      if (insertError) {
+        throw insertError;
       }
       
-      Alert.alert("Success!", language === 'EN' ? "Friend request sent." : "Naipadala ang kahilingan ng pagkakaibigan.");
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      
+      Alert.alert(
+        "Friend Added!", 
+        language === 'EN' 
+          ? "Friend added successfully to your friends list!" 
+          : "Tagumpay na naidagdag sa iyong listahan ng mga kaibigan!"
+      );
+      
       setSearchName('');
       setSearchResults([]);
+      setActiveTab('List');
+      fetchFriends();
       
-      // Broadcast real-time ping
+      // Broadcast real-time ping to the friend
       const senderName = profile?.firstName || user.email?.split('@')[0] || 'A user';
       const friendChannel = supabase.channel(`user_${friendId}`);
       friendChannel.subscribe(async (status) => {
@@ -284,10 +204,43 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
         }
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Add friend error:", error);
-      Alert.alert("Error", "Could not send friend request.");
+      Alert.alert("Error", error?.message || "Could not add friend. Please try again.");
+    } finally {
+      setAddingFriendId(null);
     }
+  };
+
+  const removeFriend = (friend: FriendProfile) => {
+    Alert.alert(
+      language === 'EN' ? "Remove Friend" : "Alisin ang Kaibigan",
+      language === 'EN' 
+        ? `Are you sure you want to remove ${friend.first_name || 'this scholar'} from your friends list?` 
+        : `Sigurado ka bang nais mong alisin si ${friend.first_name || 'scholar'} sa iyong listahan ng mga kaibigan?`,
+      [
+        { text: language === 'EN' ? "Cancel" : "Kanselahin", style: "cancel" },
+        { 
+          text: language === 'EN' ? "Remove" : "Alisin", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await supabase
+                .from('friends')
+                .delete()
+                .or(`and(user_id.eq.${user?.id},friend_id.eq.${friend.id}),and(user_id.eq.${friend.id},friend_id.eq.${user?.id})`);
+              
+              if (Platform.OS !== 'web') {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+              }
+              fetchFriends();
+            } catch (err) {
+              console.error("Remove friend error:", err);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const executeChallenge = async (friend: FriendProfile) => {
@@ -379,14 +332,11 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
 
         {activeTab === 'List' ? (
           <View style={{ flex: 1 }}>
-            {/* Friend Requests Action Banner */}
+            {/* Add Friends Action Banner */}
             <TouchableOpacity 
               style={styles.requestsBanner}
               activeOpacity={0.8}
-              onPress={() => {
-                fetchFriendRequests();
-                setIsRequestsModalVisible(true);
-              }}
+              onPress={() => setActiveTab('Add')}
             >
               <View style={styles.requestsBannerLeft}>
                 <View style={styles.requestsIconCircle}>
@@ -394,22 +344,17 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                 </View>
                 <View>
                   <Text style={styles.requestsBannerTitle}>
-                    {language === 'EN' ? 'Friend Requests' : 'Mga Kahilingan'}
+                    {language === 'EN' ? 'Add Friends' : 'Magdagdag ng Kaibigan'}
                   </Text>
                   <Text style={styles.requestsBannerSub}>
-                    {friendRequests.length === 0 
-                      ? (language === 'EN' ? 'View incoming requests' : 'Tingnan ang mga kahilingan')
-                      : `${friendRequests.length} ${language === 'EN' ? 'pending request(s)' : 'nakabinbing kahilingan'}`}
+                    {language === 'EN' 
+                      ? `You have ${friends.length} friend${friends.length === 1 ? '' : 's'}. Tap to search and add!` 
+                      : `Mayroon kang ${friends.length} kaibigan. Pindutin para maghanap!`}
                   </Text>
                 </View>
               </View>
               
               <View style={styles.requestsBannerRight}>
-                {friendRequests.length > 0 && (
-                  <View style={styles.requestsBadge}>
-                    <Text style={styles.requestsBadgeText}>{friendRequests.length}</Text>
-                  </View>
-                )}
                 <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
               </View>
             </TouchableOpacity>
@@ -446,14 +391,24 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                       <Text style={styles.friendStats}>Lvl {item.level || 1} • {item.xp || 0} XP</Text>
                       <Text style={styles.eloStats}>{item.elo_rating || 1000} RP</Text>
                     </View>
-                    <TouchableOpacity 
-                      style={styles.challengeBtn} 
-                      activeOpacity={0.7}
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      onPress={() => challengeFriend(item)}
-                    >
-                      <Ionicons name="game-controller" size={20} color="#FFF" />
-                    </TouchableOpacity>
+                    <View style={styles.friendActionGroup}>
+                      <TouchableOpacity 
+                        style={styles.challengeBtn} 
+                        activeOpacity={0.7}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        onPress={() => challengeFriend(item)}
+                      >
+                        <Ionicons name="game-controller" size={20} color="#FFF" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.removeFriendBtn} 
+                        activeOpacity={0.7}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        onPress={() => removeFriend(item)}
+                      >
+                        <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 )}
               />
@@ -462,14 +417,16 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
         ) : (
           <View style={styles.addTabContainer}>
             <Text style={styles.searchPrompt}>
-              {language === 'EN' ? "Enter your friend's name to send a request:" : "Ilagay ang pangalan upang magpadala ng kahilingan:"}
+              {language === 'EN' ? "Search scholars by first or last name:" : "Maghanap ng scholar gamit ang pangalan o apelyido:"}
             </Text>
             <View style={styles.searchRow}>
               <TextInput
                 style={styles.searchInput}
-                placeholder={language === 'EN' ? "First Name" : "Pangalan"}
+                placeholder={language === 'EN' ? "e.g. Justine, Paul, Sicat..." : "hal. Justine, Paul, Sicat..."}
                 value={searchName}
                 onChangeText={setSearchName}
+                onSubmitEditing={searchFriend}
+                returnKeyType="search"
                 autoCapitalize="words"
               />
               <TouchableOpacity style={styles.searchBtn} onPress={searchFriend} disabled={isSearching}>
@@ -482,142 +439,48 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                 data={searchResults}
                 keyExtractor={item => item.id}
                 scrollEnabled={false}
-                renderItem={({ item }) => (
-                  <View style={styles.resultCard}>
-                    {item.avatar_url ? (
-                      <Image source={{ uri: item.avatar_url }} style={styles.friendAvatar} />
-                    ) : (
-                      <View style={styles.friendAvatarPlaceholder}>
-                        <Text style={styles.friendAvatarText}>{item.first_name ? item.first_name.charAt(0) : 'S'}</Text>
+                renderItem={({ item }) => {
+                  const isAlreadyFriend = friends.some(f => f.id === item.id);
+                  const isAdding = addingFriendId === item.id;
+
+                  return (
+                    <View style={styles.resultCard}>
+                      {item.avatar_url ? (
+                        <Image source={{ uri: item.avatar_url }} style={styles.friendAvatar} />
+                      ) : (
+                        <View style={styles.friendAvatarPlaceholder}>
+                          <Text style={styles.friendAvatarText}>{item.first_name ? item.first_name.charAt(0) : 'S'}</Text>
+                        </View>
+                      )}
+                      <View style={styles.friendInfo}>
+                        <Text style={styles.friendName}>{item.first_name || 'Scholar'} {item.last_name || ''}</Text>
+                        <Text style={styles.friendStats}>Lvl {item.level || 1} • {item.xp || 0} XP</Text>
                       </View>
-                    )}
-                    <View style={styles.friendInfo}>
-                      <Text style={styles.friendName}>{item.first_name || 'Scholar'} {item.last_name || ''}</Text>
-                      <Text style={styles.friendStats}>Lvl {item.level || 1} • {item.xp || 0} XP</Text>
+                      {isAlreadyFriend ? (
+                        <View style={styles.alreadyFriendBadge}>
+                          <Ionicons name="checkmark-circle" size={16} color="#059669" />
+                          <Text style={styles.alreadyFriendText}>{language === 'EN' ? "Friends" : "Kaibigan"}</Text>
+                        </View>
+                      ) : (
+                        <TouchableOpacity 
+                          style={styles.addConfirmBtn} 
+                          onPress={() => addFriend(item.id)}
+                          disabled={isAdding}
+                        >
+                          {isAdding ? (
+                            <ActivityIndicator size="small" color="#FFF" />
+                          ) : (
+                            <Text style={styles.addConfirmText}>{language === 'EN' ? "Add" : "Idagdag"}</Text>
+                          )}
+                        </TouchableOpacity>
+                      )}
                     </View>
-                    <TouchableOpacity style={styles.addConfirmBtn} onPress={() => addFriend(item.id)}>
-                      <Text style={styles.addConfirmText}>{language === 'EN' ? "Add" : "Idagdag"}</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
+                  );
+                }}
               />
             )}
           </View>
         )}
-
-        {/* Friend Requests Modal */}
-        <Modal 
-          visible={isRequestsModalVisible} 
-          transparent 
-          animationType="slide" 
-          onRequestClose={() => setIsRequestsModalVisible(false)}
-        >
-          <View style={styles.requestsModalOverlay}>
-            <View style={styles.requestsModalContainer}>
-              <View style={styles.requestsModalHeader}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Ionicons name="mail-unread" size={24} color="#D1582D" />
-                  <Text style={styles.requestsModalTitle}>
-                    {language === 'EN' ? 'Friend Requests' : 'Mga Kahilingan'}
-                  </Text>
-                </View>
-                <TouchableOpacity 
-                  style={styles.modalCloseBtn}
-                  onPress={() => setIsRequestsModalVisible(false)}
-                >
-                  <Ionicons name="close" size={24} color="#64748B" />
-                </TouchableOpacity>
-              </View>
-
-              {loadingRequests ? (
-                <View style={{ padding: 40, alignItems: 'center' }}>
-                  <ActivityIndicator size="large" color="#D1582D" />
-                </View>
-              ) : friendRequests.length === 0 ? (
-                <View style={styles.requestsEmptyState}>
-                  <Ionicons name="mail-open-outline" size={56} color="#CBD5E1" />
-                  <Text style={styles.requestsEmptyTitle}>
-                    {language === 'EN' ? 'No pending requests' : 'Walang nakabinbing kahilingan'}
-                  </Text>
-                  <Text style={styles.requestsEmptySub}>
-                    {language === 'EN' 
-                      ? 'When someone adds you, their friend request and time sent will appear here.'
-                      : 'Kapag may nagdagdag sa iyo, makikita rito ang kanilang kahilingan at oras.'}
-                  </Text>
-                </View>
-              ) : (
-                <FlatList
-                  data={friendRequests}
-                  keyExtractor={item => item.id}
-                  contentContainerStyle={{ padding: 16 }}
-                  renderItem={({ item }) => {
-                    const isProcessing = processingRequestId === item.id;
-                    const p = item.sender_profile;
-                    
-                    return (
-                      <View style={styles.requestCard}>
-                        {p?.avatar_url ? (
-                          <Image source={{ uri: p.avatar_url }} style={styles.requestAvatar} />
-                        ) : (
-                          <View style={styles.requestAvatarPlaceholder}>
-                            <Text style={styles.requestAvatarText}>
-                              {p?.first_name ? p.first_name.charAt(0).toUpperCase() : 'S'}
-                            </Text>
-                          </View>
-                        )}
-                        
-                        <View style={styles.requestInfo}>
-                          <Text style={styles.requestName} numberOfLines={1}>
-                            {p?.first_name || 'Scholar'} {p?.last_name || ''}
-                          </Text>
-                          <Text style={styles.requestStats}>
-                            Lvl {p?.level || 1} • {p?.xp || 0} XP
-                          </Text>
-                          
-                          {/* Time elapsed badge */}
-                          <View style={styles.timeBadge}>
-                            <Ionicons name="time-outline" size={13} color="#C2410C" />
-                            <Text style={styles.timeBadgeText}>
-                              Added {getTimePassed(item.created_at)}
-                            </Text>
-                          </View>
-                        </View>
-
-                        {/* Action buttons */}
-                        <View style={styles.requestActions}>
-                          <TouchableOpacity
-                            style={[styles.requestActionBtn, styles.acceptBtn]}
-                            disabled={isProcessing}
-                            onPress={() => acceptFriendRequest(item)}
-                          >
-                            {isProcessing ? (
-                              <ActivityIndicator size="small" color="#FFF" />
-                            ) : (
-                              <>
-                                <Ionicons name="checkmark" size={16} color="#FFF" />
-                                <Text style={styles.acceptBtnText}>
-                                  {language === 'EN' ? 'Accept' : 'Tanggapin'}
-                                </Text>
-                              </>
-                            )}
-                          </TouchableOpacity>
-
-                          <TouchableOpacity
-                            style={[styles.requestActionBtn, styles.declineBtn]}
-                            disabled={isProcessing}
-                            onPress={() => declineFriendRequest(item.id)}
-                          >
-                            <Ionicons name="close" size={16} color="#64748B" />
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    );
-                  }}
-                />
-              )}
-            </View>
-          </View>
-        </Modal>
 
         {/* Custom In-App Challenge Modal */}
         {challengeModalFriend && (
@@ -887,6 +750,21 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
+  friendActionGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  removeFriendBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FEE2E2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -966,6 +844,22 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_600SemiBold',
     fontSize: 13,
     color: '#FFF',
+  },
+  alreadyFriendBadge: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  alreadyFriendText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 12,
+    color: '#059669',
   },
 
   // Friend Requests Modal Styles

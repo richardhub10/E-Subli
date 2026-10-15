@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useProfile } from '../context/ProfileContext';
 import { BackgroundImages } from '../constants/backgrounds';
 
 type LeaderboardScreenProps = {
@@ -28,6 +29,7 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
   const [selectedUser, setSelectedUser] = useState<LeaderboardEntry | null>(null);
   const [isAddingFriend, setIsAddingFriend] = useState(false);
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { t, language } = useLanguage();
 
   useEffect(() => {
@@ -80,8 +82,7 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
       const { data: existing } = await supabase
         .from('friends')
         .select('*')
-        .eq('user_id', user.id)
-        .eq('friend_id', friendId);
+        .or(`and(user_id.eq.${user.id},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${user.id})`);
         
       if (existing && existing.length > 0) {
         Alert.alert("Info", language === 'EN' ? "You are already friends!" : "Magkaibigan na kayo!");
@@ -98,7 +99,20 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert("Success!", language === 'EN' ? "Friend added successfully." : "Tagumpay na naidagdag ang kaibigan.");
       
-      await supabase.from('friends').insert([{ user_id: friendId, friend_id: user.id }]);
+      // Broadcast real-time notification to the friend
+      const senderName = profile?.firstName || user.email?.split('@')[0] || 'A scholar';
+      const friendChannel = supabase.channel(`user_${friendId}`);
+      friendChannel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await friendChannel.send({
+            type: 'broadcast',
+            event: 'friend_request',
+            payload: { senderName }
+          });
+          supabase.removeChannel(friendChannel);
+        }
+      });
+
       setSelectedUser(null);
     } catch (error) {
       console.error("Add friend error:", error);
