@@ -7,6 +7,7 @@ import {
   SafeAreaView, 
   Dimensions, 
   StatusBar, 
+  Platform, 
   Image, 
   Animated,
   Easing 
@@ -125,8 +126,14 @@ export default function WelcomeScreen({ navigation }: WelcomeScreenProps) {
           </View>
           
           <View style={styles.brandTitleRow}>
-            <Text style={styles.brandLogoE}>e</Text>
-            <Text style={styles.brandLogoSubli}>SUBLI</Text>
+            <Text style={styles.brandTitleText}>
+              <Text style={{ color: '#F6E3BA' }}>E</Text>
+              <Text style={{ color: '#EED39E' }}>S</Text>
+              <Text style={{ color: '#E8C687' }}>U</Text>
+              <Text style={{ color: '#DDB266' }}>B</Text>
+              <Text style={{ color: '#DBB064' }}>L</Text>
+              <Text style={{ color: '#D0A85F' }}>I</Text>
+            </Text>
           </View>
         </View>
 
@@ -356,20 +363,22 @@ const styles = StyleSheet.create({
   },
   brandTitleRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
   },
-  brandLogoE: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 38,
-    color: '#FB923C',
-    fontStyle: 'italic',
-  },
-  brandLogoSubli: {
-    fontFamily: 'Poppins_700Bold',
-    fontSize: 36,
-    color: '#FDE68A',
-    letterSpacing: 4,
+  brandTitleText: {
+    fontFamily: Platform.select({
+      ios: 'Times New Roman',
+      android: 'serif',
+      default: 'Times New Roman, serif',
+    }),
+    fontWeight: 'bold',
+    fontSize: 40,
+    letterSpacing: 2.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.45)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 3,
   },
   heroSection: {
     justifyContent: 'center',
