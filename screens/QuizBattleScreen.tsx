@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated, Easing, Dimensions, ScrollView, Platform, AppState, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -35,6 +35,12 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   
   const [questions, setQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const currentQuestionIndexRef = useRef(0);
+
+  useEffect(() => {
+    currentQuestionIndexRef.current = currentQuestionIndex;
+  }, [currentQuestionIndex]);
+
   const [status, setStatus] = useState('waiting'); // waiting, playing, finished
   const [hasShownVsScreen, setHasShownVsScreen] = useState(false);
   const [vsCountdown, setVsCountdown] = useState(3);
@@ -162,8 +168,8 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           const qList = (room.questions && Array.isArray(room.questions) && room.questions.length > 0)
             ? room.questions
             : getRandomQuestions(30);
-          setQuestions(qList);
-          setCurrentQuestionIndex(room.current_question_index || 0);
+          setQuestions(prev => (prev.length === 0 ? qList : prev));
+          setCurrentQuestionIndex(prev => Math.max(prev, room.current_question_index || 0));
           setStatus(room.status || 'waiting');
           if (isHost && (!room.questions || room.questions.length === 0)) {
             supabase.from('quiz_rooms').update({ questions: qList }).eq('id', roomId).then();
@@ -201,14 +207,16 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     roomSubscription = supabase.channel(`quiz_room_${roomId}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quiz_rooms', filter: `id=eq.${roomId}` }, (payload) => {
         const newRecord = payload.new;
-        if (newRecord.questions && Array.isArray(newRecord.questions) && newRecord.questions.length > 0) {
-          setQuestions(newRecord.questions);
-        }
-        if (newRecord.current_question_index !== undefined) setCurrentQuestionIndex(newRecord.current_question_index);
-        
+        if (!newRecord) return;
+
         if (newRecord.status !== undefined) {
-          if (newRecord.status === 'playing' && status === 'finished') {
+          if (newRecord.status === 'playing' && statusRef.current === 'finished') {
              // Reset state for rematch
+             currentQuestionIndexRef.current = 0;
+             setCurrentQuestionIndex(0);
+             if (newRecord.questions && Array.isArray(newRecord.questions) && newRecord.questions.length > 0) {
+               setQuestions(newRecord.questions);
+             }
              setHasShownVsScreen(false);
              setHasAwardedXP(false);
              setRematchStatus('none');
@@ -217,28 +225,39 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           }
           setStatus(newRecord.status);
         }
+
+        // Only populate questions once if empty to avoid breaking active round animations
+        if (newRecord.questions && Array.isArray(newRecord.questions) && newRecord.questions.length > 0) {
+          setQuestions(prev => (prev.length === 0 ? newRecord.questions : prev));
+        }
+
+        // Strictly monotonic forward progress: never jump backward to an old question!
+        if (newRecord.current_question_index !== undefined) {
+          const incomingIdx = newRecord.current_question_index;
+          setCurrentQuestionIndex(prev => (incomingIdx > prev ? incomingIdx : prev));
+        }
       })
       .subscribe();
 
     playersSubscription = supabase.channel(`quiz_players_${roomId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'quiz_room_players', filter: `room_id=eq.${roomId}` }, async () => {
-        const { data: players } = await supabase.from('quiz_room_players').select('*').eq('room_id', roomId);
-        if (players) {
-          const me = players.find(p => p.user_id === user?.id);
-          const opp = players.find(p => p.user_id !== user?.id);
-          if (me) {
-            setMyScore(me.score);
-            setRematchStatus(me.wants_rematch ? 'waiting' : 'none');
-          }
-          if (opp) {
-            setOpponentScore(opp.score);
-            setOpponentWantsRematch(!!opp.wants_rematch);
-            if (opp.user_id !== opponentId) {
-              setOpponentId(opp.user_id);
-              if (opp.player_name) setOpponentName(opp.player_name);
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quiz_room_players', filter: `room_id=eq.${roomId}` }, (payload: any) => {
+        const newRecord = payload.new;
+        if (newRecord && newRecord.user_id) {
+          if (newRecord.user_id === user?.id) {
+            setMyScore(newRecord.score ?? 0);
+            setRematchStatus(newRecord.wants_rematch ? 'waiting' : 'none');
+          } else {
+            setOpponentScore(newRecord.score ?? 0);
+            setOpponentWantsRematch(!!newRecord.wants_rematch);
+            if (newRecord.user_id !== opponentId) {
+              setOpponentId(newRecord.user_id);
             }
-          } else if (opponentId && statusRef.current === 'playing') {
-            // Opponent disconnected or left mid-game!
+            if (newRecord.player_name) {
+              setOpponentName(newRecord.player_name);
+            }
+          }
+        } else if (payload.eventType === 'DELETE') {
+          if (statusRef.current === 'playing') {
             setOpponentDisconnected(true);
             setStatus('finished');
           }
@@ -258,19 +277,27 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           emoji: payload.payload.emoji,
           xPosition: Math.random() * 75 + 12,
         };
-        setFloatingEmojis((prev) => [...prev, newEmoji]);
+        // Cap floating emojis to prevent memory bloat and frame drops
+        setFloatingEmojis((prev) => [...prev.slice(-3), newEmoji]);
         
         setTimeout(() => {
           setFloatingEmojis((prev) => prev.filter(e => e.id !== newEmoji.id));
         }, 2200);
       })
       .on('broadcast', { event: 'round_winner' }, (payload: any) => {
+        // Freeze local round timer so loser does not time out or fire stale updates
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerAnim.stopAnimation();
         setRoundWinnerName(payload.payload.name);
       })
       .on('broadcast', { event: 'wrong_answer' }, () => {
         opponentWrongRef.current = true;
         if (isHost && myAnswerWrongRef.current) {
-          handleTimeOut();
+          if (timerRef.current) clearTimeout(timerRef.current);
+          timerAnim.stopAnimation();
+          setTimeout(() => {
+            handleTimeOut();
+          }, 850);
         }
       })
       .subscribe();
@@ -280,7 +307,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       supabase.removeChannel(playersSubscription);
       supabase.removeChannel(broadcastChannelRef.current);
     };
-  }, [roomId, status]);
+  }, [roomId]);
 
   // VS Screen Countdown Timer
   useEffect(() => {
@@ -298,7 +325,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [status, hasShownVsScreen, opponentId, questions]);
+  }, [status, hasShownVsScreen, opponentId, questions.length]);
 
   // Game Timer (Urgency)
   useEffect(() => {
@@ -336,12 +363,13 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         useNativeDriver: false,
       }).start();
 
-      Animated.loop(
+      const floatLoop = Animated.loop(
         Animated.sequence([
           Animated.timing(cardFloatAnim, { toValue: -6, duration: 1600, useNativeDriver: true }),
           Animated.timing(cardFloatAnim, { toValue: 0, duration: 1600, useNativeDriver: true }),
         ])
-      ).start();
+      );
+      floatLoop.start();
 
       if (isHost || isAiMatch) {
         timerRef.current = setTimeout(() => {
@@ -383,10 +411,11 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         if (timerRef.current) clearTimeout(timerRef.current);
         if (aiDecisionTimerRef.current) clearTimeout(aiDecisionTimerRef.current);
         timerAnim.stopAnimation();
-        cardFloatAnim.stopAnimation();
+        floatLoop.stop();
+        cardFloatAnim.setValue(0);
       };
     }
-  }, [currentQuestionIndex, status, hasShownVsScreen, questions]);
+  }, [currentQuestionIndex, status, hasShownVsScreen, questions.length]);
 
   // Handle XP and Elo Awarding when finished
   useEffect(() => {
@@ -447,7 +476,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       setTimeout(() => {
         setOpponentScore(prev => {
           const newScore = prev + earnedPoints;
-          const nextIndex = currentQuestionIndex + 1;
+          const nextIndex = currentQuestionIndexRef.current + 1;
           if (newScore >= 60 || nextIndex >= questions.length) {
             setStatus('finished');
           } else {
@@ -473,24 +502,27 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   const handleTimeOut = async () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (aiDecisionTimerRef.current) clearTimeout(aiDecisionTimerRef.current);
+    timerAnim.stopAnimation();
 
     if (!questions || questions.length === 0) return;
 
-    const nextIndex = currentQuestionIndex + 1;
+    const nextIndex = currentQuestionIndexRef.current + 1;
     if (nextIndex >= questions.length) {
       setStatus('finished');
-      if (!isAiMatch && roomId) {
+      if (!isAiMatch && roomId && isHost) {
         await supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId);
       }
     } else {
       setCurrentQuestionIndex(nextIndex);
-      if (!isAiMatch && roomId) {
+      if (!isAiMatch && roomId && isHost) {
         await supabase.from('quiz_rooms').update({ current_question_index: nextIndex }).eq('id', roomId);
       }
     }
   };
 
   const startGame = async () => {
+    currentQuestionIndexRef.current = 0;
+    setCurrentQuestionIndex(0);
     await supabase.from('quiz_rooms').update({ status: 'playing', current_question_index: 0 }).eq('id', roomId);
   };
 
@@ -531,7 +563,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         const newScore = myScore + earnedPoints;
         setMyScore(newScore);
         
-        const nextIndex = currentQuestionIndex + 1;
+        const nextIndex = currentQuestionIndexRef.current + 1;
         
         if (newScore >= 60 || nextIndex >= questions.length) {
           setStatus('finished');
@@ -596,7 +628,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
               setTimeout(() => {
                 setOpponentScore(prev => {
                   const newScore = prev + earnedPoints;
-                  const nextIndex = currentQuestionIndex + 1;
+                  const nextIndex = currentQuestionIndexRef.current + 1;
                   if (newScore >= 60 || nextIndex >= questions.length) {
                     setStatus('finished');
                   } else {
@@ -649,8 +681,9 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
 
   const triggerAiRematch = () => {
     const newQuestions = getRandomQuestions(30);
-    setQuestions(newQuestions);
+    currentQuestionIndexRef.current = 0;
     setCurrentQuestionIndex(0);
+    setQuestions(newQuestions);
     setMyScore(0);
     setOpponentScore(0);
     setHasShownVsScreen(false);
@@ -668,6 +701,15 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
 
   const triggerRematch = async () => {
     const newQuestions = getRandomQuestions(30);
+    currentQuestionIndexRef.current = 0;
+    setCurrentQuestionIndex(0);
+    setQuestions(newQuestions);
+    setMyScore(0);
+    setOpponentScore(0);
+    setHasShownVsScreen(false);
+    setHasAwardedXP(false);
+    setRematchStatus('none');
+    setOpponentWantsRematch(false);
     await supabase.from('quiz_room_players').update({ score: 0, wants_rematch: false }).eq('room_id', roomId);
     await supabase.from('quiz_rooms').update({ 
       status: 'playing', 
@@ -922,6 +964,12 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   }
 
   const currentQ = questions[currentQuestionIndex] || questions[0];
+
+  const currentKulitanSyllables = useMemo(() => {
+    if (!currentQ?.kapampangan || currentQ.category !== 'words') return [];
+    return getKulitanSyllables(currentQ.kapampangan);
+  }, [currentQ?.kapampangan, currentQ?.category]);
+
   if (!currentQ) return null;
 
   return (
@@ -1012,7 +1060,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
               <>
                 <Text style={styles.kapampanganWord}>{currentQ.kapampangan}</Text>
                 <View style={styles.kulitanContainer}>
-                  {getKulitanSyllables(currentQ.kapampangan).map((syllables, index) => (
+                  {currentKulitanSyllables.map((syllables, index) => (
                     <View key={index} style={styles.verticalWordColumn}>
                       {syllables.map((syl: string, sIdx: number) => (
                         <View key={sIdx} style={styles.syllableGlyphBox}>
