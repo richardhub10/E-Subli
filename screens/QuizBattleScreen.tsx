@@ -49,6 +49,12 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   const [rematchStatus, setRematchStatus] = useState<'none' | 'waiting' | 'accepted'>('none');
   const [opponentWantsRematch, setOpponentWantsRematch] = useState(false);
   const [hasAwardedXP, setHasAwardedXP] = useState(false);
+  const [opponentDisconnected, setOpponentDisconnected] = useState(false);
+  const statusRef = useRef(status);
+
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
   
   // Animation & Selection State
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -153,9 +159,15 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         if (roomError) throw roomError;
         
         if (room) {
-          if (room.questions) setQuestions(room.questions);
+          const qList = (room.questions && Array.isArray(room.questions) && room.questions.length > 0)
+            ? room.questions
+            : getRandomQuestions(30);
+          setQuestions(qList);
           setCurrentQuestionIndex(room.current_question_index || 0);
           setStatus(room.status || 'waiting');
+          if (isHost && (!room.questions || room.questions.length === 0)) {
+            supabase.from('quiz_rooms').update({ questions: qList }).eq('id', roomId).then();
+          }
         }
 
         const { data: players } = await supabase
@@ -189,7 +201,9 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     roomSubscription = supabase.channel(`quiz_room_${roomId}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quiz_rooms', filter: `id=eq.${roomId}` }, (payload) => {
         const newRecord = payload.new;
-        if (newRecord.questions) setQuestions(newRecord.questions);
+        if (newRecord.questions && Array.isArray(newRecord.questions) && newRecord.questions.length > 0) {
+          setQuestions(newRecord.questions);
+        }
         if (newRecord.current_question_index !== undefined) setCurrentQuestionIndex(newRecord.current_question_index);
         
         if (newRecord.status !== undefined) {
@@ -199,6 +213,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
              setHasAwardedXP(false);
              setRematchStatus('none');
              setOpponentWantsRematch(false);
+             setOpponentDisconnected(false);
           }
           setStatus(newRecord.status);
         }
@@ -222,6 +237,10 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
               setOpponentId(opp.user_id);
               if (opp.player_name) setOpponentName(opp.player_name);
             }
+          } else if (opponentId && statusRef.current === 'playing') {
+            // Opponent disconnected or left mid-game!
+            setOpponentDisconnected(true);
+            setStatus('finished');
           }
         }
       })
@@ -328,6 +347,11 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         timerRef.current = setTimeout(() => {
            handleTimeOut();
         }, 10000);
+      } else {
+        // Failsafe for non-host: if host lags severely or disconnects, advance after 13s grace period
+        timerRef.current = setTimeout(() => {
+           handleTimeOut();
+        }, 13000);
       }
 
       if (isAiMatch) {
@@ -368,20 +392,23 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   useEffect(() => {
     if (status === 'finished' && !hasAwardedXP) {
       setHasAwardedXP(true);
-      if (myScore > opponentScore) {
+      const isWinner = opponentDisconnected || myScore > opponentScore;
+      const isTie = !opponentDisconnected && myScore === opponentScore;
+
+      if (isWinner) {
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         updateProfile({ 
           xp: (profile?.xp || 0) + 60,
           eloRating: (profile?.eloRating || 1000) + 25 
         });
-      } else if (myScore < opponentScore) {
+      } else if (!isTie && myScore < opponentScore) {
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         const newXp = Math.max(0, (profile?.xp || 0) - 15);
         const newElo = Math.max(0, (profile?.eloRating || 1000) - 20);
         updateProfile({ xp: newXp, eloRating: newElo });
       }
     }
-  }, [status, myScore, opponentScore, hasAwardedXP]);
+  }, [status, myScore, opponentScore, hasAwardedXP, opponentDisconnected]);
 
   const triggerAiEmoji = () => {
     const aiEmojis = ['🔥', '⚡', '👏', '🧠', '✨', '💪', '🎯'];
@@ -447,6 +474,8 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (aiDecisionTimerRef.current) clearTimeout(aiDecisionTimerRef.current);
 
+    if (!questions || questions.length === 0) return;
+
     const nextIndex = currentQuestionIndex + 1;
     if (nextIndex >= questions.length) {
       setStatus('finished');
@@ -467,8 +496,10 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
 
   const handleAnswer = async (selectedOpt: string) => {
     if (status !== 'playing' || selectedOption !== null || roundWinnerName !== null) return;
+    if (!questions || questions.length === 0) return;
 
     const currentQ = questions[currentQuestionIndex];
+    if (!currentQ) return;
     const isCorrect = selectedOpt === currentQ.correct;
     const elapsedSeconds = (Date.now() - questionStartTimeRef.current) / 1000;
     const isFast = elapsedSeconds <= 3.0;
@@ -676,6 +707,9 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     navigation.goBack();
     if (!isAiMatch && roomId && user) {
       supabase.from('quiz_room_players').delete().eq('room_id', roomId).eq('user_id', user.id).then();
+      if (status === 'playing') {
+        supabase.from('quiz_rooms').update({ status: 'finished' }).eq('id', roomId).then();
+      }
     }
   };
 
@@ -741,8 +775,24 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
 
   // Match Finished Results Screen
   if (status === 'finished') {
-    const isWinner = myScore > opponentScore;
-    const isTie = myScore === opponentScore;
+    const isWinner = opponentDisconnected || myScore > opponentScore;
+    const isTie = !opponentDisconnected && myScore === opponentScore;
+
+    const resultTitleText = opponentDisconnected 
+      ? "VICTORY!" 
+      : isTie 
+      ? (myScore === 0 ? "MATCH ENDED" : "It's a Draw!") 
+      : (isWinner ? "VICTORY!" : "DEFEAT");
+
+    const resultSubtitleText = opponentDisconnected
+      ? (language === 'EN' ? `${opponentName} disconnected or forfeited the match.` : `Umalis si ${opponentName}. Panalo sa forfeit!`)
+      : isWinner 
+      ? "Outstanding mastery in Kulitan!" 
+      : isTie 
+      ? (myScore === 0 
+          ? (language === 'EN' ? "Match ended before answers were submitted." : "Natapos ang laban bago makapagsagot.")
+          : "Evenly matched battle!") 
+      : "A valiant effort! Keep sharpening your skills.";
 
     return (
       <LinearGradient colors={['#0F172A', '#1E1B4B']} style={styles.container}>
@@ -759,11 +809,11 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
             </View>
 
             <Text style={[styles.resultTitle, { color: isWinner ? "#F59E0B" : isTie ? "#38BDF8" : "#E2E8F0" }]}>
-              {isTie ? "It's a Draw!" : (isWinner ? "VICTORY!" : "DEFEAT")}
+              {resultTitleText}
             </Text>
             
             <Text style={styles.resultSubtitle}>
-              {isWinner ? "Outstanding mastery in Kulitan!" : isTie ? "Evenly matched battle!" : "A valiant effort! Keep sharpening your skills."}
+              {resultSubtitleText}
             </Text>
 
             {/* Scoreboard Result Card */}
@@ -871,7 +921,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     );
   }
 
-  const currentQ = questions[currentQuestionIndex];
+  const currentQ = questions[currentQuestionIndex] || questions[0];
   if (!currentQ) return null;
 
   return (

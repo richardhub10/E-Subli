@@ -160,7 +160,12 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
     stopSearchTimer();
     setIsSearching(false);
     if (roomId) {
-      await supabase.from('quiz_rooms').delete().eq('id', roomId);
+      try {
+        await supabase.from('quiz_room_players').delete().eq('room_id', roomId);
+        await supabase.from('quiz_rooms').delete().eq('id', roomId);
+      } catch (err) {
+        console.warn('Error cleaning up room on cancel:', err);
+      }
       setRoomId(null);
     }
   };
@@ -181,11 +186,90 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
     setRoomId(null);
     setSearchSeconds(0);
 
+    // Clean up any lingering waiting room previously created by this user to prevent self-collision
+    try {
+      await supabase
+        .from('quiz_rooms')
+        .delete()
+        .eq('host_id', user.id)
+        .eq('status', 'waiting');
+    } catch (cleanErr) {
+      console.warn('Old waiting room cleanup warning:', cleanErr);
+    }
+
     // 15-second matchmaking timer -> Auto-match with AI if no human opponent joins
     let elapsed = 0;
     searchTimerRef.current = setInterval(async () => {
       elapsed += 1;
       setSearchSeconds(elapsed);
+
+      // Periodic cross-matching sweep every 2 seconds: pairs concurrent waiting hosts
+      if (elapsed % 2 === 0 && elapsed < 14 && roomIdRef.current) {
+        try {
+          const currentRoomId = roomIdRef.current;
+          if (currentRoomId) {
+            const recentThreshold = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+            const { data: otherWaitingRooms } = await supabase
+              .from('quiz_rooms')
+              .select('*')
+              .eq('status', 'waiting')
+              .neq('id', currentRoomId)
+              .neq('host_id', user.id)
+              .gte('created_at', recentThreshold)
+              .order('created_at', { ascending: true })
+              .limit(3);
+
+            if (otherWaitingRooms && otherWaitingRooms.length > 0) {
+              for (const candidate of otherWaitingRooms) {
+                // Strict tie-breaker to ensure only ONE of the two hosts claims the other
+                if (currentRoomId < candidate.id) {
+                  continue;
+                }
+
+                const { count: currentPlayersCount } = await supabase
+                  .from('quiz_room_players')
+                  .select('*', { count: 'exact', head: true })
+                  .eq('room_id', candidate.id);
+
+                if (currentPlayersCount !== 1) continue;
+
+                const { data: claimed, error: claimErr } = await supabase
+                  .from('quiz_rooms')
+                  .update({ status: 'playing' })
+                  .eq('id', candidate.id)
+                  .eq('status', 'waiting')
+                  .select()
+                  .single();
+
+                if (!claimErr && claimed) {
+                  // Clean up our current room
+                  try {
+                    await supabase.from('quiz_room_players').delete().eq('room_id', currentRoomId);
+                    await supabase.from('quiz_rooms').delete().eq('id', currentRoomId);
+                  } catch (cleanupErr) {
+                    console.warn('Cleanup error during sweep claim:', cleanupErr);
+                  }
+
+                  stopSearchTimer();
+                  setStatusMessage(t('match_found'));
+
+                  const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'SCHOLAR 2';
+                  await supabase
+                    .from('quiz_room_players')
+                    .insert([{ room_id: claimed.id, user_id: user.id, score: 0, player_name: myName }]);
+
+                  setIsSearching(false);
+                  if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  navigation.navigate('QuizBattle', { roomId: claimed.id, isHost: false });
+                  return;
+                }
+              }
+            }
+          }
+        } catch (sweepErr) {
+          console.warn('Matchmaking periodic sweep warning:', sweepErr);
+        }
+      }
 
       if (elapsed >= 15) {
         stopSearchTimer();
@@ -203,6 +287,7 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
         const activeRoom = roomIdRef.current;
         if (activeRoom) {
           try {
+            await supabase.from('quiz_room_players').delete().eq('room_id', activeRoom);
             await supabase.from('quiz_rooms').delete().eq('id', activeRoom);
           } catch (e) {
             console.warn('Failed to delete room after AI match:', e);
@@ -224,14 +309,19 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
     }, 1000);
     
     try {
+      // Look for active waiting rooms created recently (within last 3 minutes)
+      const recentThreshold = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+
       let { data: waitingRooms } = await supabase
         .from('quiz_rooms')
         .select('*')
         .eq('status', 'waiting')
         .neq('host_id', user.id)
+        .gte('created_at', recentThreshold)
         .gte('host_elo', (profile?.eloRating || 1000) - 200)
         .lte('host_elo', (profile?.eloRating || 1000) + 200)
-        .limit(1);
+        .order('created_at', { ascending: true })
+        .limit(5);
 
       if (!waitingRooms || waitingRooms.length === 0) {
         const fallbackSearch = await supabase
@@ -239,50 +329,88 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
           .select('*')
           .eq('status', 'waiting')
           .neq('host_id', user.id)
-          .limit(1);
-        waitingRooms = fallbackSearch.data;
+          .gte('created_at', recentThreshold)
+          .order('created_at', { ascending: true })
+          .limit(5);
+        waitingRooms = fallbackSearch.data || [];
       }
 
+      let claimedRoom: any = null;
+
+      // Atomic Claim: Try to claim one waiting room safely with CAS (Compare-And-Swap)
       if (waitingRooms && waitingRooms.length > 0) {
+        for (const candidate of waitingRooms) {
+          // Double-check player count to ensure strictly 1 player is in room
+          const { count: currentPlayersCount } = await supabase
+            .from('quiz_room_players')
+            .select('*', { count: 'exact', head: true })
+            .eq('room_id', candidate.id);
+
+          if (currentPlayersCount !== 1) {
+            continue;
+          }
+
+          // Atomically transition from 'waiting' to 'playing' ONLY if it is still 'waiting'
+          const { data: updatedRoom, error: claimErr } = await supabase
+            .from('quiz_rooms')
+            .update({ status: 'playing' })
+            .eq('id', candidate.id)
+            .eq('status', 'waiting')
+            .select()
+            .single();
+
+          if (!claimErr && updatedRoom) {
+            claimedRoom = updatedRoom;
+            break;
+          }
+        }
+      }
+
+      if (claimedRoom) {
         stopSearchTimer();
         setStatusMessage(t('match_found'));
-        const room = waitingRooms[0];
         
         const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'SCHOLAR 2';
         await supabase
           .from('quiz_room_players')
-          .insert([{ room_id: room.id, user_id: user.id, score: 0, player_name: myName }]);
-          
-        await supabase
-          .from('quiz_rooms')
-          .update({ status: 'playing' })
-          .eq('id', room.id);
+          .insert([{ room_id: claimedRoom.id, user_id: user.id, score: 0, player_name: myName }]);
 
         setIsSearching(false);
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        navigation.navigate('QuizBattle', { roomId: room.id, isHost: false });
+        navigation.navigate('QuizBattle', { roomId: claimedRoom.id, isHost: false });
         
       } else {
         setStatusMessage(t('creating_lobby'));
-        const newCode = Math.floor(100000 + Math.random() * 900000).toString();
         const initialQuestions = getRandomQuestions(30);
 
-        const { data: newRoom, error: createError } = await supabase
-          .from('quiz_rooms')
-          .insert([
-            { 
-              room_code: newCode, 
-              host_id: user.id, 
-              status: 'waiting', 
-              current_question_index: 0, 
-              questions: initialQuestions,
-              host_elo: profile?.eloRating || 1000
-            }
-          ])
-          .select()
-          .single();
+        // Retry loop for unique room code to avoid database unique constraint collisions
+        let newRoom: any = null;
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+          const { data, error: createError } = await supabase
+            .from('quiz_rooms')
+            .insert([
+              { 
+                room_code: newCode, 
+                host_id: user.id, 
+                status: 'waiting', 
+                current_question_index: 0, 
+                questions: initialQuestions,
+                host_elo: profile?.eloRating || 1000
+              }
+            ])
+            .select()
+            .single();
 
-        if (createError) throw createError;
+          if (!createError && data) {
+            newRoom = data;
+            break;
+          }
+        }
+
+        if (!newRoom) {
+          throw new Error('Unable to create a unique room code. Please try again.');
+        }
 
         const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'HOST';
         await supabase
@@ -293,10 +421,10 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
         setStatusMessage(t('waiting_opponent'));
       }
     } catch (err: any) {
-      console.error(err);
+      console.error('Matchmaking error:', err);
       stopSearchTimer();
       setIsSearching(false);
-      Alert.alert('Matchmaking Error', 'Could not connect to the server.');
+      Alert.alert('Matchmaking Error', err?.message || 'Could not connect to the server.');
     }
   };
 
