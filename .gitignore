@@ -49,5 +49,5 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
-
-
+# Android APKs
+*.apk
