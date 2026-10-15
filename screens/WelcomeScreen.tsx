@@ -7,7 +7,6 @@ import {
   SafeAreaView, 
   Dimensions, 
   StatusBar, 
-  Platform, 
   Image, 
   Animated,
   Easing 
@@ -128,7 +127,6 @@ export default function WelcomeScreen({ navigation }: WelcomeScreenProps) {
           <View style={styles.brandTitleRow}>
             <Text style={styles.brandLogoE}>e</Text>
             <Text style={styles.brandLogoSubli}>SUBLI</Text>
-            <View style={styles.brandDotOrnament} />
           </View>
         </View>
 
@@ -368,19 +366,10 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   brandLogoSubli: {
-    fontFamily: Platform.OS === 'ios' ? 'Times New Roman' : 'serif',
+    fontFamily: 'Poppins_700Bold',
     fontSize: 36,
-    fontWeight: '700',
     color: '#FDE68A',
-    letterSpacing: 6,
-  },
-  brandDotOrnament: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#F59E0B',
-    marginBottom: 8,
-    marginLeft: 2,
+    letterSpacing: 4,
   },
   heroSection: {
     justifyContent: 'center',
