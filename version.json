@@ -1,6 +1,6 @@
 {
-  "latest_version": "1.0.6",
-  "min_version": "1.0.6",
+  "latest_version": "1.0.7",
+  "min_version": "1.0.7",
   "download_url": "https://expo.dev/accounts/richardhub10/projects/E-Subli/builds",
-  "release_notes": "Multiplayer synchronization update, navigation bar positioning fixes, and enhanced stability."
+  "release_notes": "Multiplayer white screen fix (React hook order resolution) and battle stability improvements."
 }
