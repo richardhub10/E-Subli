@@ -27,6 +27,20 @@ type FloatingEmoji = {
   xPosition: number;
 };
 
+// Parse Kulitan safely (hoisted to module scope)
+const getKulitanSyllables = (text: string): string[][] => {
+  if (!text || typeof text !== 'string') return [['a']];
+  const words = text.toLowerCase().split(/\s+/);
+  return words.map(word => {
+    const parts = word.match(/(?:ng|[bcdfghjklmnpqrstvwxyz])?[aeiou]|(?:ng|[bcdfghjklmnpqrstvwxyz])/gi);
+    if (!parts) return [word];
+    return parts.map(p => {
+      if (/[aeiou]$/.test(p)) return p; 
+      return p + 'u'; 
+    });
+  });
+};
+
 export default function QuizBattleScreen({ navigation, route }: Props) {
   const { roomId, roomCode, isHost, isAiMatch, aiOpponent } = route?.params || {};
   const { user } = useAuth();
@@ -102,19 +116,21 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
   const myAnswerWrongRef = useRef(false);
   const opponentWrongRef = useRef(false);
 
-  // Parse Kulitan safely
-  const getKulitanSyllables = (text: string): string[][] => {
-    if (!text || typeof text !== 'string') return [['a']];
-    const words = text.toLowerCase().split(/\s+/);
-    return words.map(word => {
-      const parts = word.match(/(?:ng|[bcdfghjklmnpqrstvwxyz])?[aeiou]|(?:ng|[bcdfghjklmnpqrstvwxyz])/gi);
-      if (!parts) return [word];
-      return parts.map(p => {
-        if (/[aeiou]$/.test(p)) return p; 
-        return p + 'u'; 
-      });
-    });
-  };
+  const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'YOU';
+
+  const currentQ = (questions && questions.length > 0)
+    ? (questions[currentQuestionIndex] || questions[0])
+    : null;
+
+  // Unconditional hook call at component top-level to prevent React Error #310
+  const currentKulitanSyllables = useMemo(() => {
+    if (!currentQ?.kapampangan || currentQ.category !== 'words') return [];
+    try {
+      return getKulitanSyllables(String(currentQ.kapampangan));
+    } catch {
+      return [];
+    }
+  }, [currentQ?.kapampangan, currentQ?.category]);
 
   // Failsafe: if status is playing but questions is empty, immediately populate questions
   useEffect(() => {
@@ -836,8 +852,6 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
     );
   }
 
-  const myName = profile?.firstName ? profile.firstName.toUpperCase() : 'YOU';
-
   // Match Finished Results Screen
   if (status === 'finished') {
     const isWinner = opponentDisconnected || myScore > opponentScore;
@@ -985,19 +999,6 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       </LinearGradient>
     );
   }
-
-  const currentQ = (questions && questions.length > 0)
-    ? (questions[currentQuestionIndex] || questions[0])
-    : null;
-
-  const currentKulitanSyllables = useMemo(() => {
-    if (!currentQ?.kapampangan || currentQ.category !== 'words') return [];
-    try {
-      return getKulitanSyllables(String(currentQ.kapampangan));
-    } catch {
-      return [];
-    }
-  }, [currentQ?.kapampangan, currentQ?.category]);
 
   // NEVER return a blank white screen (null)! Always show parchment arena with loader if waiting for question:
   if (!currentQ) {
