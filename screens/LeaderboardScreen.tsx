@@ -85,9 +85,58 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
         .or(`and(user_id.eq.${user.id},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${user.id})`);
         
       if (existing && existing.length > 0) {
-        Alert.alert("Info", language === 'EN' ? "You are already friends!" : "Magkaibigan na kayo!");
-        setSelectedUser(null);
-        return;
+        const sentByMe = existing.some(r => r.user_id === user.id && r.friend_id === friendId);
+        const sentByThem = existing.some(r => r.user_id === friendId && r.friend_id === user.id);
+
+        if (sentByMe && sentByThem) {
+          Alert.alert("Info", language === 'EN' ? "You are already mutual friends!" : "Magkaibigan na kayo!");
+          setSelectedUser(null);
+          return;
+        }
+
+        if (sentByMe) {
+          Alert.alert(
+            "Pending Request", 
+            language === 'EN' 
+              ? "You have already sent a friend request to this scholar. Awaiting their response." 
+              : "Nagpadala ka na ng kahilingan sa kaibigang ito. Naghihintay ng kanilang sagot."
+          );
+          setSelectedUser(null);
+          return;
+        }
+
+        if (sentByThem) {
+          // If they already sent us a request, accept it directly!
+          const { error: acceptErr } = await supabase
+            .from('friends')
+            .insert([{ user_id: user.id, friend_id: friendId }]);
+          if (acceptErr) throw acceptErr;
+
+          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          Alert.alert(
+            "Friend Request Accepted!", 
+            language === 'EN' 
+              ? "This scholar had sent you a request — you are now mutual friends!" 
+              : "Nagpadala na ang scholar ng kahilingan — magkaibigan na kayo ngayon!"
+          );
+
+          // Broadcast accept to other user
+          const senderName = profile?.firstName || user.email?.split('@')[0] || 'A scholar';
+          const friendChannel = supabase.channel(`user_${friendId}`);
+          friendChannel.subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+              await friendChannel.send({
+                type: 'broadcast',
+                event: 'friend_accepted',
+                payload: { acceptorName: senderName, acceptorId: user.id }
+              });
+              setTimeout(() => supabase.removeChannel(friendChannel), 3000);
+            }
+          });
+
+          setSelectedUser(null);
+          return;
+        }
       }
       
       const { error } = await supabase
@@ -97,7 +146,12 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
       if (error) throw error;
       
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert("Success!", language === 'EN' ? "Friend added successfully." : "Tagumpay na naidagdag ang kaibigan.");
+      Alert.alert(
+        "Request Sent! 🤝", 
+        language === 'EN' 
+          ? "Friend request sent successfully. The user will decide whether to accept or decline." 
+          : "Tagumpay na naipadala ang kahilingan. Magpapasya ang gumagamit kung tatanggapin o tatanggihan."
+      );
       
       // Broadcast real-time notification to the friend
       const senderName = profile?.firstName || user.email?.split('@')[0] || 'A scholar';
@@ -107,16 +161,16 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
           await friendChannel.send({
             type: 'broadcast',
             event: 'friend_request',
-            payload: { senderName }
+            payload: { senderName, senderId: user.id }
           });
-          supabase.removeChannel(friendChannel);
+          setTimeout(() => supabase.removeChannel(friendChannel), 3000);
         }
       });
 
       setSelectedUser(null);
     } catch (error) {
       console.error("Add friend error:", error);
-      Alert.alert("Error", "Could not add friend.");
+      Alert.alert("Error", "Could not send friend request.");
     } finally {
       setIsAddingFriend(false);
     }
@@ -192,9 +246,14 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
           <Text style={styles.headerTitle}>{t('leaderboard')}</Text>
         </View>
 
-        <View style={styles.trophyIconBox}>
-          <Ionicons name="trophy" size={18} color="#D97706" />
-        </View>
+        <TouchableOpacity 
+          style={styles.friendsHeaderBtn}
+          onPress={() => navigation.navigate('Friends')}
+          activeOpacity={0.75}
+        >
+          <Ionicons name="people" size={17} color="#D1582D" />
+          <Text style={styles.friendsHeaderBtnText}>{language === 'EN' ? 'Friends' : 'Kaibigan'}</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
@@ -405,15 +464,26 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_700Bold',
     color: '#1E1B18',
   },
-  trophyIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FEF3C7',
-    justifyContent: 'center',
+  friendsHeaderBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 18,
+    backgroundColor: '#FFF7ED',
     borderWidth: 1,
-    borderColor: '#FDE68A',
+    borderColor: '#FED7AA',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  friendsHeaderBtnText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 12,
+    color: '#D1582D',
   },
   content: {
     flex: 1,

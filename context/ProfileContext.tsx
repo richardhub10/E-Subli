@@ -50,10 +50,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<ProfileData>(defaultProfile);
   const [inAppAlert, setInAppAlert] = useState<{
     visible: boolean;
-    type: 'challenge' | 'friend_request';
+    type: 'challenge' | 'friend_request' | 'friend_accepted';
     title: string;
     subtitle: string;
     senderName: string;
+    senderId?: string;
     roomId?: string;
     onAccept?: () => void;
     onDecline?: () => void;
@@ -262,12 +263,63 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       const personalChannel = supabase.channel(`user_${user.id}`)
         .on('broadcast', { event: 'friend_request' }, (payload) => {
           const sender = payload.payload.senderName || 'A scholar';
+          const senderId = payload.payload.senderId;
           setInAppAlert({
             visible: true,
             type: 'friend_request',
-            title: 'New Friend Added! 🤝',
-            subtitle: `${sender} has added you to their friends list!`,
+            title: 'Friend Request! 🤝',
+            subtitle: `${sender} sent you a friend request. Do you want to accept?`,
             senderName: sender,
+            senderId,
+            onAccept: async () => {
+              if (!senderId) return;
+              try {
+                // Insert reciprocal friendship record (both rows exist = mutual friends)
+                await supabase
+                  .from('friends')
+                  .insert([{ user_id: user.id, friend_id: senderId }]);
+                  
+                // Broadcast back to sender that request was accepted
+                const senderChannel = supabase.channel(`user_${senderId}`);
+                senderChannel.subscribe(async (st) => {
+                  if (st === 'SUBSCRIBED') {
+                    await senderChannel.send({
+                      type: 'broadcast',
+                      event: 'friend_accepted',
+                      payload: {
+                        acceptorName: profileRef.current.firstName || user.email?.split('@')[0] || 'A scholar',
+                        acceptorId: user.id
+                      }
+                    });
+                    setTimeout(() => supabase.removeChannel(senderChannel), 3000);
+                  }
+                });
+              } catch (err) {
+                console.error('Error accepting friend request:', err);
+              }
+            },
+            onDecline: async () => {
+              if (!senderId) return;
+              try {
+                await supabase
+                  .from('friends')
+                  .delete()
+                  .eq('user_id', senderId)
+                  .eq('friend_id', user.id);
+              } catch (err) {
+                console.error('Error declining friend request:', err);
+              }
+            }
+          });
+        })
+        .on('broadcast', { event: 'friend_accepted' }, (payload) => {
+          const acceptor = payload.payload.acceptorName || 'A scholar';
+          setInAppAlert({
+            visible: true,
+            type: 'friend_accepted',
+            title: 'Friend Request Accepted! 🎉',
+            subtitle: `${acceptor} accepted your friend request! You are now friends and can duel in multiplayer!`,
+            senderName: acceptor,
           });
         })
         .on('broadcast', { event: 'challenge' }, (payload) => {
@@ -290,6 +342,19 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
                   .from('quiz_rooms')
                   .update({ status: 'playing' })
                   .eq('id', payload.payload.roomId);
+
+                // Notify host on wait channel so host navigates immediately
+                const waitChan = supabase.channel(`wait_${payload.payload.roomId}`);
+                waitChan.subscribe(async (st) => {
+                  if (st === 'SUBSCRIBED') {
+                    await waitChan.send({
+                      type: 'broadcast',
+                      event: 'friend_accepted_duel',
+                      payload: { roomId: payload.payload.roomId }
+                    });
+                    setTimeout(() => supabase.removeChannel(waitChan), 3000);
+                  }
+                });
 
                 const targetRoomId = payload.payload.roomId;
                 const performNavigation = () => {
@@ -322,6 +387,18 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
                     .from('quiz_rooms')
                     .update({ status: 'cancelled' })
                     .eq('id', payload.payload.roomId);
+
+                  const waitChan = supabase.channel(`wait_${payload.payload.roomId}`);
+                  waitChan.subscribe(async (st) => {
+                    if (st === 'SUBSCRIBED') {
+                      await waitChan.send({
+                        type: 'broadcast',
+                        event: 'friend_declined_duel',
+                        payload: { roomId: payload.payload.roomId }
+                      });
+                      setTimeout(() => supabase.removeChannel(waitChan), 3000);
+                    }
+                  });
                 }
               } catch (e) {
                 console.warn("Error declining challenge:", e);
@@ -478,19 +555,19 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
                 {/* Top Badge */}
                 <View style={[modalStyles.modalBadge, inAppAlert.type === 'challenge' ? modalStyles.challengeBadge : modalStyles.friendBadge]}>
                   <Ionicons 
-                    name={inAppAlert.type === 'challenge' ? 'flash' : 'people'} 
+                    name={inAppAlert.type === 'challenge' ? 'flash' : inAppAlert.type === 'friend_accepted' ? 'checkmark-circle' : 'people'} 
                     size={15} 
                     color={inAppAlert.type === 'challenge' ? '#F59E0B' : '#38BDF8'} 
                   />
                   <Text style={[modalStyles.modalBadgeText, inAppAlert.type === 'challenge' ? { color: '#F59E0B' } : { color: '#38BDF8' }]}>
-                    {inAppAlert.type === 'challenge' ? 'DUEL CHALLENGE' : 'NEW FRIEND'}
+                    {inAppAlert.type === 'challenge' ? 'DUEL CHALLENGE' : inAppAlert.type === 'friend_accepted' ? 'FRIEND ACCEPTED' : 'FRIEND REQUEST'}
                   </Text>
                 </View>
 
                 {/* Center Graphic */}
                 <View style={[modalStyles.iconCircle, inAppAlert.type === 'challenge' ? modalStyles.challengeIconBg : modalStyles.friendIconBg]}>
                   <Ionicons 
-                    name={inAppAlert.type === 'challenge' ? 'game-controller' : 'person-add'} 
+                    name={inAppAlert.type === 'challenge' ? 'game-controller' : inAppAlert.type === 'friend_accepted' ? 'heart' : 'person-add'} 
                     size={40} 
                     color="#FFF" 
                   />
@@ -502,7 +579,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
 
                 {/* Actions */}
                 <View style={modalStyles.modalActions}>
-                  {inAppAlert.type === 'challenge' ? (
+                  {inAppAlert.onDecline && inAppAlert.onAccept ? (
                     <>
                       <TouchableOpacity 
                         style={modalStyles.declineButton}
@@ -523,8 +600,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
                           acceptFn?.();
                         }}
                       >
-                        <LinearGradient colors={['#EF4444', '#DC2626']} style={modalStyles.acceptGradient}>
-                          <Ionicons name="flash" size={16} color="#FFF" />
+                        <LinearGradient 
+                          colors={inAppAlert.type === 'challenge' ? ['#EF4444', '#DC2626'] : ['#10B981', '#059669']} 
+                          style={modalStyles.acceptGradient}
+                        >
+                          <Ionicons name={inAppAlert.type === 'challenge' ? "flash" : "checkmark"} size={16} color="#FFF" />
                           <Text style={modalStyles.acceptButtonText}>Accept</Text>
                         </LinearGradient>
                       </TouchableOpacity>

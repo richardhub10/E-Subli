@@ -264,6 +264,35 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           </View>
         </View>
 
+        {/* FRIENDS & DUELS SHORTCUT */}
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>{language === 'EN' ? 'Social & Duels' : 'Panlipunan at Duels'}</Text>
+        </View>
+
+        <TouchableOpacity 
+          style={styles.friendsNavCard}
+          onPress={() => {
+            if (Platform.OS !== 'web') Haptics.selectionAsync();
+            navigation.navigate('Friends');
+          }}
+          activeOpacity={0.85}
+        >
+          <View style={styles.friendsNavCardLeft}>
+            <View style={styles.friendsNavIconBox}>
+              <Ionicons name="people" size={22} color="#D1582D" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.friendsNavTitle}>
+                {language === 'EN' ? 'Friends & Friend Requests' : 'Mga Kaibigan at Kahilingan'}
+              </Text>
+              <Text style={styles.friendsNavSub}>
+                {language === 'EN' ? 'Manage friend list, requests & 1v1 duels' : 'Pamahalaan ang kaibigan at mag-duel'}
+              </Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+        </TouchableOpacity>
+
         {/* LANGUAGE SELECTION SETTING */}
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionTitle}>{language === 'EN' ? 'Language Setting' : 'Wika / Salita'}</Text>
@@ -674,6 +703,49 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 11,
     fontFamily: 'Poppins_500Medium',
+    color: '#8C7E72',
+  },
+  friendsNavCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  friendsNavCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+    marginRight: 8,
+  },
+  friendsNavIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFF7ED',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+  },
+  friendsNavTitle: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 14.5,
+    color: '#1E1B18',
+  },
+  friendsNavSub: {
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 11.5,
     color: '#8C7E72',
   },
   langSettingCard: {

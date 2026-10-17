@@ -136,6 +136,21 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
             if (Platform.OS === 'web') window.alert(msg); else Alert.alert('Declined', msg);
           }
         })
+        .on('broadcast', { event: 'friend_accepted_duel' }, () => {
+          if (pollTimer) clearInterval(pollTimer);
+          stopSearchTimer();
+          setIsSearching(false);
+          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          navigation.navigate('QuizBattle', { roomId: roomId, isHost: true });
+        })
+        .on('broadcast', { event: 'friend_declined_duel' }, () => {
+          if (pollTimer) clearInterval(pollTimer);
+          stopSearchTimer();
+          setIsSearching(false);
+          setRoomId(null);
+          const msg = language === 'EN' ? 'Friend declined the challenge.' : 'Tinanggihan ng kaibigan ang hamon.';
+          if (Platform.OS === 'web') window.alert(msg); else Alert.alert('Declined', msg);
+        })
         .subscribe();
 
       // 2. High-reliability polling fallback to handle dropped websockets under high traffic
@@ -658,17 +673,37 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
                 </TouchableOpacity>
               </Animated.View>
             ) : (
-              <TouchableOpacity style={styles.findMatchButtonWrap} onPress={findMatch} activeOpacity={0.88}>
-                <LinearGradient 
-                  colors={['#D97706', '#B45309']} 
-                  start={{ x: 0, y: 0 }} 
-                  end={{ x: 1, y: 0 }} 
-                  style={styles.findMatchButton}
+              <View style={{ width: '100%', gap: 12 }}>
+                <TouchableOpacity style={styles.findMatchButtonWrap} onPress={findMatch} activeOpacity={0.88}>
+                  <LinearGradient 
+                    colors={['#D97706', '#B45309']} 
+                    start={{ x: 0, y: 0 }} 
+                    end={{ x: 1, y: 0 }} 
+                    style={styles.findMatchButton}
+                  >
+                    <Ionicons name="flash" size={20} color="#FFF" style={{ marginRight: 8 }} />
+                    <Text style={styles.findMatchText}>{t('find_match')}</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={styles.duelFriendButtonWrap} 
+                  onPress={() => navigation.navigate('Friends')} 
+                  activeOpacity={0.88}
                 >
-                  <Ionicons name="flash" size={20} color="#FFF" style={{ marginRight: 8 }} />
-                  <Text style={styles.findMatchText}>{t('find_match')}</Text>
-                </LinearGradient>
-              </TouchableOpacity>
+                  <LinearGradient 
+                    colors={['#D1582D', '#9A3A17']} 
+                    start={{ x: 0, y: 0 }} 
+                    end={{ x: 1, y: 0 }} 
+                    style={styles.duelFriendButton}
+                  >
+                    <Ionicons name="people" size={20} color="#FFF" style={{ marginRight: 8 }} />
+                    <Text style={styles.duelFriendText}>
+                      {language === 'EN' ? 'Duel a Friend' : 'Labanan ang Kaibigan'}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
             )}
           </View>
         </View>
@@ -1151,6 +1186,29 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontFamily: 'Poppins_700Bold',
     fontSize: 16,
+    letterSpacing: 0.5,
+  },
+  duelFriendButtonWrap: {
+    width: '100%',
+    borderRadius: 18,
+    overflow: 'hidden',
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  duelFriendButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 18,
+  },
+  duelFriendText: {
+    color: '#FFFFFF',
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 15,
     letterSpacing: 0.5,
   },
   searchingBox: {

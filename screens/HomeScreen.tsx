@@ -241,6 +241,16 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                   <Ionicons name="trophy" size={13} color="#D97706" />
                   <Text style={styles.rpPillVal}>{profile.eloRating || 1000} RP</Text>
                 </TouchableOpacity>
+
+                {/* Friends Capsule */}
+                <TouchableOpacity 
+                  style={styles.friendsPillBtn}
+                  onPress={() => navigation.navigate('Friends')}
+                  activeOpacity={0.75}
+                >
+                  <Ionicons name="people" size={13} color="#D1582D" />
+                  <Text style={styles.friendsPillVal}>{language === 'EN' ? 'Friends' : 'Kaibigan'}</Text>
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -551,6 +561,26 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               </Text>
               <Text style={styles.toolSubDesc}>
                 {language === 'EN' ? 'Kapampangan ↔ Tagalog ↔ English' : 'Pagsasalin ng wika'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
+          </TouchableOpacity>
+
+          {/* Friends & Duels */}
+          <TouchableOpacity 
+            style={styles.toolGlassCard}
+            onPress={() => handleFeaturePress('Friends', language === 'EN' ? 'Friends & Duels' : 'Mga Kaibigan at Duel', <Ionicons name="people" size={64} color="#FFF" />, ['#D1582D', '#9A3A17'])}
+            activeOpacity={0.85}
+          >
+            <View style={[styles.toolIconSquare, { backgroundColor: '#FFF7ED' }]}>
+              <Ionicons name="people" size={20} color="#D1582D" />
+            </View>
+            <View style={styles.toolTextCol}>
+              <Text style={styles.toolMainTitle}>
+                {language === 'EN' ? 'Friends & Duels' : 'Mga Kaibigan at Duel'}
+              </Text>
+              <Text style={styles.toolSubDesc}>
+                {language === 'EN' ? 'Connect, manage requests & 1v1 duel' : 'Kumonekta, tanggapin ang kahilingan at makipag-duel'}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
@@ -930,6 +960,22 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_700Bold',
     fontSize: 11,
     color: '#B45309',
+  },
+  friendsPillBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF7ED',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 12,
+    gap: 4,
+    borderWidth: 1.2,
+    borderColor: '#FED7AA',
+  },
+  friendsPillVal: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 11,
+    color: '#D1582D',
   },
   progressTrack: {
     height: 9,
