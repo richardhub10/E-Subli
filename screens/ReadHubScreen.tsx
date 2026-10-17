@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Modal, Animated, Switch, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Modal, Animated, Switch, Image, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -138,122 +138,130 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
         </View>
       </View>
 
-      {/* Mode & Category Bar */}
-      <View style={styles.tabsContainer}>
-        <View style={styles.practiceToggleContainer}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name={isPracticeMode ? "timer" : "book-outline"} size={16} color={isPracticeMode ? "#10B981" : "#64748B"} />
-            <Text style={styles.practiceToggleText}>
-              {language === 'EN' ? 'SRS Review Mode' : 'Pagsasanay (SRS)'}
+      {/* Responsive Scrollable Container */}
+      <ScrollView 
+        style={styles.scrollArea} 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Mode & Category Bar */}
+        <View style={styles.tabsContainer}>
+          <View style={styles.practiceToggleContainer}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name={isPracticeMode ? "timer" : "book-outline"} size={16} color={isPracticeMode ? "#10B981" : "#64748B"} />
+              <Text style={styles.practiceToggleText}>
+                {language === 'EN' ? 'SRS Review Mode' : 'Pagsasanay (SRS)'}
+              </Text>
+            </View>
+            <Switch 
+              value={isPracticeMode} 
+              onValueChange={(val) => {
+                if (Platform.OS !== 'web') Haptics.selectionAsync();
+                setIsPracticeMode(val);
+                setCurrentIndex(0);
+              }} 
+              trackColor={{ false: '#CBD5E1', true: '#10B981' }}
+              thumbColor={'#FFFFFF'}
+            />
+          </View>
+
+          <View style={styles.categoryRow}>
+            {(['All', 'Vowels', 'Consonants'] as const).map((cat) => (
+              <TouchableOpacity 
+                key={cat} 
+                style={[styles.tabButton, category === cat && styles.tabButtonActive]}
+                onPress={() => handleCategoryChange(cat)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.tabText, category === cat && styles.tabTextActive]}>
+                  {cat === 'All' 
+                    ? (language === 'EN' ? 'All (Lahat)' : 'Lahat') 
+                    : cat === 'Vowels' 
+                    ? (language === 'EN' ? 'Vowels (Patinig)' : 'Patinig') 
+                    : (language === 'EN' ? 'Consonants' : 'Katinig')}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Progress Track */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressHeaderRow}>
+            <Text style={styles.progressText}>
+              {category.toUpperCase()} ({currentIndex + 1} of {filteredData.length})
             </Text>
+            <Text style={styles.progressPercentText}>{Math.round(progressPercentage)}%</Text>
           </View>
-          <Switch 
-            value={isPracticeMode} 
-            onValueChange={(val) => {
-              if (Platform.OS !== 'web') Haptics.selectionAsync();
-              setIsPracticeMode(val);
-              setCurrentIndex(0);
-            }} 
-            trackColor={{ false: '#CBD5E1', true: '#10B981' }}
-            thumbColor={'#FFFFFF'}
-          />
-        </View>
-
-        <View style={styles.categoryRow}>
-          {(['All', 'Vowels', 'Consonants'] as const).map((cat) => (
-            <TouchableOpacity 
-              key={cat} 
-              style={[styles.tabButton, category === cat && styles.tabButtonActive]}
-              onPress={() => handleCategoryChange(cat)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.tabText, category === cat && styles.tabTextActive]}>
-                {cat === 'All' 
-                  ? (language === 'EN' ? 'All (Lahat)' : 'Lahat') 
-                  : cat === 'Vowels' 
-                  ? (language === 'EN' ? 'Vowels (Patinig)' : 'Patinig') 
-                  : (language === 'EN' ? 'Consonants' : 'Katinig')}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Progress Track */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressHeaderRow}>
-          <Text style={styles.progressText}>
-            {category.toUpperCase()} ({currentIndex + 1} of {filteredData.length})
-          </Text>
-          <Text style={styles.progressPercentText}>{Math.round(progressPercentage)}%</Text>
-        </View>
-        <View style={styles.progressBarBackground}>
-          <View style={[styles.progressBarFill, { width: `${progressPercentage}%` }]} />
-        </View>
-      </View>
-
-      {/* Central 3D Flippable Flashcard */}
-      <Flashcard data={currentSyllable} />
-
-      {/* Navigation Controls / Spaced Repetition Rating Buttons */}
-      <View style={styles.controlsContainer}>
-        {isPracticeMode ? (
-          <View style={styles.srsButtonsContainer}>
-            <TouchableOpacity 
-              style={[styles.srsButton, { backgroundColor: '#EF4444' }]} 
-              onPress={() => handleRateCard('Hard')}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="alert-circle" size={16} color="#FFF" style={{ marginRight: 4 }} />
-              <Text style={styles.srsButtonText}>{language === 'EN' ? 'Hard' : 'Mahirap'}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.srsButton, { backgroundColor: '#F59E0B' }]} 
-              onPress={() => handleRateCard('Good')}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="thumbs-up" size={16} color="#FFF" style={{ marginRight: 4 }} />
-              <Text style={styles.srsButtonText}>{language === 'EN' ? 'Good' : 'Tama lang'}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.srsButton, { backgroundColor: '#10B981' }]} 
-              onPress={() => handleRateCard('Easy')}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="checkmark-done" size={16} color="#FFF" style={{ marginRight: 4 }} />
-              <Text style={styles.srsButtonText}>{language === 'EN' ? 'Easy' : 'Madali'}</Text>
-            </TouchableOpacity>
+          <View style={styles.progressBarBackground}>
+            <View style={[styles.progressBarFill, { width: `${progressPercentage}%` }]} />
           </View>
-        ) : (
-          <View style={styles.navButtonsRow}>
-            <TouchableOpacity 
-              style={[styles.controlButton, currentIndex === 0 && styles.controlButtonDisabled]} 
-              onPress={handlePrevious}
-              disabled={currentIndex === 0}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="arrow-back" size={18} color={currentIndex === 0 ? "#CBD5E1" : "#0F172A"} style={{ marginRight: 6 }} />
-              <Text style={[styles.controlButtonText, currentIndex === 0 && { color: '#CBD5E1' }]}>
-                {language === 'EN' ? 'Previous' : 'Nakaraan'}
-              </Text>
-            </TouchableOpacity>
+        </View>
 
-            <TouchableOpacity 
-              style={[styles.controlButtonPrimary, currentIndex === filteredData.length - 1 && styles.controlButtonDisabled]} 
-              onPress={handleNext}
-              disabled={currentIndex === filteredData.length - 1}
-              activeOpacity={0.85}
-            >
-              <LinearGradient colors={['#E87954', '#D1582D']} style={styles.nextBtnGradient}>
-                <Text style={styles.controlButtonTextPrimary}>{language === 'EN' ? 'Next' : 'Susunod'}</Text>
-                <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+        {/* Central 3D Flippable Flashcard */}
+        <Flashcard data={currentSyllable} />
+
+        {/* Navigation Controls / Spaced Repetition Rating Buttons */}
+        <View style={styles.controlsContainer}>
+          {isPracticeMode ? (
+            <View style={styles.srsButtonsContainer}>
+              <TouchableOpacity 
+                style={[styles.srsButton, { backgroundColor: '#EF4444' }]} 
+                onPress={() => handleRateCard('Hard')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="alert-circle" size={16} color="#FFF" style={{ marginRight: 4 }} />
+                <Text style={styles.srsButtonText}>{language === 'EN' ? 'Hard' : 'Mahirap'}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.srsButton, { backgroundColor: '#F59E0B' }]} 
+                onPress={() => handleRateCard('Good')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="thumbs-up" size={16} color="#FFF" style={{ marginRight: 4 }} />
+                <Text style={styles.srsButtonText}>{language === 'EN' ? 'Good' : 'Tama lang'}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.srsButton, { backgroundColor: '#10B981' }]} 
+                onPress={() => handleRateCard('Easy')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="checkmark-done" size={16} color="#FFF" style={{ marginRight: 4 }} />
+                <Text style={styles.srsButtonText}>{language === 'EN' ? 'Easy' : 'Madali'}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.navButtonsRow}>
+              <TouchableOpacity 
+                style={[styles.controlButton, currentIndex === 0 && styles.controlButtonDisabled]} 
+                onPress={handlePrevious}
+                disabled={currentIndex === 0}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="arrow-back" size={18} color={currentIndex === 0 ? "#CBD5E1" : "#0F172A"} style={{ marginRight: 6 }} />
+                <Text style={[styles.controlButtonText, currentIndex === 0 && { color: '#CBD5E1' }]}>
+                  {language === 'EN' ? 'Previous' : 'Nakaraan'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.controlButtonPrimary, currentIndex === filteredData.length - 1 && styles.controlButtonDisabled]} 
+                onPress={handleNext}
+                disabled={currentIndex === filteredData.length - 1}
+                activeOpacity={0.85}
+              >
+                <LinearGradient colors={['#E87954', '#D1582D']} style={styles.nextBtnGradient}>
+                  <Text style={styles.controlButtonTextPrimary}>{language === 'EN' ? 'Next' : 'Susunod'}</Text>
+                  <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </ScrollView>
 
       {/* Resume Progress Modal */}
       <Modal
@@ -445,9 +453,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#D1582D',
     borderRadius: 3,
   },
+  scrollArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    paddingBottom: Platform.OS === 'web' ? 30 : 20,
+  },
   controlsContainer: {
     paddingHorizontal: 20,
-    paddingBottom: Platform.OS === 'ios' ? 95 : 85,
+    paddingBottom: Platform.OS === 'web' ? 120 : Platform.OS === 'ios' ? 110 : 95,
     paddingTop: 10,
   },
   navButtonsRow: {

@@ -5,7 +5,8 @@ import { SyllableData } from '../data/kulitanData';
 import KulitanGlyph from './KulitanGlyph';
 
 const { height: screenHeight } = Dimensions.get('window');
-const CARD_HEIGHT = screenHeight < 700 ? 380 : Math.min(screenHeight * 0.55, 450);
+const isSmallScreen = screenHeight < 720;
+const CARD_HEIGHT = screenHeight < 680 ? 300 : screenHeight < 760 ? 340 : Math.min(screenHeight * 0.46, 400);
 
 type FlashcardProps = {
   data: SyllableData;
@@ -27,7 +28,7 @@ export default function Flashcard({ data }: FlashcardProps) {
           // Front of the card
           <View style={styles.cardContent}>
             <View style={styles.glyphWrapper}>
-              <KulitanGlyph symbol={data.kulitanSymbol || data.latin} size={110} color="#0B2046" strokeWidth={5} />
+              <KulitanGlyph symbol={data.kulitanSymbol || data.latin} size={isSmallScreen ? 88 : 110} color="#0B2046" strokeWidth={isSmallScreen ? 4.5 : 5} />
             </View>
             <Text style={styles.latinText}>{data.latin}</Text>
             {data.classification && (
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     height: CARD_HEIGHT,
     alignSelf: 'center',
-    marginVertical: 14,
+    marginVertical: isSmallScreen ? 8 : 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAF5EE',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: isSmallScreen ? 16 : 24,
   },
   cardFlipped: {
     backgroundColor: '#FFFFFF',
@@ -130,16 +131,16 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   glyphWrapper: {
-    marginBottom: 16,
-    height: 120,
+    marginBottom: isSmallScreen ? 8 : 14,
+    height: isSmallScreen ? 95 : 120,
     justifyContent: 'center',
     alignItems: 'center',
   },
   latinText: {
-    fontSize: 34,
+    fontSize: isSmallScreen ? 28 : 34,
     fontFamily: 'Poppins_700Bold',
     color: '#D1582D',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   classificationPill: {
     backgroundColor: 'rgba(209, 88, 45, 0.1)',

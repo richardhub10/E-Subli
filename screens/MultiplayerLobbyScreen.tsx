@@ -115,26 +115,67 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
 
   useEffect(() => {
     let subscription: any;
+    let pollTimer: any;
     
     if (isSearching && roomId) {
+      // 1. Supabase Realtime channel
       subscription = supabase.channel(`wait_${roomId}`)
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quiz_rooms', filter: `id=eq.${roomId}` }, (payload) => {
           if (payload.new.status === 'playing') {
+            if (pollTimer) clearInterval(pollTimer);
             stopSearchTimer();
             setIsSearching(false);
             if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             navigation.navigate('QuizBattle', { roomId: payload.new.id, isHost: true });
+          } else if (payload.new.status === 'cancelled') {
+            if (pollTimer) clearInterval(pollTimer);
+            stopSearchTimer();
+            setIsSearching(false);
+            setRoomId(null);
+            const msg = language === 'EN' ? 'Friend declined the challenge.' : 'Tinanggihan ng kaibigan ang hamon.';
+            if (Platform.OS === 'web') window.alert(msg); else Alert.alert('Declined', msg);
           }
         })
         .subscribe();
+
+      // 2. High-reliability polling fallback to handle dropped websockets under high traffic
+      pollTimer = setInterval(async () => {
+        try {
+          const { data: roomRecord } = await supabase
+            .from('quiz_rooms')
+            .select('id, status')
+            .eq('id', roomId)
+            .single();
+
+          if (roomRecord?.status === 'playing') {
+            clearInterval(pollTimer);
+            stopSearchTimer();
+            setIsSearching(false);
+            if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            navigation.navigate('QuizBattle', { roomId: roomRecord.id, isHost: true });
+          } else if (roomRecord?.status === 'cancelled') {
+            clearInterval(pollTimer);
+            stopSearchTimer();
+            setIsSearching(false);
+            setRoomId(null);
+            const msg = language === 'EN' ? 'Friend declined the challenge.' : 'Tinanggihan ng kaibigan ang hamon.';
+            if (Platform.OS === 'web') window.alert(msg); else Alert.alert('Declined', msg);
+          }
+        } catch (e) {
+          // ignore transient poll error
+        }
+      }, 1000);
     }
 
     return () => {
       if (subscription) {
         supabase.removeChannel(subscription);
       }
+      if (pollTimer) {
+        clearInterval(pollTimer);
+      }
     };
-  }, [isSearching, roomId, navigation]);
+  }, [isSearching, roomId, navigation, language]);
 
   useEffect(() => {
     if (isSearching) {
@@ -188,11 +229,16 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
 
     // Clean up any lingering waiting room previously created by this user to prevent self-collision
     try {
-      await supabase
+      const { data: oldRooms } = await supabase
         .from('quiz_rooms')
-        .delete()
+        .select('id')
         .eq('host_id', user.id)
         .eq('status', 'waiting');
+      if (oldRooms && oldRooms.length > 0) {
+        const oldIds = oldRooms.map(r => r.id);
+        await supabase.from('quiz_room_players').delete().in('room_id', oldIds);
+        await supabase.from('quiz_rooms').delete().in('id', oldIds);
+      }
     } catch (cleanErr) {
       console.warn('Old waiting room cleanup warning:', cleanErr);
     }
@@ -208,6 +254,21 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
         try {
           const currentRoomId = roomIdRef.current;
           if (currentRoomId) {
+            // First check if someone already joined OUR room!
+            const { data: myRoomCheck } = await supabase
+              .from('quiz_rooms')
+              .select('id, status')
+              .eq('id', currentRoomId)
+              .single();
+
+            if (myRoomCheck && myRoomCheck.status === 'playing') {
+              stopSearchTimer();
+              setIsSearching(false);
+              if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              navigation.navigate('QuizBattle', { roomId: currentRoomId, isHost: true });
+              return;
+            }
+
             const recentThreshold = new Date(Date.now() - 3 * 60 * 1000).toISOString();
             const { data: otherWaitingRooms } = await supabase
               .from('quiz_rooms')
@@ -217,10 +278,13 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
               .neq('host_id', user.id)
               .gte('created_at', recentThreshold)
               .order('created_at', { ascending: true })
-              .limit(3);
+              .limit(5);
 
             if (otherWaitingRooms && otherWaitingRooms.length > 0) {
-              for (const candidate of otherWaitingRooms) {
+              // Shuffle candidates to spread concurrent host traffic across available rooms
+              const candidates = otherWaitingRooms.sort(() => Math.random() - 0.5);
+
+              for (const candidate of candidates) {
                 // Strict tie-breaker to ensure only ONE of the two hosts claims the other
                 if (currentRoomId < candidate.id) {
                   continue;
@@ -233,6 +297,25 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
 
                 if (currentPlayersCount !== 1) continue;
 
+                // Atomically delete our own room ONLY if it is still waiting
+                const { data: deletedMyRoom } = await supabase
+                  .from('quiz_rooms')
+                  .delete()
+                  .eq('id', currentRoomId)
+                  .eq('status', 'waiting')
+                  .select();
+
+                if (!deletedMyRoom || deletedMyRoom.length === 0) {
+                  // Our room status is no longer waiting! Stop sweep and let our room proceed
+                  return;
+                }
+
+                try {
+                  await supabase.from('quiz_room_players').delete().eq('room_id', currentRoomId);
+                } catch (cleanupErr) {
+                  console.warn('Cleanup error during sweep claim:', cleanupErr);
+                }
+
                 const { data: claimed, error: claimErr } = await supabase
                   .from('quiz_rooms')
                   .update({ status: 'playing' })
@@ -242,14 +325,6 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
                   .single();
 
                 if (!claimErr && claimed) {
-                  // Clean up our current room
-                  try {
-                    await supabase.from('quiz_room_players').delete().eq('room_id', currentRoomId);
-                    await supabase.from('quiz_rooms').delete().eq('id', currentRoomId);
-                  } catch (cleanupErr) {
-                    console.warn('Cleanup error during sweep claim:', cleanupErr);
-                  }
-
                   stopSearchTimer();
                   setStatusMessage(t('match_found'));
 
@@ -274,6 +349,47 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
       if (elapsed >= 15) {
         stopSearchTimer();
 
+        // Check if an opponent matched with us right at the deadline before deleting anything
+        const activeRoom = roomIdRef.current;
+        if (activeRoom) {
+          try {
+            const { data: checkRoom } = await supabase
+              .from('quiz_rooms')
+              .select('id, status')
+              .eq('id', activeRoom)
+              .single();
+
+            if (checkRoom && checkRoom.status === 'playing') {
+              setIsSearching(false);
+              setSearchSeconds(0);
+              if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              navigation.navigate('QuizBattle', { roomId: activeRoom, isHost: true });
+              return;
+            }
+
+            const { count: playerCount } = await supabase
+              .from('quiz_room_players')
+              .select('*', { count: 'exact', head: true })
+              .eq('room_id', activeRoom);
+
+            if (playerCount && playerCount > 1) {
+              await supabase.from('quiz_rooms').update({ status: 'playing' }).eq('id', activeRoom);
+              setIsSearching(false);
+              setSearchSeconds(0);
+              if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              navigation.navigate('QuizBattle', { roomId: activeRoom, isHost: true });
+              return;
+            }
+
+            // Only delete if room is still waiting and unjoined
+            await supabase.from('quiz_room_players').delete().eq('room_id', activeRoom);
+            await supabase.from('quiz_rooms').delete().eq('id', activeRoom).eq('status', 'waiting');
+          } catch (e) {
+            console.warn('Failed to delete room after AI match:', e);
+          }
+          setRoomId(null);
+        }
+
         const ai = getRandomAiOpponent(profile?.eloRating || 1000, profile?.level || 1);
         const matchFoundMsg = language === 'EN' 
           ? `Opponent Found: ${ai.name}!` 
@@ -282,18 +398,6 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
           : `Kalaban Meakit: ${ai.name}!`;
 
         setStatusMessage(matchFoundMsg);
-
-        // Delete waiting room from Supabase if one was created
-        const activeRoom = roomIdRef.current;
-        if (activeRoom) {
-          try {
-            await supabase.from('quiz_room_players').delete().eq('room_id', activeRoom);
-            await supabase.from('quiz_rooms').delete().eq('id', activeRoom);
-          } catch (e) {
-            console.warn('Failed to delete room after AI match:', e);
-          }
-          setRoomId(null);
-        }
 
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
@@ -337,9 +441,14 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
 
       let claimedRoom: any = null;
 
+      // Distribute concurrent players by shuffling candidate list
+      const candidateList = (waitingRooms && waitingRooms.length > 0)
+        ? waitingRooms.sort(() => Math.random() - 0.5)
+        : [];
+
       // Atomic Claim: Try to claim one waiting room safely with CAS (Compare-And-Swap)
-      if (waitingRooms && waitingRooms.length > 0) {
-        for (const candidate of waitingRooms) {
+      if (candidateList.length > 0) {
+        for (const candidate of candidateList) {
           // Double-check player count to ensure strictly 1 player is in room
           const { count: currentPlayersCount } = await supabase
             .from('quiz_room_players')

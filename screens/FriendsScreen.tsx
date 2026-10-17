@@ -105,6 +105,14 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
     }
   };
 
+  const notify = (title: string, message: string) => {
+    if (Platform.OS === 'web') {
+      window.alert(`${title}\n\n${message}`);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
+
   const searchFriend = async () => {
     const q = searchName.trim();
     if (!q) return;
@@ -113,19 +121,21 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
     setSearchResults([]);
     try {
       const words = q.split(/\s+/);
-      let queryBuilder = supabase
-        .from('profiles')
-        .select('id, first_name, last_name, xp, level, elo_rating, avatar_url');
+      let filter = '';
 
       if (words.length > 1) {
         const first = words[0];
         const second = words.slice(1).join(' ');
-        queryBuilder = queryBuilder.or(`and(first_name.ilike.%${first}%,last_name.ilike.%${second}%),first_name.ilike.%${q}%,last_name.ilike.%${q}%`);
+        filter = `first_name.ilike.%${q}%,last_name.ilike.%${q}%,email.ilike.%${q}%,and(first_name.ilike.%${first}%,last_name.ilike.%${second}%),and(first_name.ilike.%${second}%,last_name.ilike.%${first}%)`;
       } else {
-        queryBuilder = queryBuilder.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%`);
+        filter = `first_name.ilike.%${q}%,last_name.ilike.%${q}%,email.ilike.%${q}%`;
       }
 
-      const { data, error } = await queryBuilder.limit(10);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, xp, level, elo_rating, avatar_url, email')
+        .or(filter)
+        .limit(10);
         
       if (error) throw error;
       
@@ -134,14 +144,14 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
         if (filteredData.length > 0) {
           setSearchResults(filteredData);
         } else {
-          Alert.alert("Info", language === 'EN' ? "That is your own account." : "Iyan ang sarili mong account.");
+          notify("Info", language === 'EN' ? "That is your own account." : "Iyan ang sarili mong account.");
         }
       } else {
-        Alert.alert("Not Found", language === 'EN' ? "No user found with that name." : "Walang gumagamit na natagpuan sa pangalang iyon.");
+        notify("Not Found", language === 'EN' ? "No user found with that name or email." : "Walang gumagamit na natagpuan sa pangalan o email na iyon.");
       }
     } catch (error) {
       console.error("Search error:", error);
-      Alert.alert("Error", "Failed to search for user.");
+      notify("Error", "Failed to search for user.");
     } finally {
       setIsSearching(false);
     }
@@ -158,7 +168,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
         .or(`and(user_id.eq.${user.id},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${user.id})`);
         
       if (existing && existing.length > 0) {
-        Alert.alert("Info", language === 'EN' ? "You are already friends!" : "Magkaibigan na kayo!");
+        notify("Info", language === 'EN' ? "You are already friends!" : "Magkaibigan na kayo!");
         return;
       }
       
@@ -178,7 +188,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       
-      Alert.alert(
+      notify(
         "Friend Added!", 
         language === 'EN' 
           ? "Friend added successfully to your friends list!" 
@@ -190,7 +200,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
       setActiveTab('List');
       fetchFriends();
       
-      // Broadcast real-time ping to the friend
+      // Broadcast real-time ping to the friend with delay to ensure delivery
       const senderName = profile?.firstName || user.email?.split('@')[0] || 'A user';
       const friendChannel = supabase.channel(`user_${friendId}`);
       friendChannel.subscribe(async (status) => {
@@ -200,24 +210,45 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
             event: 'friend_request',
             payload: { senderName }
           });
-          supabase.removeChannel(friendChannel);
+          setTimeout(() => {
+            supabase.removeChannel(friendChannel);
+          }, 4000);
         }
       });
 
     } catch (error: any) {
       console.error("Add friend error:", error);
-      Alert.alert("Error", error?.message || "Could not add friend. Please try again.");
+      notify("Error", error?.message || "Could not add friend. Please try again.");
     } finally {
       setAddingFriendId(null);
     }
   };
 
   const removeFriend = (friend: FriendProfile) => {
+    const confirmMessage = language === 'EN' 
+      ? `Are you sure you want to remove ${friend.first_name || 'this scholar'} from your friends list?` 
+      : `Sigurado ka bang nais mong alisin si ${friend.first_name || 'scholar'} sa iyong listahan ng mga kaibigan?`;
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(confirmMessage)) {
+        (async () => {
+          try {
+            await supabase
+              .from('friends')
+              .delete()
+              .or(`and(user_id.eq.${user?.id},friend_id.eq.${friend.id}),and(user_id.eq.${friend.id},friend_id.eq.${user?.id})`);
+            fetchFriends();
+          } catch (err) {
+            console.error("Remove friend error:", err);
+          }
+        })();
+      }
+      return;
+    }
+
     Alert.alert(
       language === 'EN' ? "Remove Friend" : "Alisin ang Kaibigan",
-      language === 'EN' 
-        ? `Are you sure you want to remove ${friend.first_name || 'this scholar'} from your friends list?` 
-        : `Sigurado ka bang nais mong alisin si ${friend.first_name || 'scholar'} sa iyong listahan ng mga kaibigan?`,
+      confirmMessage,
       [
         { text: language === 'EN' ? "Cancel" : "Kanselahin", style: "cancel" },
         { 
@@ -279,19 +310,18 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
               roomId: newRoom.id
             }
           });
-          supabase.removeChannel(friendChannel);
+          // Keep channel alive for 4s so the message leaves the websocket before tearing down
+          setTimeout(() => {
+            supabase.removeChannel(friendChannel);
+          }, 4000);
         }
       });
 
       navigation.navigate('MultiplayerLobby', { privateRoomId: newRoom.id });
       
-    } catch (err) {
+    } catch (err: any) {
       console.error("Challenge error:", err);
-      if (Platform.OS === 'web') {
-        window.alert("Could not create challenge. Please try again.");
-      } else {
-        Alert.alert("Error", "Could not create challenge.");
-      }
+      notify("Error", err?.message || "Could not create challenge. Please try again.");
     }
   };
 

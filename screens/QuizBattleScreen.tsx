@@ -796,8 +796,17 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
 
   if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#D1582D" />
+      <View style={styles.container}>
+        <Image 
+          source={BackgroundImages.ranksAndProfile} 
+          style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} 
+          resizeMode="cover" 
+        />
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color="#D1582D" />
+          </View>
+        </SafeAreaView>
       </View>
     );
   }

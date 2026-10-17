@@ -315,8 +315,17 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
                 console.error("Error accepting challenge:", e);
               }
             },
-            onDecline: () => {
-              console.log("Challenge declined");
+            onDecline: async () => {
+              try {
+                if (payload.payload?.roomId) {
+                  await supabase
+                    .from('quiz_rooms')
+                    .update({ status: 'cancelled' })
+                    .eq('id', payload.payload.roomId);
+                }
+              } catch (e) {
+                console.warn("Error declining challenge:", e);
+              }
             }
           });
         })
