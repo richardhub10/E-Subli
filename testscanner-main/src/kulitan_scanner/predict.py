@@ -127,9 +127,14 @@ def predict_single(
 
     results = []
     for prob, idx in zip(top_probs[0].tolist(), top_indices[0].tolist()):
+        raw_label = idx_to_label[idx]
+        display_label = raw_label.replace("_", "/").lower()
+        if display_label == "kank":
+            display_label = "kang"
         results.append(
             {
-                "label": idx_to_label[idx],
+                "label": display_label,
+                "raw_label": raw_label,
                 "confidence": prob,
             }
         )
@@ -137,6 +142,7 @@ def predict_single(
     output = {
         "image": str(image_path),
         "prediction": results[0]["label"],
+        "raw_prediction": results[0]["raw_label"],
         "confidence": results[0]["confidence"],
         "top_k": results,
         "symbol_info": symbol_info,

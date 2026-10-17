@@ -92,7 +92,11 @@ def _predict(
 
     ranked: List[Tuple[str, float]] = []
     for prob, idx in zip(top_probs[0].tolist(), top_indices[0].tolist()):
-        ranked.append((idx_to_label[idx], float(prob)))
+        raw_label = idx_to_label[idx]
+        lbl = raw_label.replace("_", "/").lower()
+        if lbl == "kank":
+            lbl = "kang"
+        ranked.append((lbl, float(prob)))
 
     pred_label, pred_conf = ranked[0]
     if pred_conf < min_confidence:

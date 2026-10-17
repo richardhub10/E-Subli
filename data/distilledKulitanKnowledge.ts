@@ -956,7 +956,8 @@ export function getDistilledFeedback(
   neuralConfidence = 85
 ): string {
   const normalized = (latinKey || '').trim().toLowerCase();
-  const entry = DISTILLED_KULITAN_KNOWLEDGE[normalized];
+  const base = normalized.split('/')[0];
+  const entry = DISTILLED_KULITAN_KNOWLEDGE[normalized] || DISTILLED_KULITAN_KNOWLEDGE[base];
 
   if (!entry) {
     if (language === 'FIL') {
