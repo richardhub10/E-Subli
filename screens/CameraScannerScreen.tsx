@@ -343,7 +343,19 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
 
                         <View style={styles.charBox}>
                           <Text style={styles.charLabel}>Transliteration</Text>
-                          <Text style={styles.latinDisplay}>{scanResult.character}</Text>
+                          <Text 
+                            style={[
+                              styles.latinDisplay, 
+                              scanResult.character.length > 2 && { 
+                                fontSize: scanResult.character.length > 4 ? 26 : 32,
+                                lineHeight: scanResult.character.length > 4 ? 36 : 42,
+                              }
+                            ]}
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                          >
+                            {scanResult.character}
+                          </Text>
                         </View>
                       </View>
 
@@ -376,7 +388,7 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
                             {scanResult.topK.slice(0, 3).map((item, idx) => (
                               <View key={idx} style={[styles.topKPill, idx === 0 && styles.topKPillActive]}>
                                 <Text style={[styles.topKPillText, idx === 0 && styles.topKPillTextActive]}>
-                                  {item.label.toUpperCase()}: {Math.round(item.confidence <= 1 ? item.confidence * 100 : item.confidence)}%
+                                  {item.label.replace(/_/g, '/').toUpperCase()}: {Math.round(item.confidence <= 1 ? item.confidence * 100 : item.confidence)}%
                                 </Text>
                               </View>
                             ))}
@@ -412,11 +424,15 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
                   {scanResult.recognized && (() => {
                     const rawTrans = (scanResult.transliteration || '').toLowerCase().trim();
                     const rawChar = (scanResult.character || '').toLowerCase().trim();
+                    const withSlash = rawTrans.replace(/_/g, '/');
                     const canonicalLatin = normalizeKulitanSyllable(scanResult.transliteration || scanResult.character);
                     const matched = kulitanSyllables.find(s => 
                       s.latin.toLowerCase() === rawTrans ||
                       s.latin.toLowerCase() === rawChar ||
+                      s.latin.toLowerCase() === withSlash ||
+                      s.latin.toLowerCase().replace(/_/g, '/') === withSlash ||
                       s.latin.toLowerCase().startsWith(rawTrans + ' ') ||
+                      s.latin.toLowerCase().startsWith(withSlash + ' ') ||
                       s.latin.toLowerCase() === canonicalLatin || 
                       s.id.toLowerCase() === canonicalLatin
                     );
