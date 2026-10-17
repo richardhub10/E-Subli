@@ -28,20 +28,23 @@ export interface TestScannerResponse {
  * Resolves the active Testscanner API endpoint URL.
  */
 export function getScannerApiUrl(): string {
-  const envUrl =
+  const rawEnv =
     process.env.EXPO_PUBLIC_SCANNER_API_URL ||
     (process.env as any)?.EXPO_PUBLIC_SCANNER_APT_URL ||
     (process.env as any)?.EXPO_PUBLIC_SCANNER_URL;
 
-  // On Web: if no custom URL or relative path is provided, use same-origin /api/scan
+  // Strictly filter out any obsolete Render URLs completely
+  const envUrl = (rawEnv && !rawEnv.includes('onrender.com')) ? rawEnv.trim() : '';
+
+  // On Web: Always use same-origin /api/scan so requests hit the unified Railway service directly
   if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location) {
-    if (!envUrl || envUrl.trim() === '' || envUrl.trim().startsWith('/')) {
+    if (!envUrl || envUrl.startsWith('/')) {
       return `${window.location.origin}/api/scan`;
     }
   }
 
-  if (envUrl && envUrl.trim().length > 0) {
-    let clean = envUrl.trim().replace(/\/+$/, '');
+  if (envUrl && envUrl.length > 0) {
+    let clean = envUrl.replace(/\/+$/, '');
     if (!clean.endsWith('/api/scan')) {
       clean += '/api/scan';
     }
@@ -94,7 +97,7 @@ export function findMatchingSyllable(rawLabel: string): SyllableData | null {
 }
 
 /**
- * Calls the high-accuracy ResNet-18 Kulitan scanner API deployed on Render.
+ * Calls the high-accuracy ResNet-18 Kulitan scanner API deployed on Railway.
  * 
  * @param base64Image Clean or data-URL encoded base64 image
  * @param language 'EN' or 'TL'
@@ -112,17 +115,17 @@ export async function callTestScannerApi(
   const cleanB64 = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
   const dataUrl = `data:image/jpeg;base64,${cleanB64}`;
   const apiUrl = options?.apiUrl || getScannerApiUrl();
-  const timeoutMs = options?.timeoutMs ?? 45000; // 45s for Render cold spin-up
+  const timeoutMs = options?.timeoutMs ?? 45000;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  // Progressive status updates if Render container is waking up
+  // Progressive status updates while model processes the image
   const wakeTimer1 = setTimeout(() => {
     options?.onStatusUpdate?.(
       language === 'EN'
-        ? 'Waking up ResNet-18 model on Render... Please hold on...'
-        : 'Ginigising ang ResNet-18 model sa Render... Mangyaring maghintay...'
+        ? 'Processing glyph with ResNet-18 model... Please hold on...'
+        : 'Sinusuri ang titik gamit ang ResNet-18 model... Mangyaring maghintay...'
     );
   }, 3500);
 

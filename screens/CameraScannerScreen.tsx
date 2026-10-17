@@ -175,7 +175,7 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
       } catch {}
     }
 
-    // Primary Engine: High-Accuracy Testscanner ResNet-18 Model (Render Cloud API)
+    // Primary Engine: High-Accuracy Testscanner ResNet-18 Model (Railway Cloud API)
     setAnalysisStep(
       language === 'EN'
         ? 'Scanning with Testscanner ResNet-18 AI Model...'
@@ -200,14 +200,14 @@ export default function CameraScannerScreen({ navigation }: CameraScannerScreenP
         character: 'Unknown',
         kulitanSymbol: '?',
         confidence: 0,
-        type: isTimeout ? 'Server Warming Up' : 'Connection Error',
+        type: isTimeout ? 'Server Processing' : 'Connection Error',
         transliteration: 'None',
         feedback: language === 'EN'
           ? isTimeout
-            ? 'The AI Scanner server on Render was asleep and is now waking up. Please tap "Scan Another" to rescan.'
+            ? 'The AI Scanner server took too long to respond. Please tap "Scan Another" to retry.'
             : `Could not connect to AI Scanner server (${scannerErr?.message || 'Check connection/CORS'}). Tap "Scan Another" to retry.`
           : isTimeout
-            ? 'Kasalukuyang nagigising ang AI Scanner sa Render. Pindutin ang "Scan Another" upang subukan muli.'
+            ? 'Masyadong matagal ang tugon ng AI Scanner. Pindutin ang "Scan Another" upang subukan muli.'
             : `Hindi makakonekta sa AI Scanner server (${scannerErr?.message || 'Suriin ang koneksyon'}). Pindutin ang "Scan Another" upang subukan muli.`,
         strokeAccuracy: 'Needs Practice',
         engine: 'testscanner',
