@@ -130,13 +130,10 @@ class KulitanPredictor:
         for prob, idx in zip(top_probs[0].tolist(), top_indices[0].tolist()):
             raw_lbl = self.idx_to_label[idx]
             display_lbl = raw_lbl.replace("_", "/").lower()
-            if display_lbl == "kank":
-                display_lbl = "kang"
-            results.append({"label": display_lbl, "raw_label": raw_lbl, "confidence": float(prob)})
+            results.append({"label": display_lbl, "confidence": float(prob)})
 
         out = {
             "prediction": results[0]["label"].lower(),
-            "raw_prediction": results[0]["raw_label"],
             "confidence": results[0]["confidence"],
             "top_k": results,
             "extracted_image_url": preview_url,
