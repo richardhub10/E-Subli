@@ -1,9 +1,10 @@
+import { Platform } from 'react-native';
 import { kulitanSyllables, SyllableData } from '../data/kulitanData';
 import { normalizeKulitanSyllable } from '../data/kulitanDatasetExemplars';
 import { ScanResult } from '../utils/kulitanClassifier';
 import { getDistilledFeedback } from '../data/distilledKulitanKnowledge';
 
-export const DEFAULT_SCANNER_API_URL = 'https://testscanner.onrender.com/api/scan';
+export const DEFAULT_SCANNER_API_URL = 'https://e-subli-production.up.railway.app/api/scan';
 
 export interface TestScannerTopK {
   label: string;
@@ -31,6 +32,14 @@ export function getScannerApiUrl(): string {
     process.env.EXPO_PUBLIC_SCANNER_API_URL ||
     (process.env as any)?.EXPO_PUBLIC_SCANNER_APT_URL ||
     (process.env as any)?.EXPO_PUBLIC_SCANNER_URL;
+
+  // On Web: if no custom URL or relative path is provided, use same-origin /api/scan
+  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location) {
+    if (!envUrl || envUrl.trim() === '' || envUrl.trim().startsWith('/')) {
+      return `${window.location.origin}/api/scan`;
+    }
+  }
+
   if (envUrl && envUrl.trim().length > 0) {
     let clean = envUrl.trim().replace(/\/+$/, '');
     if (!clean.endsWith('/api/scan')) {

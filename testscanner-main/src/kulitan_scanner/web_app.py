@@ -9,7 +9,7 @@ from typing import Dict, List
 
 import requests
 import torch
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_from_directory
 from PIL import Image
 from torchvision import transforms
 
@@ -192,9 +192,20 @@ def create_app(
     except Exception as exc:
         predictor_error = str(exc)
 
-    @app.get("/")
-    def index():
-        return render_template("index.html")
+    dist_env = os.getenv("DIST_DIR", "").strip()
+    candidates = [
+        Path(dist_env) if dist_env else None,
+        Path("/app/dist"),
+        Path(__file__).resolve().parents[3] / "dist",
+        Path(__file__).resolve().parents[2] / "dist",
+        Path("dist"),
+        Path("../dist"),
+    ]
+    resolved_dist = None
+    for candidate in candidates:
+        if candidate and candidate.exists() and (candidate / "index.html").exists():
+            resolved_dist = candidate.resolve()
+            break
 
     @app.after_request
     def add_cors_headers(response):
@@ -202,6 +213,36 @@ def create_app(
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept, X-Requested-With"
         return response
+
+    @app.get("/health")
+    def health():
+        return (
+            jsonify(
+                {
+                    "status": "healthy" if predictor is not None else "degraded",
+                    "model_loaded": predictor is not None,
+                    "frontend_loaded": resolved_dist is not None,
+                    "error": predictor_error if predictor is None else None,
+                }
+            ),
+            200 if predictor is not None else 503,
+        )
+
+    if resolved_dist:
+        @app.get("/")
+        def index():
+            return send_from_directory(str(resolved_dist), "index.html")
+
+        @app.get("/<path:path>")
+        def static_or_spa(path):
+            target = resolved_dist / path
+            if target.is_file():
+                return send_from_directory(str(resolved_dist), path)
+            return send_from_directory(str(resolved_dist), "index.html")
+    else:
+        @app.get("/")
+        def index():
+            return render_template("index.html")
 
     @app.route("/api/scan", methods=["POST", "OPTIONS"])
     def scan_api():
