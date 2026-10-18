@@ -5,7 +5,7 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, Platform, Image } from
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { CommonActions } from '@react-navigation/native';
-import { navigationRef } from '../App';
+import { navigationRef } from '../navigationRef';
 
 type ProfileData = {
   xp: number;
@@ -259,6 +259,116 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         })
         .subscribe();
 
+      const showChallengeAlert = (challenger: string, roomId: string, roomCode?: string) => {
+        setInAppAlert((prev) => {
+          if (prev?.visible && prev.roomId === roomId) return prev;
+          return {
+            visible: true,
+            type: 'challenge',
+            title: `${challenger} Challenged You!`,
+            subtitle: 'Ready for a live Kulitan Quiz Battle? Tap Accept to jump straight into the duel arena!',
+            senderName: challenger,
+            roomId: roomId,
+            onAccept: async () => {
+              try {
+                const myName = profileRef.current.firstName 
+                  ? profileRef.current.firstName.toUpperCase() 
+                  : (user?.email?.split('@')[0]?.toUpperCase() || 'PLAYER 2');
+
+                // Upsert/update player record
+                const { data: existingPlayer } = await supabase
+                  .from('quiz_room_players')
+                  .select('id')
+                  .eq('room_id', roomId)
+                  .eq('user_id', user.id);
+
+                if (existingPlayer && existingPlayer.length > 0) {
+                  await supabase
+                    .from('quiz_room_players')
+                    .update({ score: 0, player_name: myName })
+                    .eq('id', existingPlayer[0].id);
+                } else {
+                  await supabase
+                    .from('quiz_room_players')
+                    .insert([{ room_id: roomId, user_id: user.id, score: 0, player_name: myName }]);
+                }
+                  
+                await supabase
+                  .from('quiz_rooms')
+                  .update({ status: 'playing' })
+                  .eq('id', roomId);
+
+                // Notify host on wait channel so host navigates immediately
+                const waitChan = supabase.channel(`wait_${roomId}`);
+                waitChan.subscribe(async (st) => {
+                  if (st === 'SUBSCRIBED') {
+                    await waitChan.send({
+                      type: 'broadcast',
+                      event: 'friend_accepted_duel',
+                      payload: { roomId: roomId }
+                    });
+                    setTimeout(() => supabase.removeChannel(waitChan), 3000);
+                  }
+                });
+
+                const targetRoomId = roomId;
+                const performNavigation = () => {
+                  try {
+                    if (navigationRef.isReady()) {
+                      navigationRef.navigate('QuizBattle', { roomId: targetRoomId, roomCode, isHost: false });
+                    } else {
+                      navigationRef.dispatch(
+                        CommonActions.navigate({
+                          name: 'QuizBattle',
+                          params: { roomId: targetRoomId, roomCode, isHost: false }
+                        })
+                      );
+                    }
+                  } catch (navErr) {
+                    console.error("Navigation error:", navErr);
+                  }
+                };
+
+                performNavigation();
+                setTimeout(performNavigation, 200);
+              } catch (e) {
+                console.error("Error accepting challenge:", e);
+              }
+            },
+            onDecline: async () => {
+              try {
+                if (roomId) {
+                  await supabase
+                    .from('quiz_rooms')
+                    .update({ status: 'cancelled' })
+                    .eq('id', roomId);
+
+                  await supabase
+                    .from('quiz_room_players')
+                    .delete()
+                    .eq('room_id', roomId)
+                    .eq('user_id', user.id);
+
+                  const waitChan = supabase.channel(`wait_${roomId}`);
+                  waitChan.subscribe(async (st) => {
+                    if (st === 'SUBSCRIBED') {
+                      await waitChan.send({
+                        type: 'broadcast',
+                        event: 'friend_declined_duel',
+                        payload: { roomId: roomId }
+                      });
+                      setTimeout(() => supabase.removeChannel(waitChan), 3000);
+                    }
+                  });
+                }
+              } catch (e) {
+                console.warn("Error declining challenge:", e);
+              }
+            }
+          };
+        });
+      };
+
       // Listen to personal broadcast channel for notifications and challenges
       const personalChannel = supabase.channel(`user_${user.id}`)
         .on('broadcast', { event: 'friend_request' }, (payload) => {
@@ -304,8 +414,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
                 await supabase
                   .from('friends')
                   .delete()
-                  .eq('user_id', senderId)
-                  .eq('friend_id', user.id);
+                  .eq('user_id', user.id)
+                  .eq('friend_id', senderId);
               } catch (err) {
                 console.error('Error declining friend request:', err);
               }
@@ -323,93 +433,49 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           });
         })
         .on('broadcast', { event: 'challenge' }, (payload) => {
-          const challenger = payload.payload.challengerName || 'A scholar';
-          setInAppAlert({
-            visible: true,
-            type: 'challenge',
-            title: `${challenger} Challenged You!`,
-            subtitle: 'Ready for a live Kulitan Quiz Battle? Tap Accept to jump straight into the duel arena!',
-            senderName: challenger,
-            roomId: payload.payload.roomId,
-            onAccept: async () => {
-              try {
-                const myName = profileRef.current.firstName ? profileRef.current.firstName.toUpperCase() : (user?.email?.split('@')[0]?.toUpperCase() || 'PLAYER 2');
-                await supabase
-                  .from('quiz_room_players')
-                  .insert([{ room_id: payload.payload.roomId, user_id: user.id, score: 0, player_name: myName }]);
-                  
-                await supabase
-                  .from('quiz_rooms')
-                  .update({ status: 'playing' })
-                  .eq('id', payload.payload.roomId);
-
-                // Notify host on wait channel so host navigates immediately
-                const waitChan = supabase.channel(`wait_${payload.payload.roomId}`);
-                waitChan.subscribe(async (st) => {
-                  if (st === 'SUBSCRIBED') {
-                    await waitChan.send({
-                      type: 'broadcast',
-                      event: 'friend_accepted_duel',
-                      payload: { roomId: payload.payload.roomId }
-                    });
-                    setTimeout(() => supabase.removeChannel(waitChan), 3000);
-                  }
-                });
-
-                const targetRoomId = payload.payload.roomId;
-                const performNavigation = () => {
-                  try {
-                    if (navigationRef.isReady()) {
-                      navigationRef.navigate('QuizBattle', { roomId: targetRoomId, isHost: false });
-                    } else {
-                      navigationRef.dispatch(
-                        CommonActions.navigate({
-                          name: 'QuizBattle',
-                          params: { roomId: targetRoomId, isHost: false }
-                        })
-                      );
-                    }
-                  } catch (navErr) {
-                    console.error("Navigation error:", navErr);
-                  }
-                };
-
-                performNavigation();
-                setTimeout(performNavigation, 150);
-              } catch (e) {
-                console.error("Error accepting challenge:", e);
-              }
-            },
-            onDecline: async () => {
-              try {
-                if (payload.payload?.roomId) {
-                  await supabase
-                    .from('quiz_rooms')
-                    .update({ status: 'cancelled' })
-                    .eq('id', payload.payload.roomId);
-
-                  const waitChan = supabase.channel(`wait_${payload.payload.roomId}`);
-                  waitChan.subscribe(async (st) => {
-                    if (st === 'SUBSCRIBED') {
-                      await waitChan.send({
-                        type: 'broadcast',
-                        event: 'friend_declined_duel',
-                        payload: { roomId: payload.payload.roomId }
-                      });
-                      setTimeout(() => supabase.removeChannel(waitChan), 3000);
-                    }
-                  });
-                }
-              } catch (e) {
-                console.warn("Error declining challenge:", e);
-              }
-            }
-          });
+          const challenger = payload.payload?.challengerName || 'A scholar';
+          const roomId = payload.payload?.roomId;
+          const roomCode = payload.payload?.roomCode;
+          if (roomId) {
+            showChallengeAlert(challenger, roomId, roomCode);
+          }
         })
         .subscribe();
 
-      // We attach the personalChannel to the subscription so we can remove it later
+      // Listen on quiz_room_players for database-backed challenge invites (resilient against dropped broadcast packets)
+      const invitesChannel = supabase.channel(`invites_${user.id}_${Date.now()}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'quiz_room_players',
+          filter: `user_id=eq.${user.id}`
+        }, async (payload: any) => {
+          const newPlayer = payload.new;
+          if (newPlayer && newPlayer.score === -1 && newPlayer.room_id) {
+            const { data: room } = await supabase
+              .from('quiz_rooms')
+              .select('id, room_code, host_id, status')
+              .eq('id', newPlayer.room_id)
+              .single();
+
+            if (room && room.status === 'private_waiting') {
+              let hostName = 'A scholar';
+              const { data: hostProfile } = await supabase
+                .from('profiles')
+                .select('first_name, last_name')
+                .eq('id', room.host_id)
+                .single();
+              if (hostProfile?.first_name) {
+                hostName = hostProfile.first_name;
+              }
+              showChallengeAlert(hostName, room.id, room.room_code);
+            }
+          }
+        })
+        .subscribe();
+
       subscription.personalChannel = personalChannel;
+      subscription.invitesChannel = invitesChannel;
     };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -426,6 +492,9 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         supabase.removeChannel(subscription);
         if (subscription.personalChannel) {
           supabase.removeChannel(subscription.personalChannel);
+        }
+        if (subscription.invitesChannel) {
+          supabase.removeChannel(subscription.invitesChannel);
         }
       }
     };

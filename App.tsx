@@ -38,10 +38,10 @@ import { ProfileProvider } from './context/ProfileContext';
 import { QuestProvider } from './context/QuestContext';
 import { OnlinePresenceProvider } from './context/OnlinePresenceContext';
 import FloatingBottomBar, { TabName } from './components/FloatingBottomBar';
+import { navigationRef } from './navigationRef';
+export { navigationRef };
 
 const Stack = createStackNavigator();
-
-export const navigationRef = createNavigationContainerRef<any>();
 
 function AppNavigator() {
   const { user, loading } = useAuth();

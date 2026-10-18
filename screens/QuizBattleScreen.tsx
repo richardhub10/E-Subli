@@ -42,7 +42,9 @@ const getKulitanSyllables = (text: string): string[][] => {
 };
 
 export default function QuizBattleScreen({ navigation, route }: Props) {
-  const { roomId, roomCode, isHost, isAiMatch, aiOpponent } = route?.params || {};
+  const { roomId, roomCode: initialRoomCode, isHost, isAiMatch, aiOpponent } = route?.params || {};
+  const [roomCode, setRoomCode] = useState<string>(initialRoomCode || '');
+  const opponentRecordIdRef = useRef<string | null>(null);
   const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
   const { t, language } = useLanguage();
@@ -189,6 +191,7 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         if (roomError) throw roomError;
         
         if (room) {
+          if (room.room_code) setRoomCode(room.room_code);
           let parsedQuestions = room.questions;
           if (typeof parsedQuestions === 'string') {
             try { parsedQuestions = JSON.parse(parsedQuestions); } catch {}
@@ -213,11 +216,12 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
           const me = players.find(p => p.user_id === user?.id);
           const opp = players.find(p => p.user_id !== user?.id);
           if (me) {
-            setMyScore(me.score);
+            setMyScore(me.score < 0 ? 0 : me.score);
             setRematchStatus(me.wants_rematch ? 'waiting' : 'none');
           }
           if (opp) {
-            setOpponentScore(opp.score);
+            opponentRecordIdRef.current = opp.id;
+            setOpponentScore(opp.score < 0 ? 0 : opp.score);
             setOpponentId(opp.user_id);
             setOpponentWantsRematch(!!opp.wants_rematch);
             if (opp.player_name) setOpponentName(opp.player_name);
@@ -238,6 +242,10 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quiz_rooms', filter: `id=eq.${roomId}` }, (payload) => {
         const newRecord = payload.new;
         if (!newRecord) return;
+
+        if (newRecord.room_code) {
+          setRoomCode(newRecord.room_code);
+        }
 
         let parsedPayloadQs = newRecord.questions;
         if (typeof parsedPayloadQs === 'string') {
@@ -281,10 +289,11 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
         const newRecord = payload.new;
         if (newRecord && newRecord.user_id) {
           if (newRecord.user_id === user?.id) {
-            setMyScore(newRecord.score ?? 0);
+            setMyScore((newRecord.score ?? 0) < 0 ? 0 : (newRecord.score ?? 0));
             setRematchStatus(newRecord.wants_rematch ? 'waiting' : 'none');
           } else {
-            setOpponentScore(newRecord.score ?? 0);
+            opponentRecordIdRef.current = newRecord.id;
+            setOpponentScore((newRecord.score ?? 0) < 0 ? 0 : (newRecord.score ?? 0));
             setOpponentWantsRematch(!!newRecord.wants_rematch);
             if (newRecord.user_id !== opponentId) {
               setOpponentId(newRecord.user_id);
@@ -294,9 +303,12 @@ export default function QuizBattleScreen({ navigation, route }: Props) {
             }
           }
         } else if (payload.eventType === 'DELETE') {
-          if (statusRef.current === 'playing') {
-            setOpponentDisconnected(true);
-            setStatus('finished');
+          const deletedId = payload.old?.id;
+          if (deletedId && opponentRecordIdRef.current && deletedId === opponentRecordIdRef.current) {
+            if (statusRef.current === 'playing') {
+              setOpponentDisconnected(true);
+              setStatus('finished');
+            }
           }
         }
       })

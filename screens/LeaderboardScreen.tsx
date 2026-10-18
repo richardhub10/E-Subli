@@ -96,17 +96,17 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
 
         if (sentByMe) {
           Alert.alert(
-            "Pending Request", 
+            "Already Connected", 
             language === 'EN' 
-              ? "You have already sent a friend request to this scholar. Awaiting their response." 
-              : "Nagpadala ka na ng kahilingan sa kaibigang ito. Naghihintay ng kanilang sagot."
+              ? "This scholar is already in your friends list! You can challenge them directly to duels." 
+              : "Nasa listahan na ng kaibigan ang iskolar na ito! Maaari mo na silang hamunin sa duels."
           );
           setSelectedUser(null);
           return;
         }
 
         if (sentByThem) {
-          // If they already sent us a request, accept it directly!
+          // If they already added us, reciprocal add creates mutual friendship!
           const { error: acceptErr } = await supabase
             .from('friends')
             .insert([{ user_id: user.id, friend_id: friendId }]);
@@ -114,10 +114,10 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
 
           if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           Alert.alert(
-            "Friend Request Accepted!", 
+            language === 'EN' ? "Mutual Friends! 🤝" : "Magkaibigan Na Kayo! 🤝", 
             language === 'EN' 
-              ? "This scholar had sent you a request — you are now mutual friends!" 
-              : "Nagpadala na ang scholar ng kahilingan — magkaibigan na kayo ngayon!"
+              ? "You added each other — you are now mutual friends!" 
+              : "Idinagdag ninyo ang isa't isa — magkaibigan na kayo ngayon!"
           );
 
           // Broadcast accept to other user
@@ -147,10 +147,10 @@ export default function LeaderboardScreen({ navigation }: LeaderboardScreenProps
       
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert(
-        "Request Sent! 🤝", 
+        language === 'EN' ? "Friend Added! 🤝" : "Naidagdag ang Kaibigan! 🤝", 
         language === 'EN' 
-          ? "Friend request sent successfully. The user will decide whether to accept or decline." 
-          : "Tagumpay na naipadala ang kahilingan. Magpapasya ang gumagamit kung tatanggapin o tatanggihan."
+          ? "Scholar added to your friends list! You can now challenge them directly to 1v1 duels." 
+          : "Naidagdag ang iskolar sa iyong listahan! Maaari mo na silang hamunin sa 1v1 duels."
       );
       
       // Broadcast real-time notification to the friend

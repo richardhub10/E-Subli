@@ -105,13 +105,39 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
     checkVersionOnLoad();
   }, []);
 
+  const isPrivateChallenge = !!route.params?.privateRoomId;
+  const privateFriendName = route.params?.friendName;
+
   useEffect(() => {
     if (route.params?.privateRoomId) {
-      setRoomId(route.params.privateRoomId);
+      const pRoomId = route.params.privateRoomId;
+      const targetFriend = route.params.friendName || (language === 'EN' ? 'Friend' : 'Kaibigan');
+      setRoomId(pRoomId);
       setIsSearching(true);
-      setStatusMessage(language === 'EN' ? 'Waiting for friend to accept...' : 'Naghihintay na tanggapin...');
+      setStatusMessage(language === 'EN' ? `Waiting for ${targetFriend} to accept...` : `Naghihintay kay ${targetFriend}...`);
+
+      stopSearchTimer();
+      setSearchSeconds(0);
+      searchTimerRef.current = setInterval(() => {
+        setSearchSeconds(prev => {
+          if (prev >= 60) {
+            stopSearchTimer();
+            setIsSearching(false);
+            setRoomId(null);
+            supabase.from('quiz_room_players').delete().eq('room_id', pRoomId).then(() => {
+              supabase.from('quiz_rooms').delete().eq('id', pRoomId);
+            });
+            const timeoutMsg = language === 'EN'
+              ? `${targetFriend} didn't respond in time. Challenge expired.`
+              : `Hindi sumagot si ${targetFriend} sa takdang oras. Nag-expire ang hamon.`;
+            if (Platform.OS === 'web') window.alert(timeoutMsg); else Alert.alert('Challenge Expired', timeoutMsg);
+            return 0;
+          }
+          return prev + 1;
+        });
+      }, 1000);
     }
-  }, [route.params?.privateRoomId]);
+  }, [route.params?.privateRoomId, route.params?.friendName, language]);
 
   useEffect(() => {
     let subscription: any;
@@ -126,7 +152,7 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
             stopSearchTimer();
             setIsSearching(false);
             if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            navigation.navigate('QuizBattle', { roomId: payload.new.id, isHost: true });
+            navigation.navigate('QuizBattle', { roomId: payload.new.id, roomCode: payload.new.room_code, isHost: true });
           } else if (payload.new.status === 'cancelled') {
             if (pollTimer) clearInterval(pollTimer);
             stopSearchTimer();
@@ -158,7 +184,7 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
         try {
           const { data: roomRecord } = await supabase
             .from('quiz_rooms')
-            .select('id, status')
+            .select('id, status, room_code')
             .eq('id', roomId)
             .single();
 
@@ -167,7 +193,7 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
             stopSearchTimer();
             setIsSearching(false);
             if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            navigation.navigate('QuizBattle', { roomId: roomRecord.id, isHost: true });
+            navigation.navigate('QuizBattle', { roomId: roomRecord.id, roomCode: roomRecord.room_code, isHost: true });
           } else if (roomRecord?.status === 'cancelled') {
             clearInterval(pollTimer);
             stopSearchTimer();
@@ -662,14 +688,22 @@ export default function MultiplayerLobbyScreen({ navigation, route }: Multiplaye
                 <View style={styles.timerBadge}>
                   <Ionicons name="timer-outline" size={14} color="#B45309" />
                   <Text style={styles.timerBadgeText}>
-                    {searchSeconds < 15
-                      ? `${language === 'EN' ? 'Searching for match' : 'Naghahanap ng laban'}... ${Math.floor(searchSeconds / 60)}:${(searchSeconds % 60).toString().padStart(2, '0')}`
-                      : (language === 'EN' ? 'Match Found!' : 'May Nahanap na Kalaban!')}
+                    {isPrivateChallenge ? (
+                      `${language === 'EN' ? 'Expires in' : 'Mag-eexpire sa'}: ${Math.max(0, 60 - searchSeconds)}s`
+                    ) : searchSeconds < 15 ? (
+                      `${language === 'EN' ? 'Searching for match' : 'Naghahanap ng laban'}... ${Math.floor(searchSeconds / 60)}:${(searchSeconds % 60).toString().padStart(2, '0')}`
+                    ) : (
+                      language === 'EN' ? 'Match Found!' : 'May Nahanap na Kalaban!'
+                    )}
                   </Text>
                 </View>
 
                 <TouchableOpacity style={styles.cancelButton} onPress={cancelSearch} activeOpacity={0.8}>
-                  <Text style={styles.cancelButtonText}>{language === 'EN' ? 'Cancel Match' : 'Kanselahin'}</Text>
+                  <Text style={styles.cancelButtonText}>
+                    {isPrivateChallenge 
+                      ? (language === 'EN' ? 'Cancel Challenge' : 'Kanselahin ang Hamon')
+                      : (language === 'EN' ? 'Cancel Match' : 'Kanselahin')}
+                  </Text>
                 </TouchableOpacity>
               </Animated.View>
             ) : (

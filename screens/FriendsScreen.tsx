@@ -38,11 +38,14 @@ export type FriendProfile = {
   elo_rating: number;
   avatar_url?: string;
   email?: string;
+  isMutual?: boolean;
+  isIncomingOnly?: boolean;
+  isOutgoingOnly?: boolean;
 };
 
 export default function FriendsScreen({ navigation }: FriendsScreenProps) {
   const [activeTab, setActiveTab] = useState<'List' | 'Requests' | 'Add'>('List');
-  const [mutualFriends, setMutualFriends] = useState<FriendProfile[]>([]);
+  const [friendsList, setFriendsList] = useState<FriendProfile[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<FriendProfile[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<FriendProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,7 +78,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
       .subscribe();
 
     // Also listen on personal broadcast channel for instant real-time friend alerts
-    const personalChannel = supabase.channel(`friends_events_${user.id}`)
+    const personalChannel = supabase.channel(`user_${user.id}`)
       .on('broadcast', { event: 'friend_request' }, () => {
         fetchFriendsData();
       })
@@ -112,27 +115,11 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
         }
       });
 
-      const mutualIds: string[] = [];
-      const incomingIds: string[] = [];
-      const outgoingIds: string[] = [];
-
       const allIds = new Set<string>([...outgoingSet, ...incomingSet]);
       allIds.delete(user.id);
 
-      allIds.forEach(id => {
-        const isOut = outgoingSet.has(id);
-        const isIn = incomingSet.has(id);
-        if (isOut && isIn) {
-          mutualIds.push(id);
-        } else if (isIn && !isOut) {
-          incomingIds.push(id);
-        } else if (isOut && !isIn) {
-          outgoingIds.push(id);
-        }
-      });
-
       if (allIds.size === 0) {
-        setMutualFriends([]);
+        setFriendsList([]);
         setIncomingRequests([]);
         setOutgoingRequests([]);
         setLoading(false);
@@ -150,26 +137,39 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
       const profileMap = new Map<string, FriendProfile>();
       (profiles || []).forEach(p => profileMap.set(p.id, p));
 
-      const mutualList: FriendProfile[] = [];
-      mutualIds.forEach(id => {
-        const p = profileMap.get(id);
-        if (p) mutualList.push(p);
-      });
-      mutualList.sort((a, b) => (b.xp || 0) - (a.xp || 0));
-
+      const fullList: FriendProfile[] = [];
       const incomingList: FriendProfile[] = [];
-      incomingIds.forEach(id => {
-        const p = profileMap.get(id);
-        if (p) incomingList.push(p);
-      });
-
       const outgoingList: FriendProfile[] = [];
-      outgoingIds.forEach(id => {
+
+      allIds.forEach(id => {
         const p = profileMap.get(id);
-        if (p) outgoingList.push(p);
+        if (!p) return;
+        const isOut = outgoingSet.has(id);
+        const isIn = incomingSet.has(id);
+        const isMutual = isOut && isIn;
+        const isIncomingOnly = isIn && !isOut;
+        const isOutgoingOnly = isOut && !isIn;
+
+        const friendRecord: FriendProfile = {
+          ...p,
+          isMutual,
+          isIncomingOnly,
+          isOutgoingOnly,
+        };
+
+        fullList.push(friendRecord);
+
+        if (isIncomingOnly) {
+          incomingList.push(friendRecord);
+        } else if (isOutgoingOnly) {
+          outgoingList.push(friendRecord);
+        }
       });
 
-      setMutualFriends(mutualList);
+      // Sort connected friends by XP
+      fullList.sort((a, b) => (b.xp || 0) - (a.xp || 0));
+
+      setFriendsList(fullList);
       setIncomingRequests(incomingList);
       setOutgoingRequests(outgoingList);
     } catch (err) {
@@ -232,32 +232,30 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
     }
   };
 
-  // Send friend request (non auto-accept: user decides whether to accept or decline)
+  // Send friend request / Add Friend
   const sendFriendRequest = async (targetId: string, targetName?: string) => {
     if (!user) return;
     setActionLoadingId(targetId);
     try {
-      // Check if reciprocal already exists
-      const isMutual = mutualFriends.some(f => f.id === targetId);
-      if (isMutual) {
-        notify("Info", language === 'EN' ? "You are already friends!" : "Magkaibigan na kayo!");
+      const isAlreadyFriend = friendsList.some(f => f.id === targetId);
+      if (isAlreadyFriend) {
+        const existingRec = friendsList.find(f => f.id === targetId);
+        if (existingRec?.isIncomingOnly) {
+          await acceptFriendRequest(targetId, targetName);
+          return;
+        }
+        notify("Info", language === 'EN' ? "Scholar is already in your friends circle!" : "Nasa listahan mo na ng kaibigan ang iskolar!");
         return;
       }
 
-      const isOutgoing = outgoingRequests.some(f => f.id === targetId);
-      if (isOutgoing) {
-        notify("Info", language === 'EN' ? "Friend request already sent. Awaiting their response." : "Naipadala na ang kahilingan. Naghihintay ng sagot.");
-        return;
-      }
-
+      // Check if target already sent us a request -> accept directly!
       const isIncoming = incomingRequests.some(f => f.id === targetId);
       if (isIncoming) {
-        // Target already sent us a request, accept directly!
         await acceptFriendRequest(targetId, targetName);
         return;
       }
 
-      // Insert outgoing request record
+      // Insert outgoing friendship record
       const { error: insertError } = await supabase
         .from('friends')
         .insert([{
@@ -272,10 +270,10 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
       }
 
       notify(
-        language === 'EN' ? "Request Sent! 🤝" : "Naipadala ang Kahilingan! 🤝",
+        language === 'EN' ? "Friend Added! 🤝" : "Naidagdag ang Kaibigan! 🤝",
         language === 'EN'
-          ? `Friend request sent to ${targetName || 'the scholar'}. They will decide whether to accept or decline.`
-          : `Naipadala ang kahilingan kay ${targetName || 'scholar'}. Sila ang magpapasya kung tatanggapin o tatanggihan.`
+          ? `${targetName || 'Scholar'} is now in your friends circle! You can now challenge them to live duels.`
+          : `Naidagdag si ${targetName || 'scholar'} sa iyong mga kaibigan! Maaari na kayong maglaban sa live duel.`
       );
 
       // Real-time broadcast ping with senderId so recipient can accept/decline seamlessly
@@ -301,7 +299,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
     }
   };
 
-  // Accept incoming friend request
+  // Accept incoming friend request / Add Back
   const acceptFriendRequest = async (senderId: string, senderName?: string) => {
     if (!user) return;
     setActionLoadingId(senderId);
@@ -321,9 +319,9 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
       }
 
       notify(
-        language === 'EN' ? "Friend Accepted! 🎉" : "Tinanggap ang Kaibigan! 🎉",
+        language === 'EN' ? "Friend Added Back! 🎉" : "Tinanggap ang Kaibigan! 🎉",
         language === 'EN'
-          ? `You and ${senderName || 'this scholar'} are now friends! You can now challenge each other to live duels.`
+          ? `You and ${senderName || 'this scholar'} are now mutual friends! You can now challenge each other to live duels.`
           : `Kayo ni ${senderName || 'scholar'} ay magkaibigan na! Maaari na kayong maglaban sa live duel.`
       );
 
@@ -360,8 +358,16 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
       await supabase
         .from('friends')
         .delete()
-        .eq('user_id', senderId)
-        .eq('friend_id', user.id);
+        .eq('user_id', user.id)
+        .eq('friend_id', senderId);
+
+      try {
+        await supabase
+          .from('friends')
+          .delete()
+          .eq('user_id', senderId)
+          .eq('friend_id', user.id);
+      } catch {}
 
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -408,10 +414,20 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
 
     const executeRemove = async () => {
       try {
+        // Delete user's row
         await supabase
           .from('friends')
           .delete()
-          .or(`and(user_id.eq.${user?.id},friend_id.eq.${friend.id}),and(user_id.eq.${friend.id},friend_id.eq.${user?.id})`);
+          .eq('user_id', user?.id)
+          .eq('friend_id', friend.id);
+
+        try {
+          await supabase
+            .from('friends')
+            .delete()
+            .eq('user_id', friend.id)
+            .eq('friend_id', user?.id);
+        } catch {}
 
         if (Platform.OS !== 'web') {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -471,6 +487,16 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
         .from('quiz_room_players')
         .insert([{ room_id: newRoom.id, user_id: user.id, score: 0, player_name: myName }]);
 
+      // Also register challenged friend as invitee (score -1) so database-backed invite works even if broadcast drops
+      await supabase
+        .from('quiz_room_players')
+        .insert([{ 
+          room_id: newRoom.id, 
+          user_id: friend.id, 
+          score: -1, 
+          player_name: (friend.first_name || 'FRIEND').toUpperCase() 
+        }]);
+
       // Await subscription and broadcast send so challenge is dispatched before screen navigates
       await new Promise<void>((resolve) => {
         const friendChannel = supabase.channel(`user_${friend.id}`);
@@ -481,7 +507,8 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
               event: 'challenge',
               payload: {
                 challengerName: profile?.firstName || user.email?.split('@')[0] || 'A Scholar',
-                roomId: newRoom.id
+                roomId: newRoom.id,
+                roomCode: newCode
               }
             });
             setTimeout(() => {
@@ -490,11 +517,14 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
             resolve();
           }
         });
-        setTimeout(resolve, 1500);
+        setTimeout(resolve, 2500);
       });
 
       setChallengeModalFriend(null);
-      navigation.navigate('MultiplayerLobby', { privateRoomId: newRoom.id });
+      navigation.navigate('MultiplayerLobby', { 
+        privateRoomId: newRoom.id, 
+        friendName: friend.first_name || 'Friend'
+      });
     } catch (err: any) {
       console.error("Challenge error:", err);
       notify("Error", err?.message || "Could not create challenge. Please try again.");
@@ -550,7 +580,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
               style={{ marginRight: 5 }} 
             />
             <Text style={[styles.tabText, activeTab === 'List' && styles.tabTextActive]}>
-              {language === 'EN' ? 'Friends' : 'Kaibigan'} ({mutualFriends.length})
+              {language === 'EN' ? 'Friends' : 'Kaibigan'} ({friendsList.length})
             </Text>
           </TouchableOpacity>
 
@@ -594,7 +624,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
           </TouchableOpacity>
         </View>
 
-        {/* TAB 1: MUTUAL FRIENDS LIST */}
+        {/* TAB 1: FRIENDS LIST */}
         {activeTab === 'List' && (
           <View style={{ flex: 1 }}>
             {/* Pending Requests Banner Notice */}
@@ -633,7 +663,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                   {language === 'EN' ? 'Loading friends list...' : 'Kinukuha ang listahan ng kaibigan...'}
                 </Text>
               </View>
-            ) : mutualFriends.length === 0 ? (
+            ) : friendsList.length === 0 ? (
               <View style={styles.emptyState}>
                 <View style={styles.emptyIconCircle}>
                   <Ionicons name="people-outline" size={48} color="#D1582D" />
@@ -643,8 +673,8 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                 </Text>
                 <Text style={styles.emptyText}>
                   {language === 'EN' 
-                    ? 'Connect with fellow scholars, accept friend requests, and challenge each other to live 1v1 duels!' 
-                    : 'Kumonekta sa ibang iskolar, tanggapin ang mga kahilingan, at maglaban sa 1v1 duels!'}
+                    ? 'Connect with fellow scholars, add friends, and challenge each other to live 1v1 duels!' 
+                    : 'Kumonekta sa ibang iskolar, magdagdag ng kaibigan, at maglaban sa 1v1 duels!'}
                 </Text>
                 <TouchableOpacity 
                   style={styles.emptyActionBtn} 
@@ -659,7 +689,7 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
               </View>
             ) : (
               <FlatList
-                data={mutualFriends}
+                data={friendsList}
                 keyExtractor={item => item.id}
                 contentContainerStyle={styles.listContainer}
                 showsVerticalScrollIndicator={false}
@@ -689,7 +719,25 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                           <Ionicons name="shield-checkmark" size={10} color="#059669" />
                           <Text style={styles.rpBadgeText}>{item.elo_rating || 1000} RP</Text>
                         </View>
+                        {item.isMutual ? (
+                          <View style={styles.mutualSmallBadge}>
+                            <Ionicons name="star" size={10} color="#B45309" />
+                            <Text style={styles.mutualSmallText}>Mutual</Text>
+                          </View>
+                        ) : null}
                       </View>
+                      {item.isIncomingOnly && (
+                        <TouchableOpacity 
+                          style={styles.addBackRowBtn}
+                          onPress={() => acceptFriendRequest(item.id, item.first_name)}
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons name="person-add" size={11} color="#059669" />
+                          <Text style={styles.addBackRowText}>
+                            {language === 'EN' ? 'Added you • Tap to Add Back' : 'Nagdagdag sa iyo • I-add pabalik'}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
 
                     <View style={styles.friendActionGroup}>
@@ -941,9 +989,11 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                 </Text>
 
                 {searchResults.map((item) => {
-                  const isMutual = mutualFriends.some(f => f.id === item.id);
-                  const isSentPending = outgoingRequests.some(f => f.id === item.id);
-                  const isReceivedPending = incomingRequests.some(f => f.id === item.id);
+                  const friendRec = friendsList.find(f => f.id === item.id);
+                  const isFriend = !!friendRec;
+                  const isMutual = !!friendRec?.isMutual;
+                  const isSentPending = outgoingRequests.some(f => f.id === item.id) || !!friendRec?.isOutgoingOnly;
+                  const isReceivedPending = incomingRequests.some(f => f.id === item.id) || !!friendRec?.isIncomingOnly;
                   const isActing = actionLoadingId === item.id;
 
                   return (
@@ -969,7 +1019,25 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
 
                       {isActing ? (
                         <ActivityIndicator size="small" color="#D1582D" />
+                      ) : isReceivedPending ? (
+                        <TouchableOpacity 
+                          style={styles.acceptResultBtn}
+                          onPress={() => acceptFriendRequest(item.id, item.first_name)}
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons name="person-add" size={14} color="#FFF" style={{ marginRight: 3 }} />
+                          <Text style={styles.acceptResultText}>
+                            {language === 'EN' ? 'Add Back' : 'I-add Pabalik'}
+                          </Text>
+                        </TouchableOpacity>
                       ) : isMutual ? (
+                        <View style={styles.alreadyFriendBadge}>
+                          <Ionicons name="star" size={14} color="#F59E0B" />
+                          <Text style={[styles.alreadyFriendText, { color: '#B45309' }]}>
+                            {language === 'EN' ? 'Mutual' : 'Magkaibigan'}
+                          </Text>
+                        </View>
+                      ) : isFriend ? (
                         <View style={styles.alreadyFriendBadge}>
                           <Ionicons name="checkmark-circle" size={16} color="#059669" />
                           <Text style={styles.alreadyFriendText}>
@@ -985,17 +1053,6 @@ export default function FriendsScreen({ navigation }: FriendsScreenProps) {
                           <Ionicons name="time" size={13} color="#C2410C" />
                           <Text style={styles.pendingBadgeText}>
                             {language === 'EN' ? 'Pending' : 'Naghihintay'}
-                          </Text>
-                        </TouchableOpacity>
-                      ) : isReceivedPending ? (
-                        <TouchableOpacity 
-                          style={styles.acceptResultBtn}
-                          onPress={() => acceptFriendRequest(item.id, item.first_name)}
-                          activeOpacity={0.8}
-                        >
-                          <Ionicons name="checkmark" size={14} color="#FFF" />
-                          <Text style={styles.acceptResultText}>
-                            {language === 'EN' ? 'Accept' : 'Tanggapin'}
                           </Text>
                         </TouchableOpacity>
                       ) : (
@@ -1410,6 +1467,40 @@ const styles = StyleSheet.create({
   rpBadgeText: {
     fontFamily: 'Poppins_700Bold',
     fontSize: 10,
+    color: '#059669',
+  },
+  mutualSmallBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  mutualSmallText: {
+    fontFamily: 'Poppins_700Bold',
+    fontSize: 9.5,
+    color: '#B45309',
+  },
+  addBackRowBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  addBackRowText: {
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 10.5,
     color: '#059669',
   },
   friendActionGroup: {
