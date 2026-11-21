@@ -171,16 +171,9 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
                 />
               </View>
 
-              <View style={styles.brandTitleRow}>
-                <Text style={styles.brandTitleText}>
-                  <Text style={{ color: '#F6E3BA' }}>E</Text>
-                  <Text style={{ color: '#EED39E' }}>S</Text>
-                  <Text style={{ color: '#E8C687' }}>U</Text>
-                  <Text style={{ color: '#DDB266' }}>B</Text>
-                  <Text style={{ color: '#DBB064' }}>L</Text>
-                  <Text style={{ color: '#D0A85F' }}>I</Text>
-                </Text>
-              </View>
+              <Text style={styles.logoTitle}>
+                <Text style={styles.logoE}>e</Text>SUBLI
+              </Text>
               
               <Text style={styles.subtitle}>
                 {language === 'EN' 
@@ -432,24 +425,15 @@ const styles = StyleSheet.create({
     width: 68,
     height: 68,
   },
-  brandTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
+  logoTitle: {
+    fontSize: 34,
+    fontFamily: 'Poppins_700Bold',
+    color: '#0F172A',
+    letterSpacing: 2,
   },
-  brandTitleText: {
-    fontFamily: Platform.select({
-      ios: 'Times New Roman',
-      android: 'serif',
-      default: 'Times New Roman, serif',
-    }),
-    fontWeight: 'bold',
-    fontSize: 36,
-    letterSpacing: 2.5,
-    textShadowColor: 'rgba(0, 0, 0, 0.45)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 3,
+  logoE: {
+    color: '#D1582D',
+    fontStyle: 'italic',
   },
   subtitle: {
     fontSize: 13,
