@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Platform, GestureResponderEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { SyllableData } from '../data/kulitanData';
 import KulitanGlyph from './KulitanGlyph';
 
@@ -10,12 +11,22 @@ const CARD_HEIGHT = screenHeight < 680 ? 300 : screenHeight < 760 ? 340 : Math.m
 
 type FlashcardProps = {
   data: SyllableData;
+  onPressAudio?: (syllable: SyllableData) => void;
+  isAudioPlaying?: boolean;
 };
 
-export default function Flashcard({ data }: FlashcardProps) {
+export default function Flashcard({ data, onPressAudio, isAudioPlaying = false }: FlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   if (!data) return null;
+
+  const handleAudioPress = (e: GestureResponderEvent) => {
+    e.stopPropagation?.();
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    onPressAudio?.(data);
+  };
 
   return (
     <TouchableOpacity 
@@ -24,6 +35,20 @@ export default function Flashcard({ data }: FlashcardProps) {
       onPress={() => setIsFlipped(!isFlipped)}
     >
       <View style={[styles.card, isFlipped ? styles.cardFlipped : styles.cardFront]}>
+        <TouchableOpacity
+          style={[styles.audioButton, isAudioPlaying && styles.audioButtonActive]}
+          onPress={handleAudioPress}
+          activeOpacity={0.75}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityRole="button"
+          accessibilityLabel={`Play pronunciation for ${data.latin}`}
+        >
+          <Ionicons
+            name="volume-high"
+            size={20}
+            color={isAudioPlaying ? '#FFFFFF' : '#D1582D'}
+          />
+        </TouchableOpacity>
         {!isFlipped ? (
           // Front of the card
           <View style={styles.cardContent}>
@@ -125,6 +150,29 @@ const styles = StyleSheet.create({
   cardFlipped: {
     backgroundColor: '#FFFFFF',
   },
+  audioButton: {
+    position: 'absolute',
+    top: isSmallScreen ? 12 : 16,
+    right: isSmallScreen ? 12 : 16,
+    zIndex: 10,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#D1582D',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  audioButtonActive: {
+    backgroundColor: '#D1582D',
+    borderColor: '#D1582D',
+  },
   cardContent: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -177,6 +225,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     gap: 6,
     marginBottom: 10,
+    marginHorizontal: 48,
     borderWidth: 1,
     borderColor: '#FFEDD5',
   },
