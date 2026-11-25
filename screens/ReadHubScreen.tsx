@@ -3,9 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, Platform, Modal, Animated, Sw
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Flashcard from '../components/Flashcard';
 import { kulitanSyllables } from '../data/kulitanData';
+import { getKulitanAudioSource } from '../data/kulitanAudio';
 import { useProfile } from '../context/ProfileContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useQuest } from '../context/QuestContext';
@@ -82,6 +84,27 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
   };
 
   const currentSyllable = filteredData[currentIndex] || filteredData[0];
+  const currentAudioSource = useMemo(
+    () => getKulitanAudioSource(currentSyllable),
+    [currentSyllable?.id]
+  );
+  const player = useAudioPlayer(currentAudioSource);
+  const playerStatus = useAudioPlayerStatus(player);
+
+  React.useEffect(() => {
+    if (Platform.OS !== 'web') {
+      setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
+    }
+  }, []);
+
+  const handlePlayAudio = () => {
+    if (!currentAudioSource) return;
+    if (playerStatus.currentTime > 0 || playerStatus.didJustFinish) {
+      player.seekTo(0);
+    }
+    player.play();
+  };
+
   const progressPercentage = filteredData.length > 0 ? ((currentIndex + 1) / filteredData.length) * 100 : 0;
 
   const handleCategoryChange = (newCategory: 'All' | 'Vowels' | 'Consonants') => {
@@ -200,7 +223,11 @@ export default function ReadHubScreen({ navigation }: ReadHubScreenProps) {
         </View>
 
         {/* Central 3D Flippable Flashcard */}
-        <Flashcard data={currentSyllable} />
+        <Flashcard
+          data={currentSyllable}
+          onPressAudio={handlePlayAudio}
+          isAudioPlaying={Boolean(playerStatus.playing && !playerStatus.didJustFinish)}
+        />
 
         {/* Navigation Controls / Spaced Repetition Rating Buttons */}
         <View style={styles.controlsContainer}>
